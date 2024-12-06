@@ -47,7 +47,7 @@ app.use('/api/chapters', chapterController);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
-app.use('/api/notifications', notificationRoutes);
+// app.use('/api/notifications', notificationRoutes);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
