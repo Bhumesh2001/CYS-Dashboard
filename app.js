@@ -13,6 +13,9 @@ const app = express();
 // **Use compression for response bodies**
 app.use(compression());
 
+// Trust proxy configuration
+app.set('trust proxy', 1); // Trust first proxy
+
 // **Rate Limiting** to prevent abuse
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
