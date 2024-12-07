@@ -3,6 +3,9 @@ const dotenv = require('dotenv');
 const cluster = require('cluster');
 const os = require('os');
 const compression = require('compression');
+const helmet = require('helmet');
+const xss = require('xss-clean');
+const csrf = require('csurf');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./middlewares/errorMiddle');
@@ -10,8 +13,10 @@ const { errorHandler } = require('./middlewares/errorMiddle');
 dotenv.config();
 const app = express();
 
-// **Use compression for response bodies**
-app.use(compression());
+app.use(compression()); //**Use compression for response bodies**
+app.use(helmet()); // security header
+app.use(xss()); //prevent xss attack
+app.use(csrf({ cookie: true })); //prevent Cross-Site Request Forgery attacks.
 
 // Trust proxy configuration
 app.set('trust proxy', 1); // Trust first proxy
@@ -40,7 +45,7 @@ const chapterController = require('./routes/chapterRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
+// const notificationRoutes = require('./routes/notificationRoutes');
 
 // Main routes
 app.use('/api/auth', authRoutes);
