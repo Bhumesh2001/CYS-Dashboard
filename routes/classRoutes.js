@@ -26,9 +26,6 @@ router.get(
     classController.getClassById
 );
 
-// Route to get subjects and chapters by class name
-router.get('/subj-&-chap/:className', authenticate, classController.getSubjectAndChapterByClassName);
-
 // **Update class by ID**
 router.put(
     '/:classId',

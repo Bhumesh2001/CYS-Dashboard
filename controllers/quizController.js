@@ -1,4 +1,5 @@
 const Quiz = require('../models/Quiz');
+const mongoose = require('mongoose');
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
@@ -14,7 +15,9 @@ exports.createQuiz = async (req, res, next) => {
 // **Get All Quizzes**
 exports.getQuizzes = async (req, res, next) => {
     try {
-        const quizzes = await Quiz.find({}, { createdAt: 0, updatedAt: 0 }).lean();
+        const quizzes = await Quiz.find({},
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0, categoryId: 0 }
+        ).lean();
         res.status(200).json({
             success: true,
             message: 'Quizes fetched successfully...!',
@@ -29,7 +32,10 @@ exports.getQuizzes = async (req, res, next) => {
 // **Get Quiz by ID**
 exports.getQuizById = async (req, res, next) => {
     try {
-        const quiz = await Quiz.findById(req.params.quizId, { createdAt: 0, updatedAt: 0 });
+        const quiz = await Quiz.findById(
+            req.params.quizId,
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0, categoryId: 0 }
+        ).lean();
 
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
@@ -41,29 +47,48 @@ exports.getQuizById = async (req, res, next) => {
     }
 };
 
-// Get Quizzes by Chapter ID
-exports.getQuizzesByChapterId = async (req, res, next) => {
+// Get Quiz by Chapter ID
+exports.getQuizByChapterId = async (req, res, next) => {
     try {
-        // Find active quizzes by chapterId        
-        const quizzes = await Quiz.find(
+        // Find a single quiz by chapterId
+        const quiz = await Quiz.findOne(
             { chapterId: req.params.chapterId },
-            { createdAt: 0, updatedAt: 0, answer: 0 }
-        );
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 } // Exclude non-essential fields
+        ).lean();
 
-        // Early return if no quizzes found
-        if (!quizzes.length) return res.status(404).json({
-            success: false,
-            message: 'No quizzes found for this chapter'
-        });
+        // Return 404 if no quiz is found
+        if (!quiz) {
+            return res.status(404).json({
+                success: false,
+                message: 'No quiz found for this chapter',
+            });
+        }
 
-        // Return the found quizzes
+        // Fetch questions for the quiz's categoryId
+        if (quiz.categoryId) {
+            const questions = await mongoose.model('Question').find(
+                { categoryId: quiz.categoryId },
+                {
+                    createdAt: 0,
+                    updatedAt: 0,
+                    answer: 0,
+                    categoryId: 0,
+                    chapterId: 0,
+                    questionType: 0,
+                    status: 0,
+                } // Exclude unwanted fields
+            ).lean();
+
+            quiz.questions = questions.length ? questions : []; // Add questions to the quiz object
+        } else {
+            quiz.questions = []; // Handle case where categoryId is not available
+        }
+
         res.status(200).json({
             success: true,
-            message: 'Quizzes retrieved successfully',
-            totalQuizzess: quizzes.length,
-            data: quizzes
+            message: 'Quiz retrieved successfully',
+            data: quiz, // Returning a single quiz object
         });
-
     } catch (error) {
         next(error);
     }
@@ -71,7 +96,6 @@ exports.getQuizzesByChapterId = async (req, res, next) => {
 
 // **Update Quiz**
 exports.updateQuiz = async (req, res, next) => {
-
     try {
         const quiz = await Quiz.findByIdAndUpdate(
             req.params.quizId,
@@ -80,7 +104,7 @@ exports.updateQuiz = async (req, res, next) => {
         );
 
         if (!quiz) {
-            return res.status(404).json({ message: 'Quiz not found' });
+            return res.status(404).json({ success: false, message: 'Quiz not found' });
         }
 
         res.status(200).json({ success: false, message: 'Quiz updated successfully', quiz });

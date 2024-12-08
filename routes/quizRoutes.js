@@ -35,7 +35,7 @@ router.get(
     '/chapter/:chapterId',
     authenticate,
     validateObjectIds(['chapterId'], 'params'),
-    quizController.getQuizzesByChapterId
+    quizController.getQuizByChapterId
 );
 
 // **Update Quiz**

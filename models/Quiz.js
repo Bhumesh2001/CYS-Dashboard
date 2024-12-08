@@ -3,56 +3,108 @@ const mongoose = require('mongoose');
 // **Quiz Schema**
 const quizSchema = new mongoose.Schema({
     /**
+     * Class ID (reference to Class model)
+     * 
+     * The unique identifier for the class the quiz belongs to.
+     */
+    classId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Class', // References the Class model
+        required: [true, 'Class ID is required'],
+        validate: {
+            validator: (v) => mongoose.Types.ObjectId.isValid(v),
+            message: '{VALUE} is not a valid class ID',
+        },
+    },
+    /**
+     * Subject ID (reference to Subject model)
+     * 
+     * The unique identifier for the subject the quiz belongs to.
+     */
+    subjectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject', // References the Subject model
+        required: [true, 'Subject ID is required'],
+        validate: {
+            validator: (v) => mongoose.Types.ObjectId.isValid(v),
+            message: '{VALUE} is not a valid subject ID',
+        },
+    },
+    /**
      * Chapter ID (reference to Chapter model)
      * 
      * The unique identifier for the chapter the quiz belongs to.
      */
     chapterId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Chapter',  // References the Chapter model
+        ref: 'Chapter', // References the Chapter model
         required: [true, 'Chapter ID is required'],
+        validate: {
+            validator: (v) => mongoose.Types.ObjectId.isValid(v),
+            message: '{VALUE} is not a valid chapter ID',
+        },
     },
     /**
-     * Question for the quiz
+     * Category ID (reference to Category model)
      * 
-     * The question text for the quiz.
+     * The unique identifier for the category the quiz belongs to.
      */
-    question: {
+    categoryId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category', // References the Category model
+        required: [true, 'Category ID is required'],
+        validate: {
+            validator: (v) => mongoose.Types.ObjectId.isValid(v),
+            message: '{VALUE} is not a valid category ID',
+        },
+    },
+    /**
+     * Quiz Title
+     * 
+     * The title of the quiz.
+     */
+    quizTitle: {
         type: String,
-        required: [true, 'Question is required'],
-        minlength: [5, 'Question must be at least 5 characters long'],
-        maxlength: [1000, 'Question cannot exceed 1000 characters'],
+        required: [true, 'Quiz title is required'],
+        minlength: [5, 'Quiz title must be at least 5 characters long'],
+        maxlength: [200, 'Quiz title cannot exceed 200 characters'],
         trim: true,
+        lowercase: true,
     },
     /**
-     * Options for the quiz question
+     * Quiz Time
      * 
-     * The multiple-choice options for the question.
+     * The duration of the quiz in minutes.
      */
-    options: {
-        type: [String],
-        required: [true, 'Options are required'],
-        validate: {
-            validator: function (v) {
-                return v.length === 4; // Ensure exactly 4 options
-            },
-            message: 'There must be exactly 4 options.',
-        },
+    quizTime: {
+        type: Number,
+        required: [true, 'Quiz time is required'],
+        min: [1, 'Quiz time must be at least 1 minute'],
+        max: [360, 'Quiz time cannot exceed 360 minutes'],
     },
     /**
-     * Correct answer for the quiz
+     * Image URL
      * 
-     * The correct answer for the quiz question.
+     * The URL of the image associated with the quiz.
      */
-    answer: {
+    imageUrl: {
         type: String,
-        required: [true, 'Answer is required'],
+        required: [true, 'Image URL is required'],
+        trim: true,
         validate: {
-            validator: function (v) {
-                return this.options.includes(v); // Ensure answer is one of the options
-            },
-            message: 'Answer must match one of the provided options.',
+            validator: (v) => /^https?:\/\/[^\s]+$/i.test(v),
+            message: '{VALUE} is not a valid image URL',
         },
+    },
+    /**
+     * Description
+     * 
+     * A brief description of the quiz.
+     */
+    description: {
+        type: String,
+        maxlength: [1000, 'Description cannot exceed 1000 characters'],
+        trim: true,
     },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
@@ -62,12 +114,12 @@ const quizSchema = new mongoose.Schema({
 /**
  * Indexing for faster querying
  * 
- * Add compound index on `chapterId` and `question` for faster lookup and uniqueness.
- * Index on `answer` to optimize queries that filter by the correct answer.
+ * Add compound index on relevant fields for faster lookup and uniqueness.
  */
-quizSchema.index({ chapterId: 1, question: 1 }, { unique: true }); // Ensures no duplicate questions in the same chapter
+quizSchema.index({ classId: 1, subjectId: 1, chapterId: 1, quizTitle: 1 }, { unique: true });
 quizSchema.index({ chapterId: 1 }); // Index for fast lookup by chapter
-quizSchema.index({ answer: 1 }); // Index for fast lookup by answer (if querying by answer frequently)
+quizSchema.index({ categoryId: 1 }); // Index for fast lookup by category
+quizSchema.index({ quizTitle: 1 }); // Index for fast lookup by title
 
 /**
  * Quiz Model

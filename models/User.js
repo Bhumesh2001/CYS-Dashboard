@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
             message: 'Passwords do not match',
         },
     },
-    class: {
+    className: {
         type: String,
         required: function () {
             return this.role === 'user';
@@ -92,7 +92,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 }, { unique: true }); // Email indexing for uniqueness and faster lookups
 userSchema.index({ role: 1 }); // Role-based querying
 userSchema.index({ mobile: 1 }, { unique: true }); // Mobile number indexing for quick lookups
-userSchema.index({ class: 1 });
+userSchema.index({ className: 1 });
 
 // **Pre-save middleware to hash password**
 userSchema.pre('save', async function (next) {

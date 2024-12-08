@@ -40,8 +40,8 @@ const classSchema = new mongoose.Schema({
      */
     status: {
         type: String,
-        enum: ['active', 'Inactive'],
-        default: 'active',
+        enum: ['Active', 'Inactive'],
+        default: 'Active',
     },
 }, {
     timestamps: true,

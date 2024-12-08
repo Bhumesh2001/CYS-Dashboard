@@ -163,7 +163,7 @@ exports.updateProfile = async (req, res, next) => {
         }
 
         // Allowable fields for update
-        const allowedUpdates = ['fullName', 'email', 'mobile', 'profileUrl', 'class'];
+        const allowedUpdates = ['fullName', 'email', 'mobile', 'profileUrl', 'className'];
         const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.includes(key));
 
         if (!isUpdateValid) {
@@ -223,7 +223,7 @@ exports.logout = async (req, res, next) => {
  */
 exports.createUser = async (req, res, next) => {
     try {
-        const { fullName, email, password, mobile, role, class: userClass, profileUrl } = req.body;
+        const { fullName, email, password, mobile, role, className, profileUrl } = req.body;
 
         // Check if email is already registered
         const existingUser = await User.findOne({ email }).lean();
@@ -232,10 +232,10 @@ exports.createUser = async (req, res, next) => {
         }
 
         // Handle class validation
-        if (role !== 'admin' && !userClass) {
+        if (role !== 'admin' && !className) {
             return res.status(400).json({
                 success: true,
-                message: 'Class is required for non-admin users.'
+                message: 'ClassName is required for non-admin users.'
             });
         }
 
@@ -246,7 +246,7 @@ exports.createUser = async (req, res, next) => {
             password,
             mobile,
             role,
-            class: role === 'admin' ? null : userClass,
+            className: role === 'admin' ? null : className,
             profileUrl,
         });
 
@@ -288,7 +288,7 @@ exports.getAllUsers = async (req, res, next) => {
 exports.getUserById = async (req, res, next) => {
     try {
         const user = await User.findById(
-            req.params.userId, 
+            req.params.userId,
             { createdAt: 0, updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0 }
         ).lean();
         if (!user) {
@@ -307,7 +307,7 @@ exports.getUserById = async (req, res, next) => {
  */
 exports.updateUser = async (req, res, next) => {
     try {
-        const { name, email, password, role, class: userClass } = req.body;
+        const { fullName, email, password, role, className, profileUrl } = req.body;
 
         const user = await User.findById(req.params.userId);
         if (!user) {
@@ -315,14 +315,15 @@ exports.updateUser = async (req, res, next) => {
         }
 
         // Update fields if provided
-        if (name) user.name = name;
+        if (fullName) user.fullName = fullName;
         if (email) user.email = email;
         if (password) user.password = password;
         if (role) user.role = role;
-        if (role !== 'admin' && userClass) {
-            user.class = userClass;
+        if (profileUrl) usre.profileUrl = profileUrl;
+        if (role !== 'admin' && className) {
+            user.className = className;
         } else if (role === 'admin') {
-            user.class = null;
+            user.className = null;
         }
 
         await user.save();

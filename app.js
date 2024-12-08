@@ -6,7 +6,7 @@ const compression = require('compression');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const csrf = require('csurf');
-const cookieParser = require('cookie-parser'); // Required for CSRF cookies
+const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./middlewares/errorMiddle');
@@ -49,9 +49,9 @@ app.use(express.json());
 connectDB();
 
 // Routes for obtaining CSRF token
-app.get('/csrf-token', csrfProtection, (req, res) => {
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
     res.cookie('XSRF-TOKEN', req.csrfToken(), { httpOnly: true, secure: true, sameSite: 'Strict' });
-    res.json({ csrfToken: req.csrfToken() });
+    res.status(200).json({ csrfToken: req.csrfToken() });
 });
 
 // **Routes**
@@ -62,6 +62,8 @@ const chapterController = require('./routes/chapterRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
+const questionRoutes = require('./routes/questionRoutes');
 
 // Apply CSRF protection to state-changing routes
 app.use(csrfProtection);
@@ -74,6 +76,8 @@ app.use('/api/chapters', chapterController);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/questions', questionRoutes);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
@@ -87,8 +91,7 @@ app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         return res.status(403).json({ error: 'Invalid CSRF token' });
     }
-    next(err);
-    errorHandler(err, req, res, next); // Use your custom error handler
+    errorHandler(err, req, res, next);
 });
 
 // Cluster for multi-core CPUs

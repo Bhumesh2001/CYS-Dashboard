@@ -51,43 +51,6 @@ exports.getClassById = async (req, res, next) => {
     }
 };
 
-// **Get Subject and Chapters by Class Name**
-exports.getSubjectAndChapterByClassName = async (req, res, next) => {
-    try {
-        const { className } = req.params;
-
-        // Fetch subjects based on class name
-        const subjects = await Subject.find({ class: className }).lean();
-
-        if (subjects.length === 0) {
-            return res.status(404).json({ success: false, message: 'No subjects found for this class.' });
-        }
-
-        // Fetch chapters based on subject IDs
-        const subjectIds = subjects.map(subject => subject._id);
-        const chapters = await Chapter.find({ subjectId: { $in: subjectIds } }).lean();
-
-        const result = subjects.map(subject => {
-            const subjectChapters = chapters.filter(chapter => chapter.subjectId.toString() === subject._id.toString());
-            return {
-                subjectName: subject.name,
-                chapters: subjectChapters.map(chapter => ({
-                    chapterName: chapter.name,
-                    chapterDescription: chapter.description
-                }))
-            };
-        });
-
-        res.status(200).json({
-            success: true,
-            message: 'Subjects and chapters fetched successfully!',
-            data: result
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
 // **Update Class**
 exports.updateClass = async (req, res, next) => {
     try {
