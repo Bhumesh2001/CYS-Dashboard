@@ -22,6 +22,14 @@ router.post(
 // **Get all quizes**
 router.get('/', authenticate, authorize(['admin']), quizController.getQuizzes);
 
+// POST: Submit a quiz and calculate the score
+router.post(
+    '/quiz/submit-quiz',
+    authenticate,
+    validateObjectIds(['quizId', 'userId']),
+    quizController.submitQuiz
+);
+
 // **Get Quiz by ID**
 router.get(
     '/quiz/:quizId',

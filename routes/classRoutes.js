@@ -15,7 +15,7 @@ const router = express.Router();
 router.post('/', authenticate, authorize(['admin']), classController.createClass);
 
 // **Get all classes**
-router.get('/', authenticate, classController.getAllClasses);
+router.get('/', classController.getAllClasses);
 
 // **Get class by ID**
 router.get(

@@ -65,11 +65,21 @@ exports.getNewUsers = async (req, res, next) => {
         const fiveDaysAgo = moment().subtract(5, 'days').toDate();
 
         const newUsers = await User.find({ role: 'user', createdAt: { $gte: fiveDaysAgo } })
-            .select('name email createdAt') // Select relevant fields
+            .select('fullName email createdAt profileUrl') // Select relevant fields
             .sort({ createdAt: -1 }) // Sort by newest first
             .lean();
 
-        res.status(200).json({ success: true, message: 'New users fetched successfully...!', newUsers });
+        // Convert createdAt to readable date format
+        const formattedUsers = newUsers.map(user => ({
+            ...user,
+            createdAt: new Date(user.createdAt).toISOString().split('T')[0] // Format to YYYY-MM-DD
+        }));
+
+        res.status(200).json({
+            success: true,
+            message: 'New users fetched successfully...!',
+            newUsers: formattedUsers
+        });
     } catch (error) {
         next(error);
     }

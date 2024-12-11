@@ -31,7 +31,10 @@ exports.login = async (req, res, next) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email }).select('+password');
+        const user = await User.findOne(
+            { email },
+            { fullName: 1, mobile: 1, email: 1, className: 1, profileUrl: 1 }
+        ).select('+password');
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isMatch = await user.comparePassword(password, user.password);
@@ -43,7 +46,7 @@ exports.login = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'User logged in successful...!',
-            _id: user._id,
+            user,
             token
         });
     } catch (error) {

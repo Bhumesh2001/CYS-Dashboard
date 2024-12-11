@@ -6,33 +6,22 @@ const compression = require('compression');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const csrf = require('csurf');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./middlewares/errorMiddle');
+const { message } = require('./services/message')
 
 dotenv.config();
 const app = express();
 
-// Use compression for response bodies
-app.use(compression());
-
-// Set security headers
-app.use(helmet());
-
-// Prevent XSS attacks
-app.use(xss());
-
-// Enable parsing of cookies
-app.use(cookieParser());
-
-// Initialize CSRF Protection Middleware
-const csrfProtection = csrf({ cookie: true });
-
-// Trust proxy configuration
-app.set('trust proxy', 1); // Trust first proxy
-
-// Rate Limiting to prevent abuse
+app.use(compression()); // Use compression for response bodies
+app.use(helmet()); // Set security headers
+app.use(xss()); // Prevent XSS attacks
+app.use(cookieParser()); // Enable parsing of cookies
+const csrfProtection = csrf({ cookie: true }); // Initialize CSRF Protection Middleware
+app.set('trust proxy', 1); // Trust first proxy // Trust proxy configuration
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per windowMs
@@ -40,13 +29,19 @@ const limiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-app.use(limiter);
+app.use(limiter); // Rate Limiting to prevent abuse
+app.use(express.json()); // Use JSON parsing middleware
+const corsOptions = {
+    origin: "http://127.0.0.1:5500", // Allow only this origin
+    allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
+    credentials: true, // Enable cookies and authorization headers
+};
+app.use(cors(corsOptions));
+connectDB(); // Connect to MongoDB
 
-// Use JSON parsing middleware
-app.use(express.json());
-
-// Connect to MongoDB
-connectDB();
+app.get('/', (req, res) => {
+    res.send(message);
+});
 
 // Routes for obtaining CSRF token
 app.get('/api/csrf-token', csrfProtection, (req, res) => {
@@ -64,6 +59,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const questionRoutes = require('./routes/questionRoutes');
+const quizRecordRoutes = require('./routes/quizRecordRoutes');
 
 // Apply CSRF protection to state-changing routes
 app.use(csrfProtection);
@@ -78,6 +74,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/quiz-record', quizRecordRoutes);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
@@ -110,7 +107,7 @@ if (cluster.isMaster) {
     });
 } else {
     // Worker processes have an HTTP server
-    const PORT = process.env.PORT || 5000;
+    const PORT = process.env.PORT || 8000;
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT} (PID: ${process.pid})`);
     });

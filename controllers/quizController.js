@@ -1,5 +1,7 @@
-const Quiz = require('../models/Quiz');
 const mongoose = require('mongoose');
+const Quiz = require('../models/Quiz');
+const QuizRecord = require('../models/QuizRecord');
+const { ObjectId } = mongoose.Types;
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
@@ -23,6 +25,68 @@ exports.getQuizzes = async (req, res, next) => {
             message: 'Quizes fetched successfully...!',
             totaQuizess: quizzes.length,
             quizzes
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// **submit quiz**
+exports.submitQuiz = async (req, res, next) => {
+    const { userId, quizId, userAnswers } = req.body;
+
+    try {
+        // Convert quizId to ObjectId if needed
+        const quizObjectId = ObjectId.isValid(quizId) ? new ObjectId(quizId) : null;
+        if (!quizObjectId) {
+            return res.status(400).json({ success: false, message: 'Invalid quizId format.' });
+        }
+
+        // Fetch quiz and related questions using aggregation
+        const quizData = await Quiz.aggregate([
+            { $match: { _id: quizObjectId } }, // Match by ObjectId
+            {
+                $lookup: {
+                    from: 'questions',
+                    localField: 'categoryId',
+                    foreignField: 'categoryId',
+                    as: 'questions',
+                },
+            },
+        ]);
+
+        // Check if quiz exists
+        if (!quizData.length) {
+            return res.status(404).json({ success: false, message: 'Quiz not found.' });
+        }
+
+        const quiz = quizData[0];
+        const { questions } = quiz;
+
+        if (!questions.length) {
+            return res.status(404).json({ success: false, message: 'No questions found for this category.' });
+        }
+
+        // Calculate the score by comparing user answers with correct answers
+        const score = questions.reduce((acc, question, index) => {
+            return acc + (userAnswers[index] === question.answer ? 1 : 0);
+        }, 0);
+
+        // Update or create quiz record in one query
+        await QuizRecord.findOneAndUpdate(
+            { userId, quizId },
+            {
+                $set: { score, attemptedAt: new Date() },
+                $inc: { attempts: 1 },
+            },
+            { upsert: true, new: true }
+        );
+
+        // Return response
+        res.status(200).json({
+            success: true,
+            message: 'Quiz submitted successfully!',
+            score,
         });
     } catch (error) {
         next(error);
