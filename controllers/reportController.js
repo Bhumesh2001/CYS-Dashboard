@@ -18,7 +18,9 @@ exports.createReport = async (req, res, next) => {
 // Get all reports
 exports.getAllReports = async (req, res, next) => {
     try {
-        const reports = await Report.find({}, { __v: 0, createdAt: 0, updatedAt: 0 }).lean();
+        const reports = await Report.find({}, { updatedAt: 0 })
+        .populate('reporterId', 'fullName createdAt')
+        .lean();
         res.status(200).json({
             success: true,
             message: 'Reports retrieved successfully',

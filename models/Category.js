@@ -47,9 +47,18 @@ const categorySchema = new mongoose.Schema({
         trim: true,
     },
     /**
-   * Status of the cateory.
-   * Indicates if the cateory is active or archived.
-   */
+     * public_id of the imageUrl
+     */
+    publicId: {
+        type: String,
+        required: [true, 'Public ID is required'], // Field is mandatory
+        unique: true, // Ensures no duplicate public_id
+        trim: true, // Removes any leading/trailing spaces
+    },
+    /**
+     * Status of the cateory.
+     * Indicates if the cateory is active or archived.
+     */
     status: {
         type: String,
         enum: ['Active', 'Inactive'],
@@ -67,6 +76,7 @@ const categorySchema = new mongoose.Schema({
  */
 categorySchema.index({ name: 1 }, { unique: true });
 categorySchema.index({ status: 1 });
+categorySchema.index({ publicId: 1 }, { unique: true });
 
 // **Category model**
 module.exports = mongoose.model('Category', categorySchema);

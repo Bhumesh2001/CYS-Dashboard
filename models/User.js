@@ -67,6 +67,11 @@ const userSchema = new mongoose.Schema({
             'Please enter a valid URL',
         ],
     },
+    publicId: {
+        type: String,
+        unique: true,
+        trim: true,
+    },
     role: {
         type: String,
         enum: ['admin', 'user'],
@@ -84,6 +89,11 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    status: {
+        type: String,
+        enum: ['Active', 'Inactive'],
+        default: 'Active',
+    },
 }, {
     timestamps: true,
 });
@@ -92,7 +102,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 }, { unique: true }); // Email indexing for uniqueness and faster lookups
 userSchema.index({ role: 1 }); // Role-based querying
 userSchema.index({ mobile: 1 }, { unique: true }); // Mobile number indexing for quick lookups
-userSchema.index({ className: 1 });
+userSchema.index({ className: 1, status: 1 });
 
 // **Pre-save middleware to hash password**
 userSchema.pre('save', async function (next) {

@@ -1,9 +1,30 @@
 const Subject = require('../models/Subject');
+const { uploadImage, deleteImage } = require('../utils/image');
+const fs = require('fs');
 
 // **Create Subject**
 exports.createSubject = async (req, res, next) => {
+    const { classId, name, description, status } = req.body;
     try {
-        const newSubject = await Subject.create(req.body);
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ success: false, messeage: 'No files were uploaded.' });
+        };
+
+        const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
+        const newSubject = await Subject.create({
+            classId,
+            name,
+            description,
+            imageUrl: imageData.url,
+            publicId: imageData.publicId,
+            status,
+        });
+
+        // Cleanup temporary file
+        fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
+            if (err) console.error('Failed to delete temp file:', err);
+        });
+
         res.status(201).json({
             success: true,
             message: 'Subject created successfully...!',
@@ -11,7 +32,7 @@ exports.createSubject = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get Subject by id**
@@ -79,11 +100,38 @@ exports.getAllSubjects = async (req, res, next) => {
 
 // **Update Subject**
 exports.updateSubject = async (req, res, next) => {
+    const { classId, name, description, status } = req.body;
     try {
-        const updatedSubject = await Subject.findByIdAndUpdate(req.params.subjectId, req.body, {
-            new: true,
-            runValidators: true,
-        });
+        let imageData = {}; // Initialize an empty object to store image data
+        if (req.files && Object.keys(req.files).length !== 0) {
+            // If a new image is uploaded
+            const subjectData = await Subject.findById(req.params.subjectId, { publicId: 1 });
+            if (subjectData && subjectData.publicId) {
+                // If the category already has an image, delete the old one
+                await deleteImage(subjectData.publicId);
+            };
+            imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
+            // Cleanup temporary file
+            fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
+                if (err) console.error('Failed to delete temp file:', err);
+            });
+        } else {
+            // If no new image is provided, use the current image data
+            const subjectData = await Subject.findById(req.params.subjectId, { imageUrl: 1, publicId: 1 });
+            imageData.url = subjectData.imageUrl;
+            imageData.publicId = subjectData.publicId;
+        };
+        const updatedSubject = await Subject.findByIdAndUpdate(req.params.subjectId,
+            {
+                classId,
+                name,
+                imageUrl: imageData.url,
+                publicId: imageData.publicId,
+                description,
+                status,
+            },
+            { new: true, runValidators: true }
+        );
         if (!updatedSubject) {
             return res.status(404).json({ success: false, message: 'Subject not found' });
         }
@@ -94,12 +142,15 @@ exports.updateSubject = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Delete Subject**
 exports.deleteSubject = async (req, res, next) => {
     try {
+        const subjectData = await Subject.findById(req.params.subjectId, { publicId: 1 });
+        if (subjectData && subjectData.publicId) await deleteImage(subjectData.publicId);
+
         const deletedSubject = await Subject.findByIdAndDelete(req.params.subjectId);
         if (!deletedSubject) {
             return res.status(404).json({ success: false, message: 'Subject not found' });
@@ -107,5 +158,5 @@ exports.deleteSubject = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Subject deleted successfully' });
     } catch (error) {
         next(error);
-    }
+    };
 };

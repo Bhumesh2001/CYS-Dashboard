@@ -83,6 +83,16 @@ const quizSchema = new mongoose.Schema({
         max: [360, 'Quiz time cannot exceed 360 minutes'],
     },
     /**
+     * Description
+     * 
+     * A brief description of the quiz.
+     */
+    description: {
+        type: String,
+        maxlength: [1000, 'Description cannot exceed 1000 characters'],
+        trim: true,
+    },
+    /**
      * Image URL
      * 
      * The URL of the image associated with the quiz.
@@ -97,14 +107,13 @@ const quizSchema = new mongoose.Schema({
         },
     },
     /**
-     * Description
-     * 
-     * A brief description of the quiz.
+     * public_id of the imageUrl
      */
-    description: {
+    publicId: {
         type: String,
-        maxlength: [1000, 'Description cannot exceed 1000 characters'],
-        trim: true,
+        required: [true, 'Public ID is required'], // Field is mandatory
+        unique: true, // Ensures no duplicate public_id
+        trim: true, // Removes any leading/trailing spaces
     },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

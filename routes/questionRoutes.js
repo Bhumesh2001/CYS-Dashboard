@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
-// **Category Controller and Authentication, Authorization**
+// **Question Controller and Authentication, Authorization**
 const questonController = require('../controllers/questionController');
 const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 
-// Create a new category
+// Create a new Question
 router.post('/', authenticate, authorize(['admin']), questonController.addQuestion);
 
 // Get all categories
 router.get('/', authenticate, authorize(['admin']), questonController.getAllQuestions);
 
-// Get a category by ID
+// Get a Question by ID
 router.get(
     '/:questionId',
     authenticate,
@@ -21,7 +21,7 @@ router.get(
     questonController.getQuestionById
 );
 
-// Update a category by ID
+// Update a Question by ID
 router.put(
     '/:questionId',
     authenticate,
@@ -30,7 +30,7 @@ router.put(
     questonController.updateQuestion
 );
 
-// Delete a category by ID
+// Delete a Question by ID
 router.delete(
     '/:questionId',
     authenticate,

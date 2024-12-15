@@ -3,15 +3,15 @@ const dotenv = require('dotenv');
 const cluster = require('cluster');
 const os = require('os');
 const compression = require('compression');
+const fileUpload = require('express-fileupload');
 const helmet = require('helmet');
 const xss = require('xss-clean');
-const csrf = require('csurf');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./middlewares/errorMiddle');
-const { message } = require('./services/message')
+const { message } = require('./utils/message');
 
 dotenv.config();
 const app = express();
@@ -20,34 +20,31 @@ app.use(compression()); // Use compression for response bodies
 app.use(helmet()); // Set security headers
 app.use(xss()); // Prevent XSS attacks
 app.use(cookieParser()); // Enable parsing of cookies
-const csrfProtection = csrf({ cookie: true }); // Initialize CSRF Protection Middleware
-app.set('trust proxy', 1); // Trust first proxy // Trust proxy configuration
+app.set('trust proxy', 1); // Trust proxy configuration
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again later',
+    message: { success: false, message: 'Too many requests, please try again later' },
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 app.use(limiter); // Rate Limiting to prevent abuse
+app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded form data
 app.use(express.json()); // Use JSON parsing middleware
+app.use(fileUpload({
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+})); // handle file data
 const corsOptions = {
-    origin: "http://127.0.0.1:5500", // Allow only this origin
-    allowedHeaders: ["Content-Type", "Authorization"], // Allow specific headers
-    credentials: true, // Enable cookies and authorization headers
+    origin: process.env.CLIENT_URL || 'http://127.0.0.1:5500',
+    credentials: true,
 };
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // CORS
 connectDB(); // Connect to MongoDB
 
-app.get('/', (req, res) => {
-    res.send(message);
-});
-
-// Routes for obtaining CSRF token
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
-    res.cookie('XSRF-TOKEN', req.csrfToken(), { httpOnly: true, secure: true, sameSite: 'Strict' });
-    res.status(200).json({ csrfToken: req.csrfToken() });
-});
+// welcome message
+app.get('/', (req, res) => res.send(message));
 
 // **Routes**
 const authRoutes = require('./routes/authRoutes');
@@ -61,10 +58,7 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const quizRecordRoutes = require('./routes/quizRecordRoutes');
 
-// Apply CSRF protection to state-changing routes
-app.use(csrfProtection);
-
-// Main routes
+// **Main routes**
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/subjects', subjectRoutes);
@@ -84,26 +78,19 @@ app.all('*', (req, res, next) => {
 });
 
 // Centralized error handler
-app.use((err, req, res, next) => {
-    if (err.code === 'EBADCSRFTOKEN') {
-        return res.status(403).json({ error: 'Invalid CSRF token' });
-    }
-    errorHandler(err, req, res, next);
-});
+app.use((err, req, res, next) => errorHandler(err, req, res, next));
 
 // Cluster for multi-core CPUs
 if (cluster.isMaster) {
     const numWorkers = os.cpus().length;
-
     console.log(`Master process is running with PID: ${process.pid}`);
-
     // Fork workers
     for (let i = 0; i < numWorkers; i++) {
         cluster.fork();
-    }
-
+    };
     cluster.on('exit', (worker, code, signal) => {
         console.log(`Worker ${worker.process.pid} died`);
+        setTimeout(() => cluster.fork(), 5000);
     });
 } else {
     // Worker processes have an HTTP server

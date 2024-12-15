@@ -35,6 +35,30 @@ const chapterShcema = new mongoose.Schema({
         trim: true,
     },
     /**
+     * Image URL for the Chapter.
+     * 
+     * - Required: Yes
+     * - Valid URL Format
+     */
+    imageUrl: {
+        type: String,
+        required: [true, 'Image URL is required'],
+        match: [
+            /^(https?:\/\/)?[\w-]+(\.[\w-]+)+[\w.,@?^=%&:;#/~+-]*$/,
+            'Please provide a valid URL',
+        ],
+        trim: true,
+    },
+    /**
+     * public_id of the imageUrl
+     */
+    publicId: {
+        type: String,
+        required: [true, 'Public ID is required'], // Field is mandatory
+        unique: true, // Ensures no duplicate public_id
+        trim: true, // Removes any leading/trailing spaces
+    },
+    /**
      * Status of the Chapter
      * 
      * Indicates whether the chapter is active or inactive.

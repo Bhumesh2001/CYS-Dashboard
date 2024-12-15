@@ -8,7 +8,7 @@ exports.addQuestion = async (req, res, next) => {
         res.status(201).json({ success: true, message: 'Question added successfully', question });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get All Questions**
@@ -22,11 +22,11 @@ exports.getAllQuestions = async (req, res, next) => {
             success: true,
             message: 'Question fetched successsfully...!',
             totalQuestins: questions.length,
-            questions,
+            data: questions,
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get Single Question by ID**
@@ -43,7 +43,7 @@ exports.getQuestionById = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Question fetched successfully...!', question });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Update Question**
@@ -61,7 +61,7 @@ exports.updateQuestion = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Question updated successfully', updatedQuestion });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Delete Question**
@@ -76,5 +76,5 @@ exports.deleteQuestion = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'Question deleted successfully' });
     } catch (error) {
         next(error);
-    }
+    };
 };

@@ -2,16 +2,35 @@ const mongoose = require('mongoose');
 const Quiz = require('../models/Quiz');
 const QuizRecord = require('../models/QuizRecord');
 const { ObjectId } = mongoose.Types;
+const { uploadImage, deleteImage } = require('../utils/image');
+const fs = require('fs');
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
+    const {
+        classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status
+    } = req.body;
+
     try {
-        const quiz = new Quiz(req.body);
+        if (!req.files || Object.keys(req.files).length === 0) {
+            return res.status(400).json({ success: false, messeage: 'No files were uploaded.' });
+        };
+        const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
+        const quiz = new Quiz({
+            classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status,
+            imageUrl: imageData.url,
+            publicId: imageData.publicId,
+        });
+        // Cleanup temporary file
+        fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
+            if (err) console.error('Failed to delete temp file:', err);
+        });
+
         await quiz.save();
         res.status(201).json({ success: true, message: 'Quiz created successfully', quiz });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get All Quizzes**
@@ -24,7 +43,7 @@ exports.getQuizzes = async (req, res, next) => {
             success: true,
             message: 'Quizes fetched successfully...!',
             totaQuizess: quizzes.length,
-            quizzes
+            data: quizzes
         });
     } catch (error) {
         next(error);
@@ -160,34 +179,63 @@ exports.getQuizByChapterId = async (req, res, next) => {
 
 // **Update Quiz**
 exports.updateQuiz = async (req, res, next) => {
+    const {
+        classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status
+    } = req.body;
     try {
+        let imageData = {}; // Initialize an empty object to store image data
+        if (req.files && Object.keys(req.files).length !== 0) {
+            // If a new image is uploaded
+            const quizData = await Quiz.findById(req.params.quizId, { publicId: 1 });
+            if (quizData && quizData.publicId) {
+                // If the category already has an image, delete the old one
+                await deleteImage(quizData.publicId);
+            }
+            imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
+            // Cleanup temporary file
+            fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
+                if (err) console.error('Failed to delete temp file:', err);
+            });
+        } else {
+            // If no new image is provided, use the current image data
+            const quizData = await Quiz.findById(req.params.quizId, { imageUrl: 1, publicId: 1 });
+            imageData.url = quizData.imageUrl;
+            imageData.publicId = quizData.publicId;
+        };
+
         const quiz = await Quiz.findByIdAndUpdate(
             req.params.quizId,
-            req.body,
+            {
+                classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status,
+                imageUrl: imageData.url,
+                publicId: imageData.publicId
+            },
             { new: true, runValidators: true }
         );
 
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
-        }
+        };
 
         res.status(200).json({ success: false, message: 'Quiz updated successfully', quiz });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Delete Quiz**
 exports.deleteQuiz = async (req, res, next) => {
     try {
-        const quiz = await Quiz.findByIdAndDelete(req.params.quizId);
+        const quizData = await Quiz.findById(req.params.quizId, { publicId: 1 });
+        if (quizData && quizData.publicId) await deleteImage(quizData.publicId);
 
+        const quiz = await Quiz.findByIdAndDelete(req.params.quizId);
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
-        }
+        };
 
         res.status(200).json({ success: false, message: 'Quiz deleted successfully' });
     } catch (error) {
         next(error);
-    }
+    };
 };

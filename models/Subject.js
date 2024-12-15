@@ -38,6 +38,30 @@ const subjectSchema = new mongoose.Schema({
         maxlength: [500, 'Description must be less than 500 characters'],
         trim: true,
     },
+     /**
+     * Image URL for the category.
+     * 
+     * - Required: Yes
+     * - Valid URL Format
+     */
+     imageUrl: {
+        type: String,
+        required: [true, 'Image URL is required'],
+        match: [
+            /^(https?:\/\/)?[\w-]+(\.[\w-]+)+[\w.,@?^=%&:;#/~+-]*$/,
+            'Please provide a valid URL',
+        ],
+        trim: true,
+    },
+    /**
+     * public_id of the imageUrl
+     */
+    publicId: {
+        type: String,
+        required: [true, 'Public ID is required'], // Field is mandatory
+        unique: true, // Ensures no duplicate public_id
+        trim: true, // Removes any leading/trailing spaces
+    },
     /**
     * Status of the subject.
     * Indicates if the subject is active or inactive.
@@ -60,6 +84,7 @@ const subjectSchema = new mongoose.Schema({
 subjectSchema.index({ name: 1 }, { unique: true });
 subjectSchema.index({ status: 1 });
 subjectSchema.index({ classId: 1 });  // Added index on classId for optimized queries
+subjectSchema.index({ publicId: 1 }, { unique: true });
 
 /**
  * Subject Model

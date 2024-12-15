@@ -3,6 +3,8 @@ const User = require('../models/User');
 const { generateToken, storeToken } = require('../utils/token');
 const { generateOTP } = require('../utils/otp');
 const { sendOTP } = require('../services/emailService');
+const { uploadImage, deleteImage } = require('../utils/image');
+const fs = require('fs');
 
 //**Register**
 exports.register = async (req, res, next) => {
@@ -33,7 +35,7 @@ exports.login = async (req, res, next) => {
     try {
         const user = await User.findOne(
             { email },
-            { fullName: 1, mobile: 1, email: 1, className: 1, profileUrl: 1 }
+            { fullName: 1, mobile: 1, email: 1, className: 1, profileUrl: 1, role: 1 }
         ).select('+password');
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
@@ -226,13 +228,13 @@ exports.logout = async (req, res, next) => {
  */
 exports.createUser = async (req, res, next) => {
     try {
-        const { fullName, email, password, mobile, role, className, profileUrl } = req.body;
+        const { fullName, email, password, mobile, role, className } = req.body;
 
         // Check if email is already registered
         const existingUser = await User.findOne({ email }).lean();
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'User already registered.' });
-        }
+        };
 
         // Handle class validation
         if (role !== 'admin' && !className) {
@@ -240,7 +242,12 @@ exports.createUser = async (req, res, next) => {
                 success: true,
                 message: 'ClassName is required for non-admin users.'
             });
-        }
+        };
+
+        let imageData = {};
+        if (req.files || Object.keys(req.files).length !== 0) {
+            imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
+        };
 
         // Create a new user
         const newUser = new User({
@@ -250,14 +257,22 @@ exports.createUser = async (req, res, next) => {
             mobile,
             role,
             className: role === 'admin' ? null : className,
-            profileUrl,
+            profileUrl: imageData.url,
+            publicId: imageData.publicId,
         });
-
         await newUser.save();
+
+        // Cleanup temporary file
+        if (imageData) {
+            fs.unlink(req.files.profileUrl.tempFilePath, (err) => {
+                if (err) console.error('Failed to delete temp file:', err);
+            });
+        };
+
         res.status(201).json({ success: true, message: 'User created successfully.', user: newUser });
     } catch (error) {
         next(error)
-    }
+    };
 };
 
 /**
@@ -269,14 +284,14 @@ exports.getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find(
             { role: 'user' },
-            { createdAt: 0, updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0 }
+            { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0 }
         ).lean();
 
         res.status(200).json({
             success: true,
             message: "User fetched successfully...!",
             totalUsers: users.length,
-            users
+            data: users
         });
     } catch (error) {
         next(error);
@@ -310,30 +325,51 @@ exports.getUserById = async (req, res, next) => {
  */
 exports.updateUser = async (req, res, next) => {
     try {
-        const { fullName, email, password, role, className, profileUrl } = req.body;
+        const { fullName, email, password, role, className } = req.body;
 
         const user = await User.findById(req.params.userId);
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
-        }
+        };
+
+        let imageData = {}; // Initialize an empty object to store image data
+        if (req.files && Object.keys(req.files).length !== 0) {
+            // If a new image is uploaded
+            const userData = await User.findById(req.params.userId, { publicId: 1 });
+            if (userData && userData.publicId) {
+                // If the category already has an image, delete the old one
+                await deleteImage(userData.publicId);
+            };
+            imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
+            // Cleanup temporary file
+            fs.unlink(req.files.profileUrl.tempFilePath, (err) => {
+                if (err) console.error('Failed to delete temp file:', err);
+            });
+        } else {
+            // If no new image is provided, use the current image data
+            const userData = await User.findById(req.params.userId, { profileUrl: 1, publicId: 1 });
+            imageData.url = userData.profileUrl;
+            imageData.publicId = userData.publicId;
+        };
 
         // Update fields if provided
         if (fullName) user.fullName = fullName;
         if (email) user.email = email;
         if (password) user.password = password;
         if (role) user.role = role;
-        if (profileUrl) usre.profileUrl = profileUrl;
+        if (profileUrl) usre.profileUrl = imageData.profileUrl;
+        if (publicId) user.publicId = imageData.publicId;
         if (role !== 'admin' && className) {
             user.className = className;
         } else if (role === 'admin') {
             user.className = null;
-        }
+        };
 
         await user.save();
         res.status(200).json({ success: true, message: 'User updated successfully.', user });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 /**
@@ -343,13 +379,16 @@ exports.updateUser = async (req, res, next) => {
  */
 exports.deleteUser = async (req, res, next) => {
     try {
+        const userData = await User.findById(req.params.userId, { publicId: 1 });
+        if (userData && userData.publicId) await deleteImage(userData.publicId);
+
         const user = await User.findByIdAndDelete(req.params.userId).lean();
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
-        }
+        };
 
         res.status(200).json({ success: true, message: 'User deleted successfully.' });
     } catch (error) {
         next(error);
-    }
+    };
 };
