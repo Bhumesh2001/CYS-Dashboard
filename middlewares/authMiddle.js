@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // **Authentication Middleware**
-exports.authenticate = async (req, res, next) => {s
+exports.authenticate = async (req, res, next) => {
     const token = req.header('Authorization')?.split(' ')[1] || req.cookies.admin_token;
 
     if (!token) {
