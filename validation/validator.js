@@ -52,12 +52,11 @@ exports.registerValidationRules = [
         }),
 
     // Validate class
-    body('className')
+    body('classId')
         .if(body('role').equals('user')) // Only validate if role is 'user'
-        .notEmpty().withMessage('ClassName is required for users')
-        .isString().withMessage('ClassName must be a string')
-        .trim()
-        .isLength({ min: 1 }).withMessage('ClassName cannot be empty'),
+        .notEmpty().withMessage('ClassId is required for users') // Ensure the field is not empty
+        .isMongoId().withMessage('ClassId must be a valid MongoDB ObjectId') // Validate as MongoDB ObjectId
+        .trim(), // Remove extra spaces
 
     // Validate profileUrl
     body('profileUrl')

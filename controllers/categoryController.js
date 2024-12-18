@@ -17,10 +17,6 @@ exports.createCategory = async (req, res, next) => {
             publicId: imageData.publicId,
             status
         });
-        // Cleanup temporary file
-        fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-            if (err) console.error('Failed to delete temp file:', err);
-        });
 
         res.status(201).json({
             success: true,
@@ -81,10 +77,6 @@ exports.updateCategory = async (req, res, next) => {
                 await deleteImage(categoryData.publicId);
             }
             imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysCategoriesImg', 220, 200);
-            // Cleanup temporary file
-            fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temp file:', err);
-            });
         } else {
             // If no new image is provided, use the current image data
             const categoryData = await Category.findById(req.params.categoryId, { imageUrl: 1, publicId: 1 });

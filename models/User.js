@@ -47,16 +47,13 @@ const userSchema = new mongoose.Schema({
             message: 'Passwords do not match',
         },
     },
-    className: {
-        type: String,
-        required: function () {
-            return this.role === 'user';
-        },
+    classId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Class', // References the Class model
+        required: [true, 'Class ID is required'],
         validate: {
-            validator: function (value) {
-                return this.role !== 'user' || (value && value.trim().length > 0);
-            },
-            message: 'Class is required!',
+            validator: (v) => mongoose.Types.ObjectId.isValid(v),
+            message: '{VALUE} is not a valid class ID',
         },
     },
     profileUrl: {
@@ -102,7 +99,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ email: 1 }, { unique: true }); // Email indexing for uniqueness and faster lookups
 userSchema.index({ role: 1 }); // Role-based querying
 userSchema.index({ mobile: 1 }, { unique: true }); // Mobile number indexing for quick lookups
-userSchema.index({ className: 1, status: 1 });
+userSchema.index({ classId: 1, status: 1 });
 
 // **Pre-save middleware to hash password**
 userSchema.pre('save', async function (next) {

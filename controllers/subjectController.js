@@ -1,6 +1,5 @@
 const Subject = require('../models/Subject');
 const { uploadImage, deleteImage } = require('../utils/image');
-const fs = require('fs');
 
 // **Create Subject**
 exports.createSubject = async (req, res, next) => {
@@ -18,11 +17,6 @@ exports.createSubject = async (req, res, next) => {
             imageUrl: imageData.url,
             publicId: imageData.publicId,
             status,
-        });
-
-        // Cleanup temporary file
-        fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-            if (err) console.error('Failed to delete temp file:', err);
         });
 
         res.status(201).json({
@@ -91,7 +85,7 @@ exports.getAllSubjects = async (req, res, next) => {
             success: true,
             message: 'Subjects fetched successfully...!',
             totalSubjects: subjects.length,
-            subjects
+            data: subjects
         });
     } catch (error) {
         next(error);
@@ -111,10 +105,6 @@ exports.updateSubject = async (req, res, next) => {
                 await deleteImage(subjectData.publicId);
             };
             imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
-            // Cleanup temporary file
-            fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temp file:', err);
-            });
         } else {
             // If no new image is provided, use the current image data
             const subjectData = await Subject.findById(req.params.subjectId, { imageUrl: 1, publicId: 1 });

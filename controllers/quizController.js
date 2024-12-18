@@ -3,7 +3,6 @@ const Quiz = require('../models/Quiz');
 const QuizRecord = require('../models/QuizRecord');
 const { ObjectId } = mongoose.Types;
 const { uploadImage, deleteImage } = require('../utils/image');
-const fs = require('fs');
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
@@ -20,10 +19,6 @@ exports.createQuiz = async (req, res, next) => {
             classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
-        });
-        // Cleanup temporary file
-        fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-            if (err) console.error('Failed to delete temp file:', err);
         });
 
         await quiz.save();
@@ -192,10 +187,6 @@ exports.updateQuiz = async (req, res, next) => {
                 await deleteImage(quizData.publicId);
             }
             imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
-            // Cleanup temporary file
-            fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temp file:', err);
-            });
         } else {
             // If no new image is provided, use the current image data
             const quizData = await Quiz.findById(req.params.quizId, { imageUrl: 1, publicId: 1 });

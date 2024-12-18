@@ -4,7 +4,6 @@ const { generateToken, storeToken } = require('../utils/token');
 const { generateOTP } = require('../utils/otp');
 const { sendOTP } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
-const fs = require('fs');
 
 //**Register**
 exports.register = async (req, res, next) => {
@@ -228,7 +227,7 @@ exports.logout = async (req, res, next) => {
  */
 exports.createUser = async (req, res, next) => {
     try {
-        const { fullName, email, password, mobile, role, className } = req.body;
+        const { fullName, email, password, mobile, role, classId } = req.body;
 
         // Check if email is already registered
         const existingUser = await User.findOne({ email }).lean();
@@ -237,10 +236,10 @@ exports.createUser = async (req, res, next) => {
         };
 
         // Handle class validation
-        if (role !== 'admin' && !className) {
+        if (role !== 'admin' && !classId) {
             return res.status(400).json({
                 success: true,
-                message: 'ClassName is required for non-admin users.'
+                message: 'classId is required for non-admin users.'
             });
         };
 
@@ -256,18 +255,11 @@ exports.createUser = async (req, res, next) => {
             password,
             mobile,
             role,
-            className: role === 'admin' ? null : className,
+            classId: role === 'admin' ? null : classId,
             profileUrl: imageData.url,
             publicId: imageData.publicId,
         });
         await newUser.save();
-
-        // Cleanup temporary file
-        if (imageData) {
-            fs.unlink(req.files.profileUrl.tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temp file:', err);
-            });
-        };
 
         res.status(201).json({ success: true, message: 'User created successfully.', user: newUser });
     } catch (error) {
@@ -341,10 +333,6 @@ exports.updateUser = async (req, res, next) => {
                 await deleteImage(userData.publicId);
             };
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
-            // Cleanup temporary file
-            fs.unlink(req.files.profileUrl.tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temp file:', err);
-            });
         } else {
             // If no new image is provided, use the current image data
             const userData = await User.findById(req.params.userId, { profileUrl: 1, publicId: 1 });

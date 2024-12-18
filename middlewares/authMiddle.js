@@ -3,14 +3,14 @@ const User = require('../models/User');
 
 // **Authentication Middleware**
 exports.authenticate = async (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1] || req.cookies.admin_token;
+    const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({
             success: false,
-            message: 'Access Denied: No token provided!'
+            message: 'Access Denied'
         });
-    }
+    };
 
     try {
         const verified = jwt.verify(token, process.env.JWT_SECRET);
@@ -18,7 +18,7 @@ exports.authenticate = async (req, res, next) => {
         next();
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Authorization Middleware**

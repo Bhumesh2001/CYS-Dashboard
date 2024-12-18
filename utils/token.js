@@ -6,7 +6,7 @@ exports.generateToken = (payload, expiresIn = '1d') => {
 };
 
 // **Store token**
-exports.storeToken = (res, token, tokenName, maxAge = 24 * 60 * 60 * 1000) => { // default maxAge: 1 day
+exports.storeToken = (res, token, tokenName, maxAge = 24 * 60 * 60 * 1000) => { // default maxAge: 1 day    
     res.cookie(tokenName, token, {
         httpOnly: true,       // Prevents client-side JS from accessing the cookie
         secure: process.env.NODE_ENV_ === 'production', // Ensures cookie is sent over HTTPS in production

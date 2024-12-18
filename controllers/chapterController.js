@@ -18,10 +18,6 @@ exports.createChapter = async (req, res, next) => {
             publicId: imageData.publicId,
             status,
         });
-        // Cleanup temporary file
-        fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-            if (err) console.error('Failed to delete temp file:', err);
-        });
 
         res.status(201).json({
             success: true,
@@ -88,7 +84,7 @@ exports.getAllChapter = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'Chapteres fetched successfully...!',
-            totalChapter: ChapterData.length,
+            totalChapters: ChapterData.length,
             data: ChapterData
         });
     } catch (error) {
@@ -109,10 +105,6 @@ exports.updateChapter = async (req, res, next) => {
                 await deleteImage(chapterData.publicId);
             }
             imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysChatpersImg', 220, 200);
-            // Cleanup temporary file
-            fs.unlink(req.files.imageUrl.tempFilePath, (err) => {
-                if (err) console.error('Failed to delete temp file:', err);
-            });
         } else {
             // If no new image is provided, use the current image data
             const chapterData = await Chapter.findById(req.params.chapterId, { imageUrl: 1, publicId: 1 });
