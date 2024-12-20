@@ -3,7 +3,7 @@ const User = require('../models/User');
 
 // **Authentication Middleware**
 exports.authenticate = async (req, res, next) => {
-    const token = req.header('Authorization')?.split(' ')[1];
+    const token = req.header('Authorization')?.split(' ')[1] || req.cookies.user_token;
 
     if (!token) {
         return res.status(401).json({

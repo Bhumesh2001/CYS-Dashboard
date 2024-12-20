@@ -9,6 +9,7 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 
+
 // Create a new report
 router.post('/', authenticate, reportController.createReport);
 

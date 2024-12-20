@@ -86,77 +86,6 @@ exports.loginValidationRules = [
         .withMessage('Password must be at least 8 characters long'),
 ];
 
-// **Quiz validation rules**
-exports.quizValidationRules = [
-    // Validate classId (must be a valid ObjectId and reference an existing Class)
-    body('classId')
-        .notEmpty().withMessage('Class ID is required')
-        .isMongoId().withMessage('Class ID must be a valid ObjectId')
-        .custom(async (value) => {
-            const classExists = await mongoose.model('Class').findById(value);
-            if (!classExists) {
-                throw new Error('Class not found');
-            }
-            return true;
-        }),
-
-    // Validate subjectId (must be a valid ObjectId and reference an existing Subject)
-    body('subjectId')
-        .notEmpty().withMessage('Subject ID is required')
-        .isMongoId().withMessage('Subject ID must be a valid ObjectId')
-        .custom(async (value) => {
-            const subjectExists = await mongoose.model('Subject').findById(value);
-            if (!subjectExists) {
-                throw new Error('Subject not found');
-            }
-            return true;
-        }),
-
-    // Validate chapterId (must be a valid ObjectId and reference an existing Chapter)
-    body('chapterId')
-        .notEmpty().withMessage('Chapter ID is required')
-        .isMongoId().withMessage('Chapter ID must be a valid ObjectId')
-        .custom(async (value) => {
-            const chapterExists = await mongoose.model('Chapter').findById(value);
-            if (!chapterExists) {
-                throw new Error('Chapter not found');
-            }
-            return true;
-        }),
-
-    // Validate categoryId (must be a valid ObjectId and reference an existing Category)
-    body('categoryId')
-        .notEmpty().withMessage('Category ID is required')
-        .isMongoId().withMessage('Category ID must be a valid ObjectId')
-        .custom(async (value) => {
-            const categoryExists = await mongoose.model('Category').findById(value);
-            if (!categoryExists) {
-                throw new Error('Category not found');
-            }
-            return true;
-        }),
-
-    // Validate quizTitle
-    body('quizTitle')
-        .notEmpty().withMessage('Quiz title is required')
-        .isLength({ min: 3, max: 255 }).withMessage('Quiz title must be between 3 and 255 characters'),
-
-    // Validate quizTime
-    body('quizTime')
-        .notEmpty().withMessage('Quiz time is required')
-        .isInt({ min: 1 }).withMessage('Quiz time must be a positive integer'),
-
-    // Validate imageUrl
-    body('imageUrl')
-        .optional() // Allow imageUrl to be optional
-        .isURL().withMessage('Image URL must be a valid URL'),
-
-    // Validate description
-    body('description')
-        .notEmpty().withMessage('Description is required')
-        .isLength({ min: 10, max: 1000 }).withMessage('Description must be between 10 and 1000 characters'),
-];
-
 // **Validate login user field**
 exports.validateResetPasswordRules = [
     // Email Validation
@@ -214,4 +143,241 @@ exports.notificationValidationRules = [
     body('imageUrl')
         .optional()
         .isURL().withMessage('Invalid image URL.'),
+];
+
+// **Quiz validation rules**
+exports.quizValidationRules = [
+    // Validate classId (must be a valid ObjectId and reference an existing Class)
+    body('classId')
+        .notEmpty().withMessage('Class ID is required')
+        .isMongoId().withMessage('Class ID must be a valid ObjectId')
+        .custom(async (value) => {
+            const classExists = await mongoose.model('Class').findById(value);
+            if (!classExists) {
+                throw new Error('Class not found');
+            }
+            return true;
+        }),
+
+    // Validate subjectId (must be a valid ObjectId and reference an existing Subject)
+    body('subjectId')
+        .notEmpty().withMessage('Subject ID is required')
+        .isMongoId().withMessage('Subject ID must be a valid ObjectId')
+        .custom(async (value) => {
+            const subjectExists = await mongoose.model('Subject').findById(value);
+            if (!subjectExists) {
+                throw new Error('Subject not found');
+            }
+            return true;
+        }),
+
+    // Validate chapterId (must be a valid ObjectId and reference an existing Chapter)
+    body('chapterId')
+        .notEmpty().withMessage('Chapter ID is required')
+        .isMongoId().withMessage('Chapter ID must be a valid ObjectId')
+        .custom(async (value) => {
+            const chapterExists = await mongoose.model('Chapter').findById(value);
+            if (!chapterExists) {
+                throw new Error('Chapter not found');
+            }
+            return true;
+        }),
+
+    // Validate categoryId (must be a valid ObjectId and reference an existing Category)
+    body('categoryId')
+        .notEmpty().withMessage('Category ID is required')
+        .isMongoId().withMessage('Category ID must be a valid ObjectId')
+        .custom(async (value) => {
+            const categoryExists = await mongoose.model('Category').findById(value);
+            if (!categoryExists) {
+                throw new Error('Category not found');
+            }
+            return true;
+        }),
+
+    // Validate quizTitle
+    body('quizTitle')
+        .notEmpty().withMessage('Quiz title is required')
+        .isLength({ min: 3, max: 255 })
+        .withMessage('Quiz title must be between 3 and 255 characters'),
+
+    // Validate quizTime
+    body('quizTime')
+        .notEmpty().withMessage('Quiz time is required')
+        .isInt({ min: 1 })
+        .withMessage('Quiz time must be a positive integer'),
+
+    // Validate imageUrl
+    body('imageUrl')
+        .notEmpty().withMessage('Image is required!'),
+
+    // Validate description
+    body('description')
+        .notEmpty().withMessage('Description is required')
+        .isLength({ min: 10, max: 1000 })
+        .withMessage('Description must be between 10 and 1000 characters'),
+];
+
+// validate class field
+exports.classValidationRule = [
+    // Validate name
+    body('name')
+        .notEmpty().withMessage('Class name is required')
+        .isLength({ min: 2 }).withMessage('Class name must be at least 2 characters long')
+        .isLength({ max: 50 }).withMessage('Class name must be less than 50 characters')
+        .trim(),
+
+    // Validate description
+    body('description')
+        .optional()
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate status
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+
+];
+
+// category validation rule
+exports.categoryValidationRule = [
+    // Validate name
+    body('name')
+        .notEmpty().withMessage('Category name is required')
+        .isLength({ min: 2 }).withMessage('Category name must be at least 2 characters long')
+        .isLength({ max: 50 }).withMessage('Category name must be less than 50 characters long')
+        .trim(),
+
+    // Validate description (optional)
+    body('description')
+        .optional()
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate imageUrl
+    body('imageUrl')
+        .notEmpty().withMessage('Image is required'),
+
+    // Validate status (optional)
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
+// chapter validation rule
+exports.chapterValidationRule = [
+    // Validate subjectId
+    body('subjectId')
+        .notEmpty().withMessage('Subject ID is required')
+        .isMongoId().withMessage('Invalid Subject ID'),
+
+    // Validate name
+    body('name')
+        .notEmpty().withMessage('Chapter name is required')
+        .isLength({ min: 2 }).withMessage('Chapter name must be at least 2 characters long')
+        .isLength({ max: 200 }).withMessage('Chapter name must be less than 200 characters')
+        .trim(),
+
+    // Validate description (optional)
+    body('description')
+        .optional()
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate imageUrl
+    body('imageUrl')
+        .notEmpty().withMessage('Image is required'),
+
+    // Validate status (optional)
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
+// question validation rule
+exports.questionValidationRule = [
+    // Validate categoryId
+    body('categoryId')
+        .notEmpty().withMessage('Category ID is required')
+        .isMongoId().withMessage('Invalid Category ID format'),
+
+    // Validate chapterId
+    body('chapterId')
+        .notEmpty().withMessage('Chapter ID is required')
+        .isMongoId().withMessage('Invalid Chapter ID format'),
+
+    // Validate question
+    body('question')
+        .notEmpty().withMessage('Question is required')
+        .isString().withMessage('Question must be a string')
+        .isLength({ min: 5 }).withMessage('Question must be at least 5 characters long')
+        .isLength({ max: 500 }).withMessage('Question must be less than 500 characters')
+        .trim(),
+
+    // Validate questionType
+    body('questionType')
+        .notEmpty().withMessage('Question type is required')
+        .isIn(['Options', 'True/False', 'Short Answer', 'Guess Word'])
+        .withMessage('Invalid question type'),
+
+    // Validate options (only for 'Options' type questions)
+    body('options')
+        .if(body('questionType').equals('Options'))
+        .notEmpty().withMessage('Options are required for "Options" question type')
+        .isArray({ min: 2, max: 10 }).withMessage('Options must be an array with 2-10 items')
+        .custom((options) => {
+            if (options.some(option => typeof option !== 'string' || option.trim() === '')) {
+                throw new Error('Each option must be a non-empty string');
+            }
+            return true;
+        }),
+
+    // Validate answer
+    body('answer')
+        .notEmpty().withMessage('Answer is required')
+        .isString().withMessage('Answer must be a string')
+        .custom((answer, { req }) => {
+            if (req.body.questionType === 'Options' && !req.body.options.includes(answer)) {
+                throw new Error('Answer must be one of the provided options');
+            }
+            return true;
+        }),
+
+    // Validate status (optional)
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
+// subjectValidation rule
+exports.subjectValidationRule = [
+    // Validate classId
+    body('classId')
+        .notEmpty().withMessage('Class ID is required')
+        .isMongoId().withMessage('Invalid Class ID format'),
+
+    // Validate name
+    body('name')
+        .notEmpty().withMessage('Subject name is required')
+        .isString().withMessage('Subject name must be a string')
+        .isLength({ min: 2 }).withMessage('Subject name must be at least 2 characters long')
+        .isLength({ max: 100 }).withMessage('Subject name must be less than 100 characters')
+        .trim(),
+
+    // Validate description
+    body('description')
+        .optional()
+        .isString().withMessage('Description must be a string')
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate imageUrl
+    body('imageUrl')
+        .notEmpty().withMessage('Image is required'),
+
+    // Validate status (optional)
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
 ];

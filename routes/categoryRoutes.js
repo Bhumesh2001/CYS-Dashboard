@@ -5,9 +5,17 @@ const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
+const { validateFields } = require('../middlewares/validateMiddle');
+const categoryValidation = require('../validation/validator');
 
 // Create a new category
-router.post('/', authenticate, authorize(['admin']), categoryController.createCategory);
+router.post(
+    '/',
+    authenticate,
+    authorize(['admin']),
+    validateFields(categoryValidation.categoryValidationRule),
+    categoryController.createCategory
+);
 
 // Get all categories
 router.get('/', authenticate, categoryController.getAllCategories);
@@ -27,6 +35,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['categoryId'], 'params'),
+    validateFields(categoryValidation.categoryValidationRule),
     categoryController.updateCategory
 );
 

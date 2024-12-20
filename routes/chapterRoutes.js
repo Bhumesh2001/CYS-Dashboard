@@ -6,13 +6,20 @@ const chapterController = require('../controllers/chapterController');
 // **Authentication and Validation**
 const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
+const chapterValidation = require('../validation/validator');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 
 // **app**
 const router = express.Router();
 
 // **Create Chapter**
-router.post('/', authenticate, authorize(['admin']), chapterController.createChapter);
+router.post(
+    '/',
+    authenticate,
+    authorize(['admin']),
+    validateFields(chapterValidation.chapterValidationRule),
+    chapterController.createChapter
+);
 
 // **Get all Chapter**
 router.get('/', authenticate, authorize(['admin']), chapterController.getAllChapter);
@@ -40,6 +47,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['chapterId'], 'params'),
+    validateFields(chapterValidation.chapterValidationRule),
     chapterController.updateChapter
 );
 

@@ -6,13 +6,19 @@ const classController = require('../controllers/classController');
 // **Validation and Authentication**
 const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
+const classValidation = require('../validation/validator');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 
 // **app**
 const router = express.Router();
 
 // **Create Class**
-router.post('/', authenticate, authorize(['admin']), classController.createClass);
+router.post(
+    '/', authenticate,
+    authorize(['admin']),
+    validateFields(classValidation.classValidationRule),
+    classController.createClass
+);
 
 // **Get all classes**
 router.get('/', classController.getAllClasses);
@@ -32,6 +38,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['classId'], 'params'),
+    validateFields(classValidation.classValidationRule),
     classController.updateClass
 );
 

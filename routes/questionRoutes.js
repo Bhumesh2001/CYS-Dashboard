@@ -5,9 +5,17 @@ const router = express.Router();
 const questonController = require('../controllers/questionController');
 const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
+const questionValidation = require('../validation/validator');
+const { validateFields } = require('../middlewares/validateMiddle');
 
 // Create a new Question
-router.post('/', authenticate, authorize(['admin']), questonController.addQuestion);
+router.post(
+    '/',
+    authenticate,
+    authorize(['admin']),
+    validateFields(questionValidation.questionValidationRule),
+    questonController.addQuestion
+);
 
 // Get all categories
 router.get('/', authenticate, authorize(['admin']), questonController.getAllQuestions);
@@ -27,6 +35,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['questionId'], 'params'),
+    validateFields(questionValidation.questionValidationRule),
     questonController.updateQuestion
 );
 
