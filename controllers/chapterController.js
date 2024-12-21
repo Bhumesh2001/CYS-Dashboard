@@ -1,6 +1,6 @@
 const Chapter = require('../models/Chapter');
 const { uploadImage, deleteImage } = require('../utils/image');
-const fs = require('fs');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Create Chapter**
 exports.createChapter = async (req, res, next) => {
@@ -18,6 +18,9 @@ exports.createChapter = async (req, res, next) => {
             publicId: imageData.publicId,
             status,
         });
+
+        flushCacheByKey('/api/chapters');
+        flushCacheByKey('/api/dashboard/stats');
 
         res.status(201).json({
             success: true,
@@ -127,6 +130,9 @@ exports.updateChapter = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Chapter not found' });
         };
 
+        flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/chapters');
+
         res.status(200).json({
             success: true,
             message: 'Chapter updated successfully...!',
@@ -146,7 +152,12 @@ exports.deleteChapter = async (req, res, next) => {
         const deletedChapter = await Chapter.findByIdAndDelete(req.params.chapterId);
         if (!deletedChapter) {
             return res.status(404).json({ success: false, message: 'Chapter not found' });
-        }
+        };
+
+        flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/chapters');
+        flushCacheByKey('/api/dashboard/stats');
+
         res.status(200).json({ success: true, message: 'Chapter deleted successfully' });
     } catch (error) {
         next(error);

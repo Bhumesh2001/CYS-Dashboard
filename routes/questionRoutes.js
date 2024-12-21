@@ -7,6 +7,7 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 const questionValidation = require('../validation/validator');
 const { validateFields } = require('../middlewares/validateMiddle');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // Create a new Question
 router.post(
@@ -17,8 +18,8 @@ router.post(
     questonController.addQuestion
 );
 
-// Get all categories
-router.get('/', authenticate, authorize(['admin']), questonController.getAllQuestions);
+// Get all questions
+router.get('/', authenticate, authorize(['admin']), cacheMiddleware, questonController.getAllQuestions);
 
 // Get a Question by ID
 router.get(
@@ -26,6 +27,7 @@ router.get(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['questionId'], 'params'),
+    cacheMiddleware,
     questonController.getQuestionById
 );
 

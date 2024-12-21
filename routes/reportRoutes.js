@@ -8,13 +8,13 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 // **Validation**
 const { validateFields } = require('../middlewares/validateMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
-
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // Create a new report
 router.post('/', authenticate, reportController.createReport);
 
 // Get all reports
-router.get('/', authenticate, authorize(['admin']), reportController.getAllReports);
+router.get('/', authenticate, authorize(['admin']), cacheMiddleware, reportController.getAllReports);
 
 // Get a report by ID
 router.get(
@@ -22,6 +22,7 @@ router.get(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['reportId'], 'params'),
+    cacheMiddleware,
     reportController.getReportById
 );
 

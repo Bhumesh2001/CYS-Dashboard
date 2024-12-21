@@ -9,6 +9,7 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 const quizValidation = require('../validation/validator');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // **Create quiz**
 router.post(
@@ -20,7 +21,7 @@ router.post(
 );
 
 // **Get all quizes**
-router.get('/', authenticate, authorize(['admin']), quizController.getQuizzes);
+router.get('/', authenticate, authorize(['admin']), cacheMiddleware, quizController.getQuizzes);
 
 // POST: Submit a quiz and calculate the score
 router.post(
@@ -35,6 +36,7 @@ router.get(
     '/quiz/:quizId',
     authenticate,
     validateObjectIds(['quizId'], 'params'),
+    cacheMiddleware,
     quizController.getQuizById
 );
 
@@ -43,6 +45,7 @@ router.get(
     '/chapter/:chapterId',
     authenticate,
     validateObjectIds(['chapterId'], 'params'),
+    cacheMiddleware,
     quizController.getQuizByChapterId
 );
 

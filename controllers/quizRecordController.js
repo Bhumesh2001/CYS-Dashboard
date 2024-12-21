@@ -1,4 +1,5 @@
 const QuizRecord = require('../models/QuizRecord');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 /**
  * Controller for getting all quiz records of a particular user
@@ -25,7 +26,7 @@ exports.getUserQuizRecords = async (req, res, next) => {
         // Return a message if no records are found
         if (quizRecords.length === 0) {
             return res.status(404).json({ success: false, message: 'No quiz records found for this user' });
-        }
+        };
 
         // Return success with quiz records
         res.status(200).json({
@@ -35,7 +36,7 @@ exports.getUserQuizRecords = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 /**
@@ -65,7 +66,7 @@ exports.getQuizRecordByUserAndQuiz = async (req, res, next) => {
                 success: false,
                 message: 'Quiz record not found for the given user and quiz'
             });
-        }
+        };
 
         res.status(200).json({
             success: true,
@@ -74,7 +75,7 @@ exports.getQuizRecordByUserAndQuiz = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 /**
@@ -94,7 +95,9 @@ exports.updateQuizRecord = async (req, res, next) => {
                 success: false,
                 message: 'Quiz record not found for the given user and quiz'
             });
-        }
+        };
+
+        flushCacheByKey(req.originalUrl);
 
         res.status(200).json({
             success: true,

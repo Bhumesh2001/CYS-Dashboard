@@ -7,6 +7,7 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const categoryValidation = require('../validation/validator');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // Create a new category
 router.post(
@@ -18,7 +19,7 @@ router.post(
 );
 
 // Get all categories
-router.get('/', authenticate, categoryController.getAllCategories);
+router.get('/', authenticate, cacheMiddleware, categoryController.getAllCategories);
 
 // Get a category by ID
 router.get(
@@ -26,6 +27,7 @@ router.get(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['categoryId'], 'params'),
+    cacheMiddleware,
     categoryController.getCategoryById
 );
 

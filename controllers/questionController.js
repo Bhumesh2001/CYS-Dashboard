@@ -1,10 +1,12 @@
 const Question = require('../models/Question');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Add Question**
 exports.addQuestion = async (req, res, next) => {
     try {
         const question = new Question(req.body);
         await question.save();
+        flushCacheByKey('/api/questions');
         res.status(201).json({ success: true, message: 'Question added successfully', question });
     } catch (error) {
         next(error);
@@ -57,7 +59,10 @@ exports.updateQuestion = async (req, res, next) => {
 
         if (!updatedQuestion) {
             return res.status(404).json({ success: false, message: 'Question not found' });
-        }
+        };
+        flushCacheByKey('/api/questions');
+        flushCacheByKey(req.oiriginalUrl);
+
         res.status(200).json({ success: true, message: 'Question updated successfully', updatedQuestion });
     } catch (error) {
         next(error);
@@ -71,7 +76,9 @@ exports.deleteQuestion = async (req, res, next) => {
 
         if (!deletedQuestion) {
             return res.status(404).json({ success: false, message: 'Question not found' });
-        }
+        };
+        flushCacheByKey('/api/questions');
+        flushCacheByKey(req.oiriginalUrl);
 
         res.status(200).json({ success: true, message: 'Question deleted successfully' });
     } catch (error) {

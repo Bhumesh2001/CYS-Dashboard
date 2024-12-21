@@ -8,6 +8,7 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const classValidation = require('../validation/validator');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // **app**
 const router = express.Router();
@@ -21,7 +22,7 @@ router.post(
 );
 
 // **Get all classes**
-router.get('/', classController.getAllClasses);
+router.get('/', cacheMiddleware, classController.getAllClasses);
 
 // **Get class by ID**
 router.get(
@@ -29,6 +30,7 @@ router.get(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['classId'], 'params'),
+    cacheMiddleware,
     classController.getClassById
 );
 

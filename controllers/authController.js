@@ -4,6 +4,7 @@ const { generateToken, storeToken } = require('../utils/token');
 const { generateOTP } = require('../utils/otp');
 const { sendOTP } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
+const { flushCacheByKey } = require('../middlewares/cacheMiddle');
 
 //**Register**
 exports.register = async (req, res, next) => {
@@ -15,6 +16,10 @@ exports.register = async (req, res, next) => {
 
         const token = generateToken({ id: user._id, role: user.role });
         storeToken(res, token, `${user.role}_token`);
+
+        flushCacheByKey('/api/auth/users');
+        flushCacheByKey('/api/dashboard/stats');
+        flushCacheByKey('/api/dashboard/new-users');
 
         res.status(201).json({
             success: true,
@@ -164,7 +169,7 @@ exports.updateProfile = async (req, res, next) => {
         // Validate that updates are not empty
         if (!Object.keys(updates).length) {
             return res.status(400).json({ success: false, message: 'No updates provided' });
-        }
+        };
 
         // Allowable fields for update
         const allowedUpdates = ['fullName', 'email', 'mobile', 'profileUrl', 'className'];
@@ -172,7 +177,7 @@ exports.updateProfile = async (req, res, next) => {
 
         if (!isUpdateValid) {
             return res.status(400).json({ message: 'Invalid update fields' });
-        }
+        };
 
         // Find and update the user
         const updatedUser = await User.findByIdAndUpdate(
@@ -184,26 +189,31 @@ exports.updateProfile = async (req, res, next) => {
         // Handle case where user is not found
         if (!updatedUser) {
             return res.status(404).json({ success: false, message: 'User not found' });
-        }
+        };
+
+        flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/auth/users');
 
         // Send success response
         res.status(200).json({ success: true, message: 'Profile updated successfully', data: updatedUser });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Logout**
 exports.logout = async (req, res, next) => {
     try {
-        const token = req.header('Authorization')?.split(' ')[1];
+        const token = req.header('Authorization')?.split(' ')[1]
+            || req.cookies.user_token
+            || req.cookies.admin_token;
 
         if (!token) {
             return res.status(401).json({
                 success: false,
                 message: 'No token provided or invalid format.'
             });
-        }
+        };
 
         // Verify the token and clear the respective role-based cookie
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
@@ -217,7 +227,7 @@ exports.logout = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'User logged out successfully.', token });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 /**
@@ -260,6 +270,10 @@ exports.createUser = async (req, res, next) => {
             publicId: imageData.publicId,
         });
         await newUser.save();
+
+        flushCacheByKey('/api/auth/users');
+        flushCacheByKey('/api/dashboard/new-users');
+        flushCacheByKey('/api/dashboard/stats');
 
         res.status(201).json({ success: true, message: 'User created successfully.', user: newUser });
     } catch (error) {
@@ -353,6 +367,9 @@ exports.updateUser = async (req, res, next) => {
             user.className = null;
         };
 
+        flushCacheByKey('/api/auth/users');
+        flushCacheByKey(req.originalUrl);
+
         await user.save();
         res.status(200).json({ success: true, message: 'User updated successfully.', user });
     } catch (error) {
@@ -374,6 +391,10 @@ exports.deleteUser = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         };
+
+        flushCacheByKey('/api/auth/users');
+        flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/dashboard/new-users');
 
         res.status(200).json({ success: true, message: 'User deleted successfully.' });
     } catch (error) {

@@ -3,6 +3,7 @@ const Quiz = require('../models/Quiz');
 const QuizRecord = require('../models/QuizRecord');
 const { ObjectId } = mongoose.Types;
 const { uploadImage, deleteImage } = require('../utils/image');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
@@ -20,6 +21,9 @@ exports.createQuiz = async (req, res, next) => {
             imageUrl: imageData.url,
             publicId: imageData.publicId,
         });
+
+        flushCacheByKey('/api/quizzess');
+        flushCacheByKey('/api/dashboard/stats');
 
         await quiz.save();
         res.status(201).json({ success: true, message: 'Quiz created successfully', quiz });
@@ -208,6 +212,9 @@ exports.updateQuiz = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
         };
 
+        flushCacheByKey('/api/quizzess');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({ success: false, message: 'Quiz updated successfully', quiz });
     } catch (error) {
         next(error);
@@ -224,6 +231,10 @@ exports.deleteQuiz = async (req, res, next) => {
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
         };
+
+        flushCacheByKey('/api/quizzess');
+        flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/dashboard/stats');
 
         res.status(200).json({ success: false, message: 'Quiz deleted successfully' });
     } catch (error) {

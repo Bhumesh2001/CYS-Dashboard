@@ -1,6 +1,6 @@
 const Category = require('../models/Category');
 const { uploadImage, deleteImage } = require('../utils/image');
-const fs = require('fs');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // Create a new category
 exports.createCategory = async (req, res, next) => {
@@ -17,6 +17,8 @@ exports.createCategory = async (req, res, next) => {
             publicId: imageData.publicId,
             status
         });
+
+        flushCacheByKey('/api/categories');
 
         res.status(201).json({
             success: true,
@@ -75,7 +77,7 @@ exports.updateCategory = async (req, res, next) => {
             if (categoryData && categoryData.publicId) {
                 // If the category already has an image, delete the old one
                 await deleteImage(categoryData.publicId);
-            }
+            };
             imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysCategoriesImg', 220, 200);
         } else {
             // If no new image is provided, use the current image data
@@ -99,6 +101,9 @@ exports.updateCategory = async (req, res, next) => {
 
         if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
 
+        flushCacheByKey('/api/categories');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({
             success: true,
             message: 'Category updated successfully!',
@@ -106,7 +111,7 @@ exports.updateCategory = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // Delete a category by ID
@@ -117,6 +122,9 @@ exports.deleteCategory = async (req, res, next) => {
 
         const category = await Category.findByIdAndDelete(req.params.categoryId);
         if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
+
+        flushCacheByKey('/api/categories');
+        flushCacheByKey(req.originalUrl);
 
         res.status(200).json({ success: true, message: 'Category deleted successfully' });
     } catch (error) {

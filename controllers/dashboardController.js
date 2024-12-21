@@ -2,7 +2,6 @@ const Report = require('../models/Report');
 const User = require('../models/User');
 const Quiz = require('../models/Quiz');
 const Chapter = require('../models/Chapter');
-
 const moment = require('moment');
 
 /**
@@ -30,7 +29,7 @@ exports.getDashboardStats = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 /**
@@ -54,7 +53,7 @@ exports.getUserAnalytics = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 /**
@@ -82,5 +81,5 @@ exports.getNewUsers = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };

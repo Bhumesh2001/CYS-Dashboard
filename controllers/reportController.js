@@ -1,10 +1,15 @@
 const Report = require('../models/Report');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // Create a new report
 exports.createReport = async (req, res, next) => {
     try {
         const { reportedId, reportedModel, reporterId, reason } = req.body;
         const report = await Report.create({ reportedId, reportedModel, reporterId, reason });
+
+        flushCacheByKey('/api/reports');
+        flushCacheByKey('/api/dashboard/stats');
+
         res.status(201).json({
             success: true,
             message: 'Report created successfully',
@@ -12,7 +17,7 @@ exports.createReport = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // Get all reports
@@ -53,6 +58,10 @@ exports.updateReportStatus = async (req, res, next) => {
             { new: true, runValidators: true }
         );
         if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+
+        flushCacheByKey('/api/reports');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({ success: true, message: "Report updated successfully...!", data: report });
     } catch (error) {
         next(error);
@@ -64,8 +73,13 @@ exports.deleteReport = async (req, res, next) => {
     try {
         const report = await Report.findByIdAndDelete(req.params.reportId);
         if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+
+        flushCacheByKey('/api/reports');
+        flushCacheByKey('/api/dashboard/stats');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({ success: true, message: 'Report deleted successfully' });
     } catch (error) {
         next(error);
-    }
+    };
 };

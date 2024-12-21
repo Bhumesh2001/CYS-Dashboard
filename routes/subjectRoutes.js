@@ -8,6 +8,7 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const subjectValidation = require('../validation/validator');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // **app**
 const router = express.Router();
@@ -22,13 +23,14 @@ router.post(
 );
 
 // **Get all subjects**
-router.get('/', authenticate, subjectController.getAllSubjects);
+router.get('/', authenticate, cacheMiddleware, subjectController.getAllSubjects);
 
 // Route to get subjects by classId
 router.get(
     '/class/:classId',
     authenticate,
     validateObjectIds(['classId'], 'params'),
+    cacheMiddleware,
     subjectController.getSubjectByClassId
 );
 
@@ -38,6 +40,7 @@ router.get(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['subjectId'], 'params'),
+    cacheMiddleware,
     subjectController.getSubjectById
 );
 

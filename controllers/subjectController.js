@@ -1,5 +1,6 @@
 const Subject = require('../models/Subject');
 const { uploadImage, deleteImage } = require('../utils/image');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Create Subject**
 exports.createSubject = async (req, res, next) => {
@@ -18,6 +19,8 @@ exports.createSubject = async (req, res, next) => {
             publicId: imageData.publicId,
             status,
         });
+
+        flushCacheByKey('/api/subjects');
 
         res.status(201).json({
             success: true,
@@ -124,7 +127,11 @@ exports.updateSubject = async (req, res, next) => {
         );
         if (!updatedSubject) {
             return res.status(404).json({ success: false, message: 'Subject not found' });
-        }
+        };
+
+        flushCacheByKey('/api/subjects');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({
             success: true,
             message: 'Subject Updated successfully...!',
@@ -144,7 +151,11 @@ exports.deleteSubject = async (req, res, next) => {
         const deletedSubject = await Subject.findByIdAndDelete(req.params.subjectId);
         if (!deletedSubject) {
             return res.status(404).json({ success: false, message: 'Subject not found' });
-        }
+        };
+
+        flushCacheByKey('/api/subjects');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({ success: true, message: 'Subject deleted successfully' });
     } catch (error) {
         next(error);

@@ -1,11 +1,11 @@
 const Class = require('../models/Class');
-const Subject = require('../models/Subject');
-const Chapter = require('../models/Chapter');
+const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Create Class**
 exports.createClass = async (req, res, next) => {
     try {
         const newClass = await Class.create(req.body);
+        flushCacheByKey('/api/classes');
         res.status(201).json({
             success: true,
             message: 'Class created successfully...!',
@@ -13,7 +13,7 @@ exports.createClass = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get all Calsses**
@@ -28,7 +28,7 @@ exports.getAllClasses = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get class by ID**
@@ -60,7 +60,10 @@ exports.updateClass = async (req, res, next) => {
         });
         if (!updatedClass) {
             return res.status(404).json({ success: false, message: 'Class not found' });
-        }
+        };
+        flushCacheByKey('/api/classes');
+        flushCacheByKey(req.originalUrl);
+        
         res.status(200).json({
             success: true,
             message: 'Class updated successfully...!',
@@ -77,7 +80,10 @@ exports.deleteClass = async (req, res, next) => {
         const deletedClass = await Class.findByIdAndDelete(req.params.classId);
         if (!deletedClass) {
             return res.status(404).json({ success: false, message: 'Class not found' });
-        }
+        };
+        flushCacheByKey('/api/classes');
+        flushCacheByKey(req.originalUrl);
+
         res.status(200).json({ success: true, message: 'Class deleted successfully' });
     } catch (error) {
         next(error);

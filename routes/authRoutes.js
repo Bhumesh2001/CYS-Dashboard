@@ -11,6 +11,7 @@ const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 
 // **Authentication and authorization**
 const { authenticate, authorize } = require('../middlewares/authMiddle');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 // **Register**
 router.post(
@@ -49,7 +50,7 @@ router.post(
 
 // **Get profile and update profile**
 router.route('/profile')
-    .get(authenticate, authorize(['admin', 'user']), userController.getProfile)
+    .get(authenticate, authorize(['admin', 'user']), cacheMiddleware, userController.getProfile)
     .put(authenticate, authorize(['admin', 'user']), userController.updateProfile)
 
 // **Logout**
@@ -73,7 +74,7 @@ router.post(
  * @desc Get all users
  * @access Admin only
  */
-router.get('/users', authenticate, authorize(['admin']), userController.getAllUsers);
+router.get('/users', authenticate, authorize(['admin']), cacheMiddleware, userController.getAllUsers);
 
 /**
  * @route GET /api/users/:id
@@ -85,6 +86,7 @@ router.get(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['userId'], 'params'),
+    cacheMiddleware,
     userController.getUserById
 );
 

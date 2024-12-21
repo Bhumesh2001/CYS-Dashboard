@@ -8,6 +8,7 @@ const quizRecordController = require('../controllers/quizRecordController');
 const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
+const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
 /**
  * Route for getting all quiz records of a specific user
@@ -17,6 +18,7 @@ router.get(
     '/user/:userId', 
     authenticate, 
     validateObjectIds(['userId'], 'params'), 
+    cacheMiddleware,
     quizRecordController.getUserQuizRecords
 );
 
@@ -28,6 +30,7 @@ router.get(
     '/user/:userId/quiz/:quizId', 
     authenticate, 
     validateObjectIds(['userId', 'quizId'], 'params'),
+    cacheMiddleware,
     quizRecordController.getQuizRecordByUserAndQuiz
 );
 
