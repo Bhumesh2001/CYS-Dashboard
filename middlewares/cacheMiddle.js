@@ -14,7 +14,7 @@ module.exports = {
         // console.log("Cache miss!");
         res.sendResponse = res.json;
         res.json = (body) => {
-            cache.set(key, body, 600); // Cache response for 10 minutes
+            cache.set(key, body, 1800); // Cache response for 10 minutes
             res.sendResponse(body);
         };
 

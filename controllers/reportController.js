@@ -34,18 +34,20 @@ exports.getAllReports = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // Get a report by ID
 exports.getReportById = async (req, res, next) => {
     try {
         const report = await Report.findById(req.params.reportId, { createdAt: 0, updatedAt: 0 }).lean();
+
         if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
+        
         res.status(200).json({ success: true, message: "Report fetched successfully...!", data: report });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // Update report status

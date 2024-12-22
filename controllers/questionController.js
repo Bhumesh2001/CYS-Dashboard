@@ -17,7 +17,6 @@ exports.addQuestion = async (req, res, next) => {
 exports.getAllQuestions = async (req, res, next) => {
     try {
         const questions = await Question.find({}, { createdAt: 0, updatedAt: 0 })
-            .populate('categoryId', '-createdAt -updatedAt')
             .populate('chapterId', '-createdAt -updatedAt')
             .lean();
         res.status(200).json({
@@ -37,7 +36,6 @@ exports.getQuestionById = async (req, res, next) => {
         const question = await Question.findById(
             req.params.questionId,
             { createdAt: 0, updatedAt: 0 })
-            .populate('categoryId', '-createdAt -updatedAt')
             .lean();
         if (!question) {
             return res.status(404).json({ success: true, message: 'Question not found' });
@@ -55,7 +53,7 @@ exports.updateQuestion = async (req, res, next) => {
             req.params.questionId,
             req.body,
             { new: true, runValidators: true }
-        ).populate('quizId', 'title category');
+        );
 
         if (!updatedQuestion) {
             return res.status(404).json({ success: false, message: 'Question not found' });

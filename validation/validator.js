@@ -61,8 +61,28 @@ exports.registerValidationRules = [
     // Validate profileUrl
     body('profileUrl')
         .optional()
-        .isURL()
-        .withMessage('Profile URL must be a valid URL.'),
+        .custom((value, { req }) => {
+            // Check if there's no file uploaded
+            if (!req.files || !req.files.imageUrl) {
+                throw new Error('Image file is required');
+            };
+
+            const imageFile = req.files.imageUrl;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
+            // Check the file type
+            if (!allowedTypes.includes(imageFile.mimetype)) {
+                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            };
+
+            // Check the file size
+            if (imageFile.size > maxSize) {
+                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            };
+
+            return true;
+        }),
 
     // Validate role
     body('role')
@@ -209,7 +229,28 @@ exports.quizValidationRules = [
 
     // Validate imageUrl
     body('imageUrl')
-        .notEmpty().withMessage('Image is required!'),
+        .custom((value, { req }) => {
+            // Check if there's no file uploaded
+            if (!req.files || !req.files.imageUrl) {
+                throw new Error('Image file is required');
+            };
+
+            const imageFile = req.files.imageUrl;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
+            // Check the file type
+            if (!allowedTypes.includes(imageFile.mimetype)) {
+                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            };
+
+            // Check the file size
+            if (imageFile.size > maxSize) {
+                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            };
+
+            return true;
+        }),
 
     // Validate description
     body('description')
@@ -240,31 +281,6 @@ exports.classValidationRule = [
 
 ];
 
-// category validation rule
-exports.categoryValidationRule = [
-    // Validate name
-    body('name')
-        .notEmpty().withMessage('Category name is required')
-        .isLength({ min: 2 }).withMessage('Category name must be at least 2 characters long')
-        .isLength({ max: 50 }).withMessage('Category name must be less than 50 characters long')
-        .trim(),
-
-    // Validate description (optional)
-    body('description')
-        .optional()
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
-
-    // Validate imageUrl
-    body('imageUrl')
-        .notEmpty().withMessage('Image is required'),
-
-    // Validate status (optional)
-    body('status')
-        .optional()
-        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
-];
-
 // chapter validation rule
 exports.chapterValidationRule = [
     // Validate subjectId
@@ -287,7 +303,28 @@ exports.chapterValidationRule = [
 
     // Validate imageUrl
     body('imageUrl')
-        .notEmpty().withMessage('Image is required'),
+        .custom((value, { req }) => {
+            // Check if there's no file uploaded
+            if (!req.files || !req.files.imageUrl) {
+                throw new Error('Image file is required');
+            };
+
+            const imageFile = req.files.imageUrl;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
+            // Check the file type
+            if (!allowedTypes.includes(imageFile.mimetype)) {
+                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            };
+
+            // Check the file size
+            if (imageFile.size > maxSize) {
+                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            };
+
+            return true;
+        }),
 
     // Validate status (optional)
     body('status')
@@ -374,10 +411,49 @@ exports.subjectValidationRule = [
 
     // Validate imageUrl
     body('imageUrl')
-        .notEmpty().withMessage('Image is required'),
+        .custom((value, { req }) => {
+            // Check if there's no file uploaded
+            if (!req.files || !req.files.imageUrl) {
+                throw new Error('Image file is required');
+            };
+
+            const imageFile = req.files.imageUrl;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
+            // Check the file type
+            if (!allowedTypes.includes(imageFile.mimetype)) {
+                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            };
+
+            // Check the file size
+            if (imageFile.size > maxSize) {
+                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            };
+
+            return true;
+        }),
 
     // Validate status (optional)
     body('status')
         .optional()
         .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
+// report validation rule
+exports.reportValidationRule = [
+    body('reportedId')
+        .isMongoId()
+        .withMessage('Reported ID must be a valid MongoDB ObjectId'),
+    body('reportedModel')
+        .isIn(['Chapter', 'Product', 'User']) // Adjust the allowed models as per your app
+        .withMessage('Reported Model must be one of the allowed models'),
+    body('reporterId')
+        .isMongoId()
+        .withMessage('Reporter ID must be a valid MongoDB ObjectId'),
+    body('reason')
+        .isString()
+        .trim()
+        .isLength({ min: 10 })
+        .withMessage('Reason must be a string with at least 10 characters'),
 ];

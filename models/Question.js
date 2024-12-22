@@ -3,17 +3,6 @@ const mongoose = require('mongoose');
 // **Question Schema**
 const questionSchema = new mongoose.Schema({
     /**
-    * Category ID (reference to Category model)
-    * 
-    * The unique identifier for the category the quiz belongs to.
-    */
-    categoryId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category', // References the Category model
-        required: [true, 'Category ID is required'],
-        index: true,
-    },
-    /**
      * Chapter ID (reference to Chapter model)
      * 
      * The unique identifier for the chapter the quiz belongs to.
@@ -96,7 +85,7 @@ const questionSchema = new mongoose.Schema({
 });
 
 // **Indexes for performance optimization**
-questionSchema.index({ categoryId: 1, question: 1 }, { unique: true });
+questionSchema.index({ question: 1 }, { unique: true });
 questionSchema.index({ status: 1 });
 
 // **Question Model**

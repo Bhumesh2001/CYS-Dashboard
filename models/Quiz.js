@@ -45,20 +45,6 @@ const quizSchema = new mongoose.Schema({
         },
     },
     /**
-     * Category ID (reference to Category model)
-     * 
-     * The unique identifier for the category the quiz belongs to.
-     */
-    categoryId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Category', // References the Category model
-        required: [true, 'Category ID is required'],
-        validate: {
-            validator: (v) => mongoose.Types.ObjectId.isValid(v),
-            message: '{VALUE} is not a valid category ID',
-        },
-    },
-    /**
      * Quiz Title
      * 
      * The title of the quiz.

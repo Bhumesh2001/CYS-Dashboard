@@ -7,17 +7,13 @@ const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
-    const {
-        classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status
-    } = req.body;
-
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({ success: false, messeage: 'No files were uploaded.' });
         };
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
         const quiz = new Quiz({
-            classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status,
+            ...req.body,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
         });
@@ -36,7 +32,7 @@ exports.createQuiz = async (req, res, next) => {
 exports.getQuizzes = async (req, res, next) => {
     try {
         const quizzes = await Quiz.find({},
-            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0, categoryId: 0 }
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 }
         ).lean();
         res.status(200).json({
             success: true,
@@ -46,7 +42,7 @@ exports.getQuizzes = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **submit quiz**
@@ -58,7 +54,7 @@ exports.submitQuiz = async (req, res, next) => {
         const quizObjectId = ObjectId.isValid(quizId) ? new ObjectId(quizId) : null;
         if (!quizObjectId) {
             return res.status(400).json({ success: false, message: 'Invalid quizId format.' });
-        }
+        };
 
         // Fetch quiz and related questions using aggregation
         const quizData = await Quiz.aggregate([
@@ -66,8 +62,8 @@ exports.submitQuiz = async (req, res, next) => {
             {
                 $lookup: {
                     from: 'questions',
-                    localField: 'categoryId',
-                    foreignField: 'categoryId',
+                    localField: 'chapterId',
+                    foreignField: 'chapterId',
                     as: 'questions',
                 },
             },
@@ -76,14 +72,14 @@ exports.submitQuiz = async (req, res, next) => {
         // Check if quiz exists
         if (!quizData.length) {
             return res.status(404).json({ success: false, message: 'Quiz not found.' });
-        }
+        };
 
         const quiz = quizData[0];
         const { questions } = quiz;
 
         if (!questions.length) {
-            return res.status(404).json({ success: false, message: 'No questions found for this category.' });
-        }
+            return res.status(404).json({ success: false, message: 'No questions found for this chapterId.' });
+        };
 
         // Calculate the score by comparing user answers with correct answers
         const score = questions.reduce((acc, question, index) => {
@@ -108,7 +104,7 @@ exports.submitQuiz = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get Quiz by ID**
@@ -116,17 +112,17 @@ exports.getQuizById = async (req, res, next) => {
     try {
         const quiz = await Quiz.findById(
             req.params.quizId,
-            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0, categoryId: 0 }
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 }
         ).lean();
 
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
-        }
+        };
 
         res.json({ success: true, message: 'Quiz fetched successfully...!', quiz });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // Get Quiz by Chapter ID
@@ -135,7 +131,7 @@ exports.getQuizByChapterId = async (req, res, next) => {
         // Find a single quiz by chapterId
         const quiz = await Quiz.findOne(
             { chapterId: req.params.chapterId },
-            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 } // Exclude non-essential fields
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 }
         ).lean();
 
         // Return 404 if no quiz is found
@@ -144,17 +140,16 @@ exports.getQuizByChapterId = async (req, res, next) => {
                 success: false,
                 message: 'No quiz found for this chapter',
             });
-        }
+        };
 
-        // Fetch questions for the quiz's categoryId
-        if (quiz.categoryId) {
+        // Fetch questions for the quiz's chapterId
+        if (quiz.chapterId) {
             const questions = await mongoose.model('Question').find(
-                { categoryId: quiz.categoryId },
+                { chapterId: quiz.chapterId },
                 {
                     createdAt: 0,
                     updatedAt: 0,
                     answer: 0,
-                    categoryId: 0,
                     chapterId: 0,
                     questionType: 0,
                     status: 0,
@@ -163,7 +158,7 @@ exports.getQuizByChapterId = async (req, res, next) => {
 
             quiz.questions = questions.length ? questions : []; // Add questions to the quiz object
         } else {
-            quiz.questions = []; // Handle case where categoryId is not available
+            quiz.questions = []; // Handle case where chapterId is not available
         }
 
         res.status(200).json({
@@ -173,14 +168,11 @@ exports.getQuizByChapterId = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Update Quiz**
 exports.updateQuiz = async (req, res, next) => {
-    const {
-        classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status
-    } = req.body;
     try {
         let imageData = {}; // Initialize an empty object to store image data
         if (req.files && Object.keys(req.files).length !== 0) {
@@ -201,7 +193,7 @@ exports.updateQuiz = async (req, res, next) => {
         const quiz = await Quiz.findByIdAndUpdate(
             req.params.quizId,
             {
-                classId, subjectId, chapterId, categoryId, quizTitle, quizTime, description, status,
+                ...req.body,
                 imageUrl: imageData.url,
                 publicId: imageData.publicId
             },

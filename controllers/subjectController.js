@@ -77,7 +77,7 @@ exports.getSubjectByClassId = async (req, res, next) => {
 
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Get all subjects**
@@ -92,7 +92,7 @@ exports.getAllSubjects = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Update Subject**

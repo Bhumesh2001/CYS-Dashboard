@@ -6,7 +6,6 @@ const quizRecordController = require('../controllers/quizRecordController');
 
 // **Authenticaiton and validation**
 const { authenticate, authorize } = require('../middlewares/authMiddle');
-const { validateFields } = require('../middlewares/validateMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 

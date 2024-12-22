@@ -15,11 +15,11 @@ exports.getUserQuizRecords = async (req, res, next) => {
         .select('-createdAt -updatedAt') // Exclude unnecessary fields from the QuizRecord
         .populate({
             path: 'quizId',
-            select: '-createdAt -updatedAt -classId -subjectId -chapterId -categoryId', // Limit fields from Quiz model
+            select: '-createdAt -updatedAt -classId -subjectId -chapterId', // Limit fields from Quiz model
         })
         .populate({
             path: 'userId',
-            select: 'fullName email mobile profileUrl className', // Limit fields from User model
+            select: 'fullName email mobile profileUrl classId', // Limit fields from User model
         })
         .lean(); // Convert to plain JavaScript objects for better performance
 
@@ -53,11 +53,11 @@ exports.getQuizRecordByUserAndQuiz = async (req, res, next) => {
         .select('-createdAt -updatedAt') // Exclude unnecessary fields from the QuizRecord
         .populate({
             path: 'quizId',
-            select: '-createdAt -updatedAt -classId -subjectId -chapterId -categoryId', // Limit fields from Quiz model
+            select: '-createdAt -updatedAt -classId -subjectId -chapterId', // Limit fields from Quiz model
         })
         .populate({
             path: 'userId',
-            select: 'fullName email mobile profileUrl className', // Limit fields from User model
+            select: 'fullName email mobile profileUrl classId', // Limit fields from User model
         })
         .lean();
 

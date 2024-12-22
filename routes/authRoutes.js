@@ -48,6 +48,9 @@ router.post(
     userController.resetPassword
 );
 
+// Route for changing password
+router.put('/change-password', authenticate, userController.changePassword);
+
 // **Get profile and update profile**
 router.route('/profile')
     .get(authenticate, authorize(['admin', 'user']), cacheMiddleware, userController.getProfile)

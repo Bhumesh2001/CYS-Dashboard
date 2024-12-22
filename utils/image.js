@@ -7,7 +7,13 @@ exports.uploadImage = async (file, folder, width, height) => {
             folder: folder || 'default-folder', // Dynamically specify folder
             resource_type: 'image', // For image files
             transformation: [
-                { width, height, crop: "limit", quality: "auto" }, // Optimized size
+                {
+                    width: width || undefined, // Use specified width or keep original
+                    height: height || undefined, // Use specified height or keep original
+                    crop: "limit", // Prevent upscaling beyond original dimensions
+                    quality: "auto:best", // Store in the highest quality suitable
+                    fetch_format: "auto", // Automatically select the best format (e.g., WebP)
+                },
             ],
         });
         return {
@@ -17,7 +23,7 @@ exports.uploadImage = async (file, folder, width, height) => {
     } catch (error) {
         console.error('Error uploading image:', error);
         throw new Error('Image upload failed');
-    }
+    };
 };
 
 // delete image to cloudinary

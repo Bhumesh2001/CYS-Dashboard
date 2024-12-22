@@ -9,9 +9,15 @@ const { authenticate, authorize } = require('../middlewares/authMiddle');
 const { validateFields } = require('../middlewares/validateMiddle');
 const { validateObjectIds } = require('../middlewares/objectIdMiddle');
 const { cacheMiddleware } = require("../middlewares/cacheMiddle");
+const reportValidation = require('../validation/validator');
 
 // Create a new report
-router.post('/', authenticate, reportController.createReport);
+router.post(
+    '/',
+    authenticate,
+    validateFields(reportValidation.reportValidationRule),
+    reportController.createReport
+);
 
 // Get all reports
 router.get('/', authenticate, authorize(['admin']), cacheMiddleware, reportController.getAllReports);

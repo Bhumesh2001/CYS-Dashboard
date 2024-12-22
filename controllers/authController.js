@@ -15,7 +15,7 @@ exports.register = async (req, res, next) => {
         await user.save();
 
         const token = generateToken({ id: user._id, role: user.role });
-        storeToken(res, token, `${user.role}_token`);
+        storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
 
         flushCacheByKey('/api/auth/users');
         flushCacheByKey('/api/dashboard/stats');
@@ -29,7 +29,7 @@ exports.register = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Login**
@@ -39,25 +39,34 @@ exports.login = async (req, res, next) => {
     try {
         const user = await User.findOne(
             { email },
-            { fullName: 1, mobile: 1, email: 1, className: 1, profileUrl: 1, role: 1 }
-        ).select('+password');
+            { fullName: 1, mobile: 1, email: 1, classId: 1, profileUrl: 1, role: 1 }
+        ).populate('classId', 'name')
+            .select('+password');
+
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isMatch = await user.comparePassword(password, user.password);
         if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
 
         const token = generateToken({ id: user._id, role: user.role });
-        storeToken(res, token, `${user.role}_token`);
+        storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
+
+        // Convert `classId` object to a key-value pair
+        const userData = {
+            ...user.toObject(),
+            className: user.classId?.name || null, // Extract the name field as className
+        };
+        delete userData.classId;
 
         res.status(200).json({
             success: true,
             message: 'User logged in successful...!',
-            user,
+            user: userData,
             token
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Forgot password**
@@ -123,18 +132,65 @@ exports.resetPassword = async (req, res, next) => {
                 success: false,
                 message: 'OTP verification is required!',
             });
-        }
+        };
 
         // Update the password and clear OTP fields
         user.password = newPassword;
         user.otp = user.otpExpires = null;
         user.otpVerified = false; // Reset verification status
+        user.isPasswordReset = true;
         await user.save();
 
         res.status(200).json({ success: true, message: 'Password has been reset successfully.' });
     } catch (error) {
         next(error);
-    }
+    };
+};
+
+// Change Password Controller
+exports.changePassword = async (req, res, next) => {
+    const { oldPassword, newPassword } = req.body;
+
+    // Validate input
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            message: 'Old and new passwords are required'
+        });
+    };
+
+    try {
+        // Fetch the user by ID, including password for comparison
+        const user = await User.findById(req.user._id).select('+password');;
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        };
+
+        // Validate old password (assuming comparePassword is a method in the User schema)
+        const isMatch = await user.comparePassword(oldPassword);
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: 'Old password is incorrect'
+            });
+        };
+
+        // Hash the new password and update
+        user.password = newPassword;
+        user.isPasswordReset = true;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password updated successfully'
+        });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
 };
 
 // **Get Profile**
@@ -291,7 +347,7 @@ exports.getAllUsers = async (req, res, next) => {
         const users = await User.find(
             { role: 'user' },
             { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0 }
-        ).lean();
+        ).populate('classId', 'name').lean();
 
         res.status(200).json({
             success: true,

@@ -50,10 +50,17 @@ const userSchema = new mongoose.Schema({
     classId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Class', // References the Class model
-        required: [true, 'Class ID is required'],
+        required: function () {
+            // Check if role is 'user' and it's not a password reset/forget operation
+            return this.role === 'user' && !this.isPasswordReset;
+        },
         validate: {
-            validator: (v) => mongoose.Types.ObjectId.isValid(v),
-            message: '{VALUE} is not a valid class ID',
+            validator: function (v) {
+                // Skip validation for admins or during password reset/forget
+                if ((!v && this.role === 'admin') || this.isPasswordReset) return true;
+                return mongoose.Types.ObjectId.isValid(v); // Validate for users
+            },
+            message: (props) => `${props.value} is not a valid class ID`,
         },
     },
     profileUrl: {

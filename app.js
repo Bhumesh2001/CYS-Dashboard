@@ -54,7 +54,6 @@ const chapterController = require('./routes/chapterRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
 const questionRoutes = require('./routes/questionRoutes');
 const quizRecordRoutes = require('./routes/quizRecordRoutes');
 
@@ -66,7 +65,6 @@ app.use('/api/chapters', chapterController);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
-app.use('/api/categories', categoryRoutes);
 app.use('/api/questions', questionRoutes);
 app.use('/api/quiz-record', quizRecordRoutes);
 
