@@ -17,7 +17,7 @@ exports.addQuestion = async (req, res, next) => {
 exports.getAllQuestions = async (req, res, next) => {
     try {
         const questions = await Question.find({}, { createdAt: 0, updatedAt: 0 })
-            .populate('chapterId', '-createdAt -updatedAt')
+            .populate('chapterId', '-createdAt -updatedAt -subjectId -publicId')
             .lean();
         res.status(200).json({
             success: true,

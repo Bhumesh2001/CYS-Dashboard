@@ -58,7 +58,7 @@ exports.getSubjectByClassId = async (req, res, next) => {
         // Find active subjects by classId
         const subjects = await Subject.find(
             { classId: req.params.classId, status: 'Active' },
-            { createdAt: 0, updatedAt: 0 },
+            { createdAt: 0, updatedAt: 0, publicId: 0 },
         ).lean();
 
         // Early return if no subjects found

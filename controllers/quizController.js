@@ -131,7 +131,7 @@ exports.getQuizByChapterId = async (req, res, next) => {
         // Find a single quiz by chapterId
         const quiz = await Quiz.findOne(
             { chapterId: req.params.chapterId },
-            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 }
+            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, publicId: 0 }
         ).lean();
 
         // Return 404 if no quiz is found
@@ -159,7 +159,7 @@ exports.getQuizByChapterId = async (req, res, next) => {
             quiz.questions = questions.length ? questions : []; // Add questions to the quiz object
         } else {
             quiz.questions = []; // Handle case where chapterId is not available
-        }
+        };
 
         res.status(200).json({
             success: true,

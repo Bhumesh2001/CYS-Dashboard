@@ -196,24 +196,28 @@ exports.changePassword = async (req, res, next) => {
 // **Get Profile**
 exports.getProfile = async (req, res, next) => {
     try {
-        const user = await User.findById(
-            req.user._id,
-            {
-                password: 0,
-                createdAt: 0,
-                updatedAt: 0, __v: 0,
-                otpVerified: 0,
-                otp: 0,
-                otpExpires: 0,
-            }
-        ).lean();
+        const user = await User.findById(req.user._id)
+            .select('-password -createdAt -updatedAt -__v -otpVerified -otp -otpExpires')
+            .populate('classId', 'name'); // Populate `classId` with only `name`
+
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
-        }
-        res.status(200).json({ success: true, message: 'Profile fetched successfully...!', data: user });
+        };
+
+        const userData = {
+            ...user.toObject(),
+            className: user.classId?.name || null, // Extract `name` as `className`
+        };
+        delete userData.classId; // Remove the original `classId` field
+
+        return res.status(200).json({
+            success: true,
+            message: 'Profile fetched successfully!',
+            data: userData,
+        });
     } catch (error) {
-        next(error);
-    }
+        next(error); // Pass the error to the global error handler
+    };
 };
 
 // Update User Profile

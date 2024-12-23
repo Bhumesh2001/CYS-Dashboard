@@ -58,7 +58,7 @@ exports.getChaptersBySubjectId = async (req, res, next) => {
         // Find active chapters by subjectId
         const chapters = await Chapter.find(
             { subjectId: req.params.subjectId, status: 'Active' },
-            { createdAt: 0, updatedAt: 0 },
+            { createdAt: 0, updatedAt: 0, publicId: 0 },
         );
 
         // Early return if no chapters found

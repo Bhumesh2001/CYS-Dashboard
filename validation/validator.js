@@ -202,19 +202,7 @@ exports.quizValidationRules = [
             }
             return true;
         }),
-
-    // Validate categoryId (must be a valid ObjectId and reference an existing Category)
-    body('categoryId')
-        .notEmpty().withMessage('Category ID is required')
-        .isMongoId().withMessage('Category ID must be a valid ObjectId')
-        .custom(async (value) => {
-            const categoryExists = await mongoose.model('Category').findById(value);
-            if (!categoryExists) {
-                throw new Error('Category not found');
-            }
-            return true;
-        }),
-
+        
     // Validate quizTitle
     body('quizTitle')
         .notEmpty().withMessage('Quiz title is required')
@@ -334,11 +322,6 @@ exports.chapterValidationRule = [
 
 // question validation rule
 exports.questionValidationRule = [
-    // Validate categoryId
-    body('categoryId')
-        .notEmpty().withMessage('Category ID is required')
-        .isMongoId().withMessage('Invalid Category ID format'),
-
     // Validate chapterId
     body('chapterId')
         .notEmpty().withMessage('Chapter ID is required')
