@@ -1,4 +1,5 @@
 const { cloudinary } = require('../config/cloudinary');
+const fs = require('fs');
 
 // upload image to cloudinary
 exports.uploadImage = async (file, folder, width, height) => {
@@ -37,5 +38,36 @@ exports.deleteImage = async (publicId) => {
     } catch (error) {
         console.error('Error deleting image:', error);
         throw new Error('Image deletion failed');
-    }
+    };
+};
+
+// Function to upload a PDF to Cloudinary
+exports.uploadPDFToCloudinary = async (pdfPath) => {
+    try {
+        // Use a promise to handle async file upload
+        const uploadResponse = await new Promise((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+                { resource_type: 'auto', folder: "CysPdfs" },
+                (error, result) => {
+                    if (error) {
+                        reject(error);  // Reject if an error occurs
+                    } else {
+                        resolve(result);  // Resolve if the upload is successful
+                    }
+                }
+            );
+
+            // Pipe the PDF stream directly to Cloudinary
+            fs.createReadStream(pdfPath).pipe(stream);
+        });
+
+        // Return the URL and public ID of the uploaded file
+        return {
+            url: uploadResponse.secure_url,
+            publicId: uploadResponse.public_id,
+        };
+    } catch (error) {
+        console.error('Upload failed:', error);
+        throw error;  // Re-throw the error after logging it
+    };
 };

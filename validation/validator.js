@@ -202,7 +202,7 @@ exports.quizValidationRules = [
             }
             return true;
         }),
-        
+
     // Validate quizTitle
     body('quizTitle')
         .notEmpty().withMessage('Quiz title is required')
@@ -242,7 +242,7 @@ exports.quizValidationRules = [
 
     // Validate description
     body('description')
-        .notEmpty().withMessage('Description is required')
+        .optional()
         .isLength({ min: 10, max: 1000 })
         .withMessage('Description must be between 10 and 1000 characters'),
 ];
