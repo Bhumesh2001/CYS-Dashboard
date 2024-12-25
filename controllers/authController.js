@@ -11,27 +11,33 @@ exports.register = async (req, res, next) => {
     const { role = 'user', ...data } = req.body;
 
     try {
+        // Initialize imageData with default values
+        let imageData = { url: null, publicId: null };
 
-        let imageData = {};
-        if (req.files || Object.keys(req.files).length !== 0) {
+        // Validate and process the uploaded file if it exists
+        if (req.files && req.files.profileUrl && req.files.profileUrl.tempFilePath) {
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
-        };
+        }
 
+        // Create a new user document
         const user = new User({
             role,
             profileUrl: imageData.url,
             publicId: imageData.publicId,
-            ...data
+            ...data,
         });
         await user.save();
 
+        // Generate token and set cookie
         const token = generateToken({ id: user._id, role: user.role });
         storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
 
+        // Clear relevant caches
         flushCacheByKey('/api/auth/users');
         flushCacheByKey('/api/dashboard/stats');
         flushCacheByKey('/api/dashboard/new-users');
 
+        // Respond with success
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
@@ -237,21 +243,22 @@ exports.updateProfile = async (req, res, next) => {
         const userId = req.user._id;
         const updates = req.body;
 
-        // Validate that updates are not empty
-        if (!Object.keys(updates).length) {
+        // Validate non-empty updates
+        if (!Object.keys(updates).length && (!req.files || !req.files.profileUrl)) {
             return res.status(400).json({ success: false, message: 'No updates provided' });
         };
 
-        // Allowable fields for update
-        const allowedUpdates = ['fullName', 'email', 'mobile', 'profileUrl', 'className'];
-        const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.includes(key));
+        // Allowed fields for update
+        const allowedUpdates = new Set(['fullName', 'email', 'mobile', 'profileUrl', 'className']);
+        const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.has(key));
 
         if (!isUpdateValid) {
             return res.status(400).json({ success: false, message: 'Invalid update fields' });
         };
 
-        let imageData = {};
-        if (req.files || Object.keys(req.files).length !== 0) {
+        // Process profile image if provided
+        let imageData = { url: null, publicId: null };
+        if (req.files?.profileUrl?.tempFilePath) {
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
         };
 
@@ -260,24 +267,27 @@ exports.updateProfile = async (req, res, next) => {
             userId,
             {
                 $set: {
-                    profileUrl: imageData.url,
-                    publicId: imageData.publicId,
-                    ...updates
-                }
+                    ...updates,
+                    ...(imageData.url && { profileUrl: imageData.url, publicId: imageData.publicId }),
+                },
             },
             { new: true, runValidators: true }
         );
 
-        // Handle case where user is not found
         if (!updatedUser) {
             return res.status(404).json({ success: false, message: 'User not found' });
         };
 
+        // Invalidate relevant cache keys
         flushCacheByKey(req.originalUrl);
         flushCacheByKey('/api/auth/users');
 
-        // Send success response
-        res.status(200).json({ success: true, message: 'Profile updated successfully', data: updatedUser });
+        // Respond with success
+        res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully',
+            data: updatedUser,
+        });
     } catch (error) {
         next(error);
     };
