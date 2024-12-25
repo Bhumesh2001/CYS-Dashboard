@@ -15,7 +15,7 @@ exports.getUserQuizRecords = async (req, res, next) => {
         .select('-createdAt -updatedAt') // Exclude unnecessary fields from the QuizRecord
         .populate({
             path: 'quizId',
-            select: '-createdAt -updatedAt -classId -subjectId -chapterId', // Limit fields from Quiz model
+            select: '-createdAt -updatedAt -classId -subjectId -chapterId -publicId', // Limit fields from Quiz model
         })
         .populate({
             path: 'userId',
@@ -53,7 +53,7 @@ exports.getQuizRecordByUserAndQuiz = async (req, res, next) => {
         .select('-createdAt -updatedAt') // Exclude unnecessary fields from the QuizRecord
         .populate({
             path: 'quizId',
-            select: '-createdAt -updatedAt -classId -subjectId -chapterId', // Limit fields from Quiz model
+            select: '-createdAt -updatedAt -classId -subjectId -chapterId -publicId', // Limit fields from Quiz model
         })
         .populate({
             path: 'userId',

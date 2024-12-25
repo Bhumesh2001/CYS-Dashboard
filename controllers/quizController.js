@@ -81,26 +81,41 @@ exports.submitQuiz = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'No questions found for this chapterId.' });
         };
 
-        // Calculate the score by comparing user answers with correct answers
-        const score = questions.reduce((acc, question, index) => {
-            return acc + (userAnswers[index] === question.answer ? 1 : 0);
-        }, 0);
+        // Calculate the score and create the results list
+        let correctCount = 0;
+        let incorrectCount = 0;
+        const results = questions.map((question, index) => {
+            const isCorrect = userAnswers[index] === question.answer;
+            if (isCorrect) correctCount++;
+            else incorrectCount++;
+
+            return {
+                question: question.question,  // Assuming the question text is stored as 'questionText'
+                options: question.options,        // List of options
+                userAnswer: userAnswers[index],   // User's answer
+                correctAnswer: question.answer,   // Correct answer
+                isCorrect                          // Whether the answer is correct
+            };
+        });
 
         // Update or create quiz record in one query
         await QuizRecord.findOneAndUpdate(
             { userId, quizId },
             {
-                $set: { score, attemptedAt: new Date() },
+                $set: { score: correctCount, attemptedAt: new Date() },
                 $inc: { attempts: 1 },
             },
             { upsert: true, new: true }
         );
 
-        // Return response
+        // Return response with correct and incorrect count, and the question-by-question results
         res.status(200).json({
             success: true,
             message: 'Quiz submitted successfully!',
-            score,
+            score: correctCount,
+            correctAnswers: correctCount,
+            incorrectAnswers: incorrectCount,
+            results // List of question, options, user answer, correct answer, and correctness status
         });
     } catch (error) {
         next(error);
@@ -149,7 +164,6 @@ exports.getQuizByChapterId = async (req, res, next) => {
                 {
                     createdAt: 0,
                     updatedAt: 0,
-                    answer: 0,
                     chapterId: 0,
                     questionType: 0,
                     status: 0,

@@ -1,5 +1,6 @@
 const { body } = require('express-validator');
 const mongoose = require('mongoose');
+const Quiz = require('../models/Quiz');
 
 // **Rgister validation rules**
 exports.registerValidationRules = [
@@ -338,16 +339,21 @@ exports.questionValidationRule = [
     // Validate questionType
     body('questionType')
         .notEmpty().withMessage('Question type is required')
-        .isIn(['Options', 'True/False', 'Short Answer', 'Guess Word'])
+        .isIn(['Options', 'True/False', 'Short Answer', 'Guess Word', 'Fill in the Blanks'])
         .withMessage('Invalid question type'),
 
-    // Validate options (only for 'Options' type questions)
+    // Validate options (for 'Options' question type)
     body('options')
         .if(body('questionType').equals('Options'))
         .notEmpty().withMessage('Options are required for "Options" question type')
-        .isArray({ min: 2, max: 10 }).withMessage('Options must be an array with 2-10 items')
+        .isObject().withMessage('Options must be an object with keys a, b, c, d')
         .custom((options) => {
-            if (options.some(option => typeof option !== 'string' || option.trim() === '')) {
+            const validKeys = ['a', 'b', 'c', 'd'];
+            const keys = Object.keys(options);
+            if (!keys.every(key => validKeys.includes(key))) {
+                throw new Error('Options must contain keys: a, b, c, d');
+            }
+            if (!keys.every(key => typeof options[key] === 'string' && options[key].trim() !== '')) {
                 throw new Error('Each option must be a non-empty string');
             }
             return true;
@@ -358,8 +364,17 @@ exports.questionValidationRule = [
         .notEmpty().withMessage('Answer is required')
         .isString().withMessage('Answer must be a string')
         .custom((answer, { req }) => {
-            if (req.body.questionType === 'Options' && !req.body.options.includes(answer)) {
-                throw new Error('Answer must be one of the provided options');
+            if (req.body.questionType === 'Options' && !Object.keys(req.body.options).includes(answer)) {
+                throw new Error('Answer must be one of the keys in the options object (a, b, c, d)');
+            }
+            if (req.body.questionType === 'True/False' && !['True', 'False'].includes(answer)) {
+                throw new Error('Answer must be either "True" or "False" for True/False question type');
+            }
+            if (req.body.questionType === 'Guess Word' && typeof answer !== 'string') {
+                throw new Error('Answer must be a string for Guess Word question type');
+            }
+            if (req.body.questionType === 'Short Answer' && (typeof answer !== 'string' || answer.trim() === '')) {
+                throw new Error('Answer must be a non-empty string for Short Answer question type');
             }
             return true;
         }),
@@ -439,4 +454,35 @@ exports.reportValidationRule = [
         .trim()
         .isLength({ min: 10 })
         .withMessage('Reason must be a string with at least 10 characters'),
+];
+
+// submit quiz validation 
+exports.validateQuizSubmissionRule = [
+    // Validate userId - required and should be a valid MongoDB ObjectId
+    body('userId')
+        .notEmpty().withMessage('userId is required')
+        .isMongoId().withMessage('Invalid userId format'),
+
+    // Validate quizId - required and should be a valid MongoDB ObjectId
+    body('quizId')
+        .notEmpty().withMessage('quizId is required')
+        .isMongoId().withMessage('Invalid quizId format'),
+
+    // Validate userAnswers - required, should be an array, and length should match the number of questions
+    body('userAnswers')
+        .notEmpty().withMessage('userAnswers are required')
+        .isArray().withMessage('userAnswers must be an array')
+        .custom(async (value, { req }) => {
+            // Fetch quiz to get the number of questions
+            const quiz = await Quiz.findById(req.body.quizId);
+            if (!quiz) {
+                throw new Error('Quiz not found');
+            }
+
+            const questionCount = quiz.questions.length;
+            if (value.length !== questionCount) {
+                throw new Error(`userAnswers should contain exactly ${questionCount} answers`);
+            }
+            return true;
+        }).withMessage('Number of user answers should match the number of questions in the quiz')
 ];

@@ -28,6 +28,7 @@ router.post(
     '/quiz/submit-quiz',
     authenticate,
     validateObjectIds(['quizId', 'userId']),
+    validateFields(quizValidation.validateQuizSubmissionRule),
     quizController.submitQuiz
 );
 

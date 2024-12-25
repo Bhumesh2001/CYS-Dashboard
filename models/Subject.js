@@ -107,9 +107,7 @@ const subjectSchema = new mongoose.Schema({
  * 
  * Creates indexes for faster queries on name, status, and classId.
  */
-subjectSchema.index({ name: 1 }, { unique: true });
-subjectSchema.index({ status: 1 });
-subjectSchema.index({ classId: 1 });  // Added index on classId for optimized queries
+subjectSchema.index({ name: 1, classId: 1 }, { unique: true });
 subjectSchema.index({ publicId: 1 }, { unique: true });
 
 /**

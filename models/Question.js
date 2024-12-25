@@ -32,31 +32,33 @@ const questionSchema = new mongoose.Schema({
     /**
      * Options for the quiz question
      * 
-     * The multiple-choice options for the question.
+     * The multiple-choice options for the question, stored as key-value pairs.
      */
     options: {
-        type: [{ type: String, trim: true }],
+        type: Map, // Using Map to store key-value pairs
+        of: String,
         required: [true, 'Options are required'],
         validate: {
             validator: function (v) {
-                return v.length === 4; // Ensure exactly 4 options
+                return v.size === 4 && ['a', 'b', 'c', 'd'].every(key => v.has(key));
             },
-            message: 'There must be exactly 4 options.',
+            message: 'Options must have exactly 4 keys: a, b, c, and d.',
         },
     },
     /**
      * Correct answer for the quiz
      * 
-     * The correct answer for the quiz question.
+     * The key of the correct answer (e.g., 'a', 'b', 'c', or 'd').
      */
     answer: {
         type: String,
         required: [true, 'Answer is required'],
+        enum: ['a', 'b', 'c', 'd'], // Answer must be one of the keys
         validate: {
             validator: function (v) {
-                return this.options.includes(v); // Ensure answer is one of the options
+                return this.options && this.options.has(v); // Ensure answer key exists in options
             },
-            message: 'Answer must match one of the provided options.',
+            message: 'Answer must match one of the option keys (a, b, c, d).',
         },
     },
     /**
