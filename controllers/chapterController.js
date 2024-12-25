@@ -64,6 +64,7 @@ exports.getChaptersBySubjectId = async (req, res, next) => {
         // Early return if no chapters found
         if (!chapters.length) return res.status(404).json({
             success: false,
+            status: 404,
             message: 'No chapters found for this subject'
         });
 

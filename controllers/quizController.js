@@ -153,6 +153,7 @@ exports.getQuizByChapterId = async (req, res, next) => {
         if (!quiz) {
             return res.status(404).json({
                 success: false,
+                status: 404,
                 message: 'No quiz found for this chapter',
             });
         };

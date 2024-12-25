@@ -63,7 +63,11 @@ exports.login = async (req, res, next) => {
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         const isMatch = await user.comparePassword(password, user.password);
-        if (!isMatch) return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        if (!isMatch) return res.status(401).json({
+            success: false,
+            status: 401,
+            message: 'Invalid credentials'
+        });
 
         const token = generateToken({ id: user._id, role: user.role });
         storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
@@ -94,7 +98,7 @@ exports.forgotPassword = async (req, res, next) => {
         // Check if user exists
         const user = await User.findOne({ email }, { email: 1, otp: 1, otpExpires: 1 });
 
-        if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+        if (!user) return res.status(404).json({ success: false, status: 404, message: 'User not found.' });
 
         // Generate OTP and expiration
         const otp = generateOTP();
@@ -124,7 +128,11 @@ exports.verifyOtp = async (req, res, next) => {
             { email: 1, otp: 1, otpExpires: 1 }
         );
 
-        if (!user) return res.status(400).json({ success: false, message: "Invalid or expired OTP." });
+        if (!user) return res.status(400).json({ 
+            success: false, 
+            status: 400, 
+            message: "Invalid or expired OTP." 
+        });
         // Mark OTP as verified
         user.otpVerified = true;
         await user.save();
@@ -141,12 +149,13 @@ exports.resetPassword = async (req, res, next) => {
 
     try {
         const user = await User.findOne({ email }, { createdAt: 0, updatedAt: 0, __v: 0 });
-        if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+        if (!user) return res.status(404).json({ success: false, status: 404, message: 'User not found.' });
 
         // Check if OTP verification is completed
         if (!user.otpVerified) {
             return res.status(400).json({
                 success: false,
+                status: 400,
                 message: 'OTP verification is required!',
             });
         };
@@ -172,6 +181,7 @@ exports.changePassword = async (req, res, next) => {
     if (!oldPassword || !newPassword) {
         return res.status(400).json({
             success: false,
+            status: 400,
             message: 'Old and new passwords are required'
         });
     };
@@ -182,6 +192,7 @@ exports.changePassword = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
+                status: 404,
                 message: 'User not found'
             });
         };
@@ -191,6 +202,7 @@ exports.changePassword = async (req, res, next) => {
         if (!isMatch) {
             return res.status(400).json({
                 success: false,
+                status: 400,
                 message: 'Old password is incorrect'
             });
         };
@@ -205,7 +217,6 @@ exports.changePassword = async (req, res, next) => {
             message: 'Password updated successfully'
         });
     } catch (error) {
-        console.error(error);
         next(error);
     };
 };
@@ -218,7 +229,7 @@ exports.getProfile = async (req, res, next) => {
             .populate('classId', 'name'); // Populate `classId` with only `name`
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'User not found' });
         };
 
         const userData = {
@@ -233,7 +244,7 @@ exports.getProfile = async (req, res, next) => {
             data: userData,
         });
     } catch (error) {
-        next(error); // Pass the error to the global error handler
+        next(error);
     };
 };
 
@@ -253,7 +264,7 @@ exports.updateProfile = async (req, res, next) => {
         const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.has(key));
 
         if (!isUpdateValid) {
-            return res.status(400).json({ success: false, message: 'Invalid update fields' });
+            return res.status(400).json({ success: false, status: 400, message: 'Invalid update fields' });
         };
 
         // Process profile image if provided
@@ -275,7 +286,7 @@ exports.updateProfile = async (req, res, next) => {
         );
 
         if (!updatedUser) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'User not found' });
         };
 
         // Invalidate relevant cache keys
@@ -303,6 +314,7 @@ exports.logout = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({
                 success: false,
+                status: 401,
                 message: 'No token provided or invalid format.'
             });
         };

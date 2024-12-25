@@ -25,7 +25,11 @@ exports.getUserQuizRecords = async (req, res, next) => {
 
         // Return a message if no records are found
         if (quizRecords.length === 0) {
-            return res.status(404).json({ success: false, message: 'No quiz records found for this user' });
+            return res.status(404).json({ 
+                success: false, 
+                status: 404,
+                message: 'No quiz records found for this user' 
+            });
         };
 
         // Return success with quiz records
@@ -64,6 +68,7 @@ exports.getQuizRecordByUserAndQuiz = async (req, res, next) => {
         if (!quizRecord) {
             return res.status(404).json({
                 success: false,
+                status: 404,
                 message: 'Quiz record not found for the given user and quiz'
             });
         };
@@ -93,6 +98,7 @@ exports.updateQuizRecord = async (req, res, next) => {
         if (!updatedRecord) {
             return res.status(404).json({
                 success: false,
+                status: 404,
                 message: 'Quiz record not found for the given user and quiz'
             });
         };

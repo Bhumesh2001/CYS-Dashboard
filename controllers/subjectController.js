@@ -71,6 +71,7 @@ exports.getSubjectByClassId = async (req, res, next) => {
         // Early return if no subjects found
         if (!subjects.length) return res.status(404).json({
             success: false,
+            status: 404,
             message: 'No subjects found for this class'
         });
 

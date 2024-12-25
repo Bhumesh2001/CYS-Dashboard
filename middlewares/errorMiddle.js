@@ -12,7 +12,6 @@ exports.errorHandler = (err, req, res, next) => {
                 success: false,
                 status: 400,
                 message: `Validation error: ${errors.join(', ')}`,
-                stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
             });
         case 'CastError':
             // Mongoose invalid ObjectId
@@ -20,7 +19,6 @@ exports.errorHandler = (err, req, res, next) => {
                 success: false,
                 status: 400,
                 message: `Invalid ${err.path}: ${err.value}`,
-                stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
             });
         case 'SyntaxError':
             if (err.type === 'entity.parse.failed') {
@@ -29,7 +27,6 @@ exports.errorHandler = (err, req, res, next) => {
                     success: false,
                     status: 400,
                     message: 'Invalid JSON syntax in request body.',
-                    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
                 });
             }
             break;
@@ -38,14 +35,12 @@ exports.errorHandler = (err, req, res, next) => {
                 success: false,
                 status: 401,
                 message: 'Token has expired. Please log in again.',
-                stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
             });
         case 'JsonWebTokenError':
             return res.status(400).json({
                 success: false,
                 status: 400,
                 message: 'Invalid token. Please log in again.',
-                stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
             });
         default:
             if (err.code && err.code === 11000) {
@@ -55,7 +50,6 @@ exports.errorHandler = (err, req, res, next) => {
                     success: false,
                     status: 400,
                     message: `Duplicate field value: '${field}' already exists.`,
-                    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
                 });
             } else if (err.type === 'entity.too.large') {
                 // Payload too large error
@@ -63,15 +57,13 @@ exports.errorHandler = (err, req, res, next) => {
                     success: false,
                     status: 413,
                     message: 'Payload size exceeds the allowed limit.',
-                    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
                 });
             } else {
                 return res.status(statusCode).json({
                     success: false,
                     status: statusCode,
                     message,
-                    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
                 });
-            }
+            };
     };
 };
