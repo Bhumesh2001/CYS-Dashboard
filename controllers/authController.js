@@ -382,8 +382,10 @@ exports.getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find(
             { role: 'user' },
-            { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0 }
-        ).populate('classId', 'name').lean();
+            { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0, publicId: 0 }
+        ).populate('classId', 'name')
+            .sort({ createdAt: -1 })
+            .lean();
 
         res.status(200).json({
             success: true,

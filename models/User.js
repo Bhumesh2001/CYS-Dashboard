@@ -105,7 +105,7 @@ const userSchema = new mongoose.Schema({
 // **Indexes**
 userSchema.index({ email: 1 }, { unique: true }); // Email indexing for uniqueness and faster lookups
 userSchema.index({ role: 1 }); // Role-based querying
-userSchema.index({ mobile: 1 }, { unique: true }); // Mobile number indexing for quick lookups
+userSchema.index({ mobile: 1 }); // Mobile number indexing for quick lookups
 userSchema.index({ classId: 1, status: 1 });
 
 // **Pre-save middleware to hash password**
