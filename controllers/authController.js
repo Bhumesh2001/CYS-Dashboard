@@ -11,7 +11,18 @@ exports.register = async (req, res, next) => {
     const { role = 'user', ...data } = req.body;
 
     try {
-        const user = new User({ role, ...data });
+
+        let imageData = {};
+        if (req.files || Object.keys(req.files).length !== 0) {
+            imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
+        };
+
+        const user = new User({
+            role,
+            profileUrl: imageData.url,
+            publicId: imageData.publicId,
+            ...data
+        });
         await user.save();
 
         const token = generateToken({ id: user._id, role: user.role });
@@ -197,7 +208,7 @@ exports.changePassword = async (req, res, next) => {
 exports.getProfile = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id)
-            .select('-password -createdAt -updatedAt -__v -otpVerified -otp -otpExpires')
+            .select('-password -createdAt -updatedAt -__v -otpVerified -otp -otpExpires -publicId')
             .populate('classId', 'name'); // Populate `classId` with only `name`
 
         if (!user) {
@@ -210,7 +221,7 @@ exports.getProfile = async (req, res, next) => {
         };
         delete userData.classId; // Remove the original `classId` field
 
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
             message: 'Profile fetched successfully!',
             data: userData,
@@ -236,13 +247,24 @@ exports.updateProfile = async (req, res, next) => {
         const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.includes(key));
 
         if (!isUpdateValid) {
-            return res.status(400).json({ message: 'Invalid update fields' });
+            return res.status(400).json({ success: false, message: 'Invalid update fields' });
+        };
+
+        let imageData = {};
+        if (req.files || Object.keys(req.files).length !== 0) {
+            imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
         };
 
         // Find and update the user
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            { $set: updates },
+            {
+                $set: {
+                    profileUrl: imageData.url,
+                    publicId: imageData.publicId,
+                    ...updates
+                }
+            },
             { new: true, runValidators: true }
         );
 

@@ -63,7 +63,7 @@ exports.registerValidationRules = [
     body('profileUrl')
         .optional()
         .custom((value, { req }) => {
-            // Check if there's no file uploaded
+            // body if there's no file uploaded
             if (!req.files || !req.files.imageUrl) {
                 throw new Error('Image file is required');
             };
@@ -72,7 +72,7 @@ exports.registerValidationRules = [
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // Check the file type
+            // body the file type
             if (!allowedTypes.includes(imageFile.mimetype)) {
                 throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
             };
@@ -485,4 +485,146 @@ exports.validateQuizSubmissionRule = [
             }
             return true;
         }).withMessage('Number of user answers should match the number of questions in the quiz')
+];
+
+// admin general setting validation
+exports.validateGeneralSettingsRule = [
+    body('siteName')
+        .isLength({ min: 3, max: 100 })
+        .withMessage('Site Name must be 3-100 characters long.'),
+
+    body('siteLogo')
+        .isURL()
+        .withMessage('Site Logo must be a valid URL.'),
+];
+
+// admin smtp setting rule
+exports.validateSmtpSettingsRule = [
+    body('smtpType')
+        .isIn(['Gmail', 'Outlook', 'Custom'])
+        .withMessage('Invalid SMTP Type.'),
+
+    body('smtpHost')
+        .notEmpty()
+        .withMessage('SMTP Host is required.'),
+
+    body('smtpEmail')
+        .isEmail()
+        .withMessage('Invalid SMTP Email.'),
+
+    body('smtpPassword')
+        .isLength({ min: 8 })
+        .withMessage('SMTP Password must be at least 8 characters long.'),
+
+    body('smtpSecure')
+        .isBoolean()
+        .withMessage('SMTP Secure must be true or false.'),
+
+    body('smtpPort')
+        .isInt({ min: 1, max: 65535 })
+        .withMessage('SMTP Port must be between 1 and 65535.'),
+];
+
+//app settting validation
+exports.validateGeneralRule = [
+    body('siteName')
+        .notEmpty()
+        .withMessage('Site Name is required.')
+        .isString()
+        .withMessage('Site Name must be a string.'),
+    body('siteLogo')
+        .notEmpty()
+        .withMessage('Site Logo is required.')
+        .isURL()
+        .withMessage('Site Logo must be a valid URL.'),
+];
+
+// validte app setting
+exports.validateAppSettingRule = [
+    body('rtl')
+        .isBoolean()
+        .withMessage('RTL must be a boolean value.')
+        .notEmpty()
+        .withMessage('RTL is required.'),
+    body('appMaintenance')
+        .isBoolean()
+        .withMessage('App Maintenance must be a boolean value.')
+        .notEmpty()
+        .withMessage('App Maintenance is required.'),
+    body('googleLogin')
+        .isBoolean()
+        .withMessage('Google Login must be a boolean value.')
+        .notEmpty()
+        .withMessage('Google Login is required.'),
+    body('firstOpenLogin')
+        .isBoolean()
+        .withMessage('First Open Login must be a boolean value.')
+        .notEmpty()
+        .withMessage('First Open Login is required.'),
+    body('screenshotBlock')
+        .isBoolean()
+        .withMessage('Screenshot Block must be a boolean value.')
+        .notEmpty()
+        .withMessage('Screenshot Block is required.'),
+    body('vpnBlock')
+        .isBoolean()
+        .withMessage('VPN Block must be a boolean value.')
+        .notEmpty()
+        .withMessage('VPN Block is required.'),
+];
+
+// validate privacy policy
+exports.validatePrivacyPolicyRule = [
+    body('privacyPolicy')
+        .notEmpty()
+        .withMessage('Privacy Policy is required.')
+        .isString()
+        .withMessage('Privacy Policy must be a string.'),
+];
+
+// validate temrs 
+exports.validateTermsRule = [
+    body('termsAndConditions')
+        .notEmpty()
+        .withMessage('Terms and Conditions are required.')
+        .isString()
+        .withMessage('Terms and Conditions must be a string.'),
+];
+
+// validate notifiction
+exports.validateNotificationRule = [
+    body('oneSignalAppId')
+        .notEmpty()
+        .withMessage('OneSignal App ID is required.')
+        .isString()
+        .withMessage('OneSignal App ID must be a string.'),
+    body('oneSignalAppKey')
+        .notEmpty()
+        .withMessage('OneSignal App Key is required.')
+        .isString()
+        .withMessage('OneSignal App Key must be a string.'),
+];
+
+// validate App update 
+exports.validateAppUpdateRule = [
+    body('onOff')
+        .isBoolean()
+        .withMessage('On/Off must be a boolean value.')
+        .notEmpty()
+        .withMessage('On/Off is required.'),
+    body('newAppVersion')
+        .notEmpty()
+        .withMessage('New App Version is required.')
+        .isString()
+        .withMessage('New App Version must be a string.'),
+    body('description')
+        .notEmpty()
+        .withMessage('Description is required.')
+        .isString()
+        .withMessage('Description must be a string.'),
+    body('appLink')
+        .notEmpty()
+        .withMessage('App Link is required.')
+        .isURL()
+        .withMessage('App Link must be a valid URL.'),
 ];
