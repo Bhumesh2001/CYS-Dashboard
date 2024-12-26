@@ -503,15 +503,18 @@ exports.validateGeneralSettingsRule = [
         .isLength({ min: 3, max: 100 })
         .withMessage('Site Name must be 3-100 characters long.'),
 
-    body('siteLogo')
-        .isURL()
-        .withMessage('Site Logo must be a valid URL.'),
+    (req, res, next) => {
+        if (!req.files || !req.files.siteLogo) {
+            return res.status(400).json({ success: false, message: 'Site Logo file is required.' });
+        }
+        next();
+    },
 ];
 
 // admin smtp setting rule
 exports.validateSmtpSettingsRule = [
     body('smtpType')
-        .isIn(['Gmail', 'Outlook', 'Custom'])
+        .isIn(['Gmail', 'Outlook', 'Custom', "SMTP"])
         .withMessage('Invalid SMTP Type.'),
 
     body('smtpHost')
@@ -536,17 +539,50 @@ exports.validateSmtpSettingsRule = [
 ];
 
 //app settting validation
-exports.validateGeneralRule = [
-    body('siteName')
+exports.validateAppGeneralSettingsRule = [
+    // Validate email - required and should be a valid email address
+    body('email')
         .notEmpty()
-        .withMessage('Site Name is required.')
+        .withMessage('Email is required.')
+        .isEmail()
+        .withMessage('Invalid email format.'),
+
+    // Validate author - required and should be a string
+    body('author')
+        .notEmpty()
+        .withMessage('Author is required.')
         .isString()
-        .withMessage('Site Name must be a string.'),
-    body('siteLogo')
+        .withMessage('Author must be a string.'),
+
+    // Validate contact - required and should be a valid phone number (you can use a regex for validation)
+    body('contact')
         .notEmpty()
-        .withMessage('Site Logo is required.')
+        .withMessage('Contact is required.')
+        .matches(/^\+?[1-9]\d{1,14}$/)
+        .withMessage('Invalid contact number format.'),  // Matches international phone numbers
+    
+    // Validate website - required and should be a valid URL
+    body('website')
+        .notEmpty()
+        .withMessage('Website is required.')
         .isURL()
-        .withMessage('Site Logo must be a valid URL.'),
+        .withMessage('Invalid website URL.'),
+
+    // Validate developerBy - required and should be a string
+    body('developerBy')
+        .notEmpty()
+        .withMessage('Developer By is required.')
+        .isString()
+        .withMessage('Developer By must be a string.'),
+
+    // Validate description - required and should be a string
+    body('description')
+        .notEmpty()
+        .withMessage('Description is required.')
+        .isString()
+        .withMessage('Description must be a string.')
+        .isLength({ min: 10, max: 500 })
+        .withMessage('Description should be between 10 and 500 characters long.'),
 ];
 
 // validte app setting
@@ -585,16 +621,16 @@ exports.validateAppSettingRule = [
 
 // validate privacy policy
 exports.validatePrivacyPolicyRule = [
-    body('privacyPolicy')
+    body('policy')
         .notEmpty()
-        .withMessage('Privacy Policy is required.')
+        .withMessage('Policy is required.')
         .isString()
-        .withMessage('Privacy Policy must be a string.'),
+        .withMessage('Policy must be a string.'),
 ];
 
 // validate temrs 
 exports.validateTermsRule = [
-    body('termsAndConditions')
+    body('terms')
         .notEmpty()
         .withMessage('Terms and Conditions are required.')
         .isString()
@@ -627,7 +663,7 @@ exports.validateAppUpdateRule = [
         .withMessage('New App Version is required.')
         .isString()
         .withMessage('New App Version must be a string.'),
-    body('description')
+    body('description_')
         .notEmpty()
         .withMessage('Description is required.')
         .isString()

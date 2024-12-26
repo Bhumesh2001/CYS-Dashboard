@@ -96,7 +96,7 @@ const AppUpdateSchema = new mongoose.Schema({
         required: [true, 'New App Version is required'],
         trim: true,
     },
-    description: {
+    description_: {
         type: String,
         maxlength: [500, 'Update description cannot exceed 500 characters'],
         trim: true,

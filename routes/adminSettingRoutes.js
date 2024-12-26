@@ -24,7 +24,7 @@ router.route('/general')
 // **SMTP Settings Routes**
 
 // Create or Update SMTP or Get SMTP Settings
-router.route('/smpt')
+router.route('/smtp')
     .post(
         authenticate,
         authorize(['admin']),

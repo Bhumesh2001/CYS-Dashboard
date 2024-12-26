@@ -15,14 +15,14 @@ router
     .post(
         authenticate,
         authorize(['admin']),
-        validateFields(appSettingValidation.validateGeneralRule),
+        validateFields(appSettingValidation.validateAppGeneralSettingsRule),
         appSettingController.createOrUpdateGeneral
     )
     .get(authenticate, authorize(['admin']), appSettingController.getGeneral);
 
 // App Settings
 router
-    .route('/app-settings')
+    .route('/app')
     .post(
         authenticate,
         authorize(['admin']),

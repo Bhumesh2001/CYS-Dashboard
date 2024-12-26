@@ -83,7 +83,13 @@ const generalSettingsSchema = new mongoose.Schema({
             },
             message: 'Site Logo must be a valid URL'
         }
-    }
+    },
+    publicId: {
+        type: String,
+        required: [true, 'Public ID is required'], // Field is mandatory
+        unique: true, // Ensures no duplicate public_id
+        trim: true, // Removes any leading/trailing spaces
+    },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt
     collection: 'generalSettings', // Explicit collection name

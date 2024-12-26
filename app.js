@@ -30,11 +30,13 @@ const limiter = rateLimit({
 });
 app.use(limiter); // Rate Limiting to prevent abuse
 app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded form data
-app.use(express.json()); // Use JSON parsing middleware
+app.use(express.json());
 app.use(fileUpload({
     useTempFiles: true,
     tempFileDir: '/tmp/',
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+    abortOnLimit: true,
+    responseOnLimit: 'File size limit exceeded!',
 })); // handle file data
 const corsOptions = {
     origin: process.env.CLIENT_URL || 'http://127.0.0.1:5500',
