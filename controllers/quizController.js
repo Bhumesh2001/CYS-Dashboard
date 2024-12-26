@@ -53,7 +53,7 @@ exports.submitQuiz = async (req, res, next) => {
         // Convert quizId to ObjectId if needed
         const quizObjectId = ObjectId.isValid(quizId) ? new ObjectId(quizId) : null;
         if (!quizObjectId) {
-            return res.status(400).json({ success: false, message: 'Invalid quizId format.' });
+            return res.status(400).json({ success: false, status: 400, message: 'Invalid quizId format.' });
         };
 
         // Fetch quiz and related questions using aggregation
@@ -71,14 +71,18 @@ exports.submitQuiz = async (req, res, next) => {
 
         // Check if quiz exists
         if (!quizData.length) {
-            return res.status(404).json({ success: false, message: 'Quiz not found.' });
+            return res.status(404).json({ success: false, status: 404, message: 'Quiz not found.' });
         };
 
         const quiz = quizData[0];
         const { questions } = quiz;
 
         if (!questions.length) {
-            return res.status(404).json({ success: false, message: 'No questions found for this chapterId.' });
+            return res.status(404).json({
+                success: false,
+                status: 404,
+                message: 'No questions found for this chapterId.'
+            });
         };
 
         // Calculate the score and create the results list
@@ -171,8 +175,10 @@ exports.getQuizByChapterId = async (req, res, next) => {
                 } // Exclude unwanted fields
             ).lean();
 
+            quiz.totalQuestions = questions.length ? questions.length : 0;
             quiz.questions = questions.length ? questions : []; // Add questions to the quiz object
         } else {
+            quiz.totalQuestions = 0;
             quiz.questions = []; // Handle case where chapterId is not available
         };
 

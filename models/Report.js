@@ -27,7 +27,7 @@ const reportSchema = new mongoose.Schema({
     reportedModel: {
         type: String,
         required: [true, 'Reported model is required'],
-        enum: ['Question', 'User', 'Category'], // Add other models if needed
+        enum: ['Question', 'User', 'Chapter'], // Add other models if needed
     },
 
     /**

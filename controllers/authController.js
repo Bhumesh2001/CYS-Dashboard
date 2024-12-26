@@ -36,6 +36,7 @@ exports.register = async (req, res, next) => {
         flushCacheByKey('/api/auth/users');
         flushCacheByKey('/api/dashboard/stats');
         flushCacheByKey('/api/dashboard/new-users');
+        flushCacheByKey('/api/auth/profile');
 
         // Respond with success
         res.status(201).json({
@@ -260,7 +261,7 @@ exports.updateProfile = async (req, res, next) => {
         };
 
         // Allowed fields for update
-        const allowedUpdates = new Set(['fullName', 'email', 'mobile', 'profileUrl', 'className']);
+        const allowedUpdates = new Set(['fullName', 'email', 'mobile', 'profileUrl', 'classId']);
         const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.has(key));
 
         if (!isUpdateValid) {

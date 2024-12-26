@@ -1,6 +1,7 @@
 const { body } = require('express-validator');
 const mongoose = require('mongoose');
 const Quiz = require('../models/Quiz');
+const Question = require('../models/Question'); // Assuming Question model is defined here
 
 // **Rgister validation rules**
 exports.registerValidationRules = [
@@ -63,25 +64,18 @@ exports.registerValidationRules = [
     body('profileUrl')
         .optional()
         .custom((value, { req }) => {
-            // body if there's no file uploaded
-            if (!req.files || !req.files.imageUrl) {
-                throw new Error('Image file is required');
-            };
+            if (req.file) { // Check if file exists
+                const imageFile = req.file;
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            const imageFile = req.files.imageUrl;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
-
-            // body the file type
-            if (!allowedTypes.includes(imageFile.mimetype)) {
-                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
-            };
-
-            // Check the file size
-            if (imageFile.size > maxSize) {
-                throw new Error('File is too large. Maximum allowed size is 50MB.');
-            };
-
+                if (!allowedTypes.includes(imageFile.mimetype)) {
+                    throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+                }
+                if (imageFile.size > maxSize) {
+                    throw new Error('File is too large. Maximum allowed size is 50MB.');
+                }
+            }
             return true;
         }),
 
@@ -468,23 +462,39 @@ exports.validateQuizSubmissionRule = [
         .notEmpty().withMessage('quizId is required')
         .isMongoId().withMessage('Invalid quizId format'),
 
-    // Validate userAnswers - required, should be an array, and length should match the number of questions
+    // Validate userAnswers
     body('userAnswers')
         .notEmpty().withMessage('userAnswers are required')
         .isArray().withMessage('userAnswers must be an array')
         .custom(async (value, { req }) => {
-            // Fetch quiz to get the number of questions
+            // Step 1: Fetch the quiz using quizId
             const quiz = await Quiz.findById(req.body.quizId);
             if (!quiz) {
                 throw new Error('Quiz not found');
             }
 
-            const questionCount = quiz.questions.length;
-            if (value.length !== questionCount) {
-                throw new Error(`userAnswers should contain exactly ${questionCount} answers`);
+            // Step 2: Ensure the quiz has a valid chapterId
+            const chapterId = quiz.chapterId; // Assuming `chapterId` exists in the Quiz model
+            if (!chapterId) {
+                throw new Error('Quiz does not have a valid chapterId');
             }
+
+            // Step 3: Fetch all questions for the chapter
+            const questions = await Question.find({ chapterId });
+            if (!questions || questions.length === 0) {
+                throw new Error('No questions found for the specified chapter');
+            }
+
+            // Step 4: Validate the length of userAnswers
+            const questionCount = questions.length;
+            if (value.length !== questionCount) {
+                throw new Error(
+                    `userAnswers should contain exactly ${questionCount} answers. You provided ${value.length}.`
+                );
+            }
+
             return true;
-        }).withMessage('Number of user answers should match the number of questions in the quiz')
+        }),
 ];
 
 // admin general setting validation
