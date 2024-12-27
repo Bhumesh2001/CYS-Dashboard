@@ -139,12 +139,12 @@ exports.getPrivacyPolicy = async (req, res, next) => {
 
 // Create or Update General Settings
 exports.createOrUpdateGeneral = async (req, res, next) => {
-    const { email, author, contact, website, developerBy, description } = req.body;
+    const { email, author, contact, website, developerBy, _description } = req.body;
 
     try {
         const general = await General.findOneAndUpdate(
             {},
-            { email, author, contact, website, developerBy, description },
+            { email, author, contact, website, developerBy, _description },
             { upsert: true, new: true }
         );
         res.status(200).json({ success: true, message: 'General settings updated successfully', data: general });

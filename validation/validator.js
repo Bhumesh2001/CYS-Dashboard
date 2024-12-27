@@ -530,8 +530,8 @@ exports.validateSmtpSettingsRule = [
         .withMessage('SMTP Password must be at least 8 characters long.'),
 
     body('smtpSecure')
-        .isBoolean()
-        .withMessage('SMTP Secure must be true or false.'),
+        .notEmpty()
+        .withMessage('SMTP Secure is required!'),
 
     body('smtpPort')
         .isInt({ min: 1, max: 65535 })
@@ -576,7 +576,7 @@ exports.validateAppGeneralSettingsRule = [
         .withMessage('Developer By must be a string.'),
 
     // Validate description - required and should be a string
-    body('description')
+    body('_description')
         .notEmpty()
         .withMessage('Description is required.')
         .isString()

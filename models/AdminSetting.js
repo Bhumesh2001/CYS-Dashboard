@@ -23,7 +23,6 @@ const smtpSettingsSchema = new mongoose.Schema({
             },
             message: 'Invalid SMTP Email format'
         },
-        unique: true
     },
     smtpPassword: {
         type: String,
@@ -31,9 +30,9 @@ const smtpSettingsSchema = new mongoose.Schema({
         minlength: [8, 'SMTP Password must be at least 8 characters long']
     },
     smtpSecure: {
-        type: Boolean,
+        type: String,
         required: [true, 'SMTP Secure is required'],
-        default: false
+        enum: ['TLS', 'SSL'],
     },
     smtpPort: {
         type: Number,

@@ -39,7 +39,7 @@ const GeneralSchema = new mongoose.Schema({
         required: [true, 'Developer information is required'],
         trim: true,
     },
-    description: {
+    _description: {
         type: String,
         maxlength: [500, 'Description cannot exceed 500 characters'],
         trim: true,
