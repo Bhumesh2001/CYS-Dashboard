@@ -103,3 +103,6 @@ if (cluster.isMaster) {
         console.log(`Server running on port ${PORT} (PID: ${process.pid})`);
     });
 };
+
+// Export the app for use in other modules
+module.exports = app;
