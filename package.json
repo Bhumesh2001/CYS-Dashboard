@@ -7,6 +7,9 @@
     "start": "cross-env NODE_NO_WARNINGS=1 node app.js",
     "dev": "cross-env NODE_NO_WARNINGS=1 nodemon app.js"
   },
+  "engines": {
+    "node": "21.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
