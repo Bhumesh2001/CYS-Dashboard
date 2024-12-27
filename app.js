@@ -40,8 +40,6 @@ app.use(fileUpload({
 })); // handle file data
 const corsOptions = {
     origin: process.env.CLIENT_URL || 'http://127.0.0.1:5500',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // Allow these HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
     credentials: true,
 };
 app.use(cors(corsOptions)); // CORS
