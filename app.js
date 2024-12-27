@@ -43,7 +43,6 @@ const corsOptions = {
     credentials: true,
 };
 app.use(cors(corsOptions)); // CORS
-app.options('*', cors()); // Handle preflight requests
 connectDB(); // Connect to MongoDB
 
 // welcome message
