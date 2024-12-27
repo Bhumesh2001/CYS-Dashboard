@@ -8,24 +8,24 @@ exports.errorHandler = (err, req, res, next) => {
         case 'ValidationError':
             // Mongoose validation error
             const errors = Object.values(err.errors).map((el) => el.message);
-            return res.status(400).json({
+            return res.status(422).json({
                 success: false,
-                status: 400,
+                status: 422,
                 message: `Validation error: ${errors.join(', ')}`,
             });
         case 'CastError':
             // Mongoose invalid ObjectId
-            return res.status(400).json({
+            return res.status(422).json({
                 success: false,
-                status: 400,
+                status: 422,
                 message: `Invalid ${err.path}: ${err.value}`,
             });
         case 'SyntaxError':
             if (err.type === 'entity.parse.failed') {
                 // JSON syntax error in the request body
-                return res.status(400).json({
+                return res.status(422).json({
                     success: false,
-                    status: 400,
+                    status: 422,
                     message: 'Invalid JSON syntax in request body.',
                 });
             }
@@ -37,18 +37,18 @@ exports.errorHandler = (err, req, res, next) => {
                 message: 'Token has expired. Please log in again.',
             });
         case 'JsonWebTokenError':
-            return res.status(400).json({
+            return res.status(422).json({
                 success: false,
-                status: 400,
+                status: 422,
                 message: 'Invalid token. Please log in again.',
             });
         default:
             if (err.code && err.code === 11000) {
                 // Mongoose duplicate key error
                 const field = Object.keys(err.keyValue).join(', ');
-                return res.status(400).json({
+                return res.status(422).json({
                     success: false,
-                    status: 400,
+                    status: 422,
                     message: `Duplicate field value: '${field}' already exists.`,
                 });
             } else if (err.type === 'entity.too.large') {

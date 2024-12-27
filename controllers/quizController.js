@@ -9,7 +9,7 @@ const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 exports.createQuiz = async (req, res, next) => {
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(400).json({ success: false, messeage: 'No files were uploaded.' });
+            return res.status(422).json({ success: false, messeage: 'No files were uploaded.' });
         };
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
         const quiz = new Quiz({
@@ -53,7 +53,7 @@ exports.submitQuiz = async (req, res, next) => {
         // Convert quizId to ObjectId if needed
         const quizObjectId = ObjectId.isValid(quizId) ? new ObjectId(quizId) : null;
         if (!quizObjectId) {
-            return res.status(400).json({ success: false, status: 400, message: 'Invalid quizId format.' });
+            return res.status(422).json({ success: false, status: 422, message: 'Invalid quizId format.' });
         };
 
         // Fetch quiz and related questions using aggregation

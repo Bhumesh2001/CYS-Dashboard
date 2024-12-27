@@ -129,10 +129,10 @@ exports.verifyOtp = async (req, res, next) => {
             { email: 1, otp: 1, otpExpires: 1 }
         );
 
-        if (!user) return res.status(400).json({ 
-            success: false, 
-            status: 400, 
-            message: "Invalid or expired OTP." 
+        if (!user) return res.status(422).json({
+            success: false,
+            status: 422,
+            message: "Invalid or expired OTP."
         });
         // Mark OTP as verified
         user.otpVerified = true;
@@ -154,9 +154,9 @@ exports.resetPassword = async (req, res, next) => {
 
         // Check if OTP verification is completed
         if (!user.otpVerified) {
-            return res.status(400).json({
+            return res.status(422).json({
                 success: false,
-                status: 400,
+                status: 422,
                 message: 'OTP verification is required!',
             });
         };
@@ -180,9 +180,9 @@ exports.changePassword = async (req, res, next) => {
 
     // Validate input
     if (!oldPassword || !newPassword) {
-        return res.status(400).json({
+        return res.status(422).json({
             success: false,
-            status: 400,
+            status: 422,
             message: 'Old and new passwords are required'
         });
     };
@@ -201,9 +201,9 @@ exports.changePassword = async (req, res, next) => {
         // Validate old password (assuming comparePassword is a method in the User schema)
         const isMatch = await user.comparePassword(oldPassword);
         if (!isMatch) {
-            return res.status(400).json({
+            return res.status(422).json({
                 success: false,
-                status: 400,
+                status: 422,
                 message: 'Old password is incorrect'
             });
         };
@@ -257,7 +257,7 @@ exports.updateProfile = async (req, res, next) => {
 
         // Validate non-empty updates
         if (!Object.keys(updates).length && (!req.files || !req.files.profileUrl)) {
-            return res.status(400).json({ success: false, message: 'No updates provided' });
+            return res.status(422).json({ success: false, message: 'No updates provided' });
         };
 
         // Allowed fields for update
@@ -265,7 +265,7 @@ exports.updateProfile = async (req, res, next) => {
         const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.has(key));
 
         if (!isUpdateValid) {
-            return res.status(400).json({ success: false, status: 400, message: 'Invalid update fields' });
+            return res.status(422).json({ success: false, status: 422, message: 'Invalid update fields' });
         };
 
         // Process profile image if provided
@@ -347,12 +347,12 @@ exports.createUser = async (req, res, next) => {
         // Check if email is already registered
         const existingUser = await User.findOne({ email }).lean();
         if (existingUser) {
-            return res.status(400).json({ success: false, message: 'User already registered.' });
+            return res.status(422).json({ success: false, message: 'User already registered.' });
         };
 
         // Handle class validation
         if (role !== 'admin' && !classId) {
-            return res.status(400).json({
+            return res.status(422).json({
                 success: true,
                 message: 'classId is required for non-admin users.'
             });

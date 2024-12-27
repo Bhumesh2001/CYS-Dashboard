@@ -7,7 +7,11 @@ exports.createChapter = async (req, res, next) => {
     const { subjectId, name, description, status } = req.body;
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(400).json({ success: false, messeage: 'No files were uploaded.' });
+            return res.status(422).json({
+                success: false,
+                status: 422,
+                messeage: 'No files were uploaded.'
+            });
         };
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysChaptersImg', 220, 200);
         const newChapter = await Chapter.create({
@@ -149,7 +153,7 @@ exports.deleteChapter = async (req, res, next) => {
     try {
         const chapterData = await Chapter.findById(req.params.chapterId, { publicId: 1 });
         if (chapterData && chapterData.publicId) await deleteImage(chapterData.publicId);
-        
+
         const deletedChapter = await Chapter.findByIdAndDelete(req.params.chapterId);
         if (!deletedChapter) {
             return res.status(404).json({ success: false, message: 'Chapter not found' });
