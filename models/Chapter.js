@@ -58,6 +58,32 @@ const chapterShcema = new mongoose.Schema({
         unique: true, // Ensures no duplicate public_id
         trim: true, // Removes any leading/trailing spaces
     },
+    pdfUrl: {
+        url: {
+            type: String,
+            validate: {
+                validator: function (v) {
+                    // Regex to validate any well-formed URL (http/https)
+                    const urlRegex = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z0-9]{2,}(\/[^\s]*)?$/i;
+                    return urlRegex.test(v);
+                },
+                message: props => `${props.value} is not a valid URL!`
+            }
+        },
+        /**
+         * public_id of the imageUrl
+         * This is required only if a URL is provided
+         */
+        publicId: {
+            type: String,
+            unique: true, // Ensures no duplicate public_id
+            trim: true, // Removes any leading/trailing spaces
+            required: function () {
+                // Only make publicId required if url is provided
+                return this.url && this.url.length > 0;
+            }
+        }
+    },
     /**
      * Status of the Chapter
      * 

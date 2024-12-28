@@ -14,7 +14,6 @@ exports.createSubject = async (req, res, next) => {
 
         // Upload image and PDF (if available)
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
-        const pdfData = req.files?.pdfUrl ? await uploadPDFToCloudinary(req.files.pdfUrl.tempFilePath) : null;
 
         // Create the new subject document
         const newSubject = await Subject.create({
@@ -23,7 +22,6 @@ exports.createSubject = async (req, res, next) => {
             description,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
-            pdfUrl: pdfData ? { url: pdfData.url, publicId: pdfData.publicId } : null,
             status,
         });
 
@@ -104,6 +102,7 @@ exports.getAllSubjects = async (req, res, next) => {
 };
 
 // **Update Subject**
+// **Update Subject**
 exports.updateSubject = async (req, res, next) => {
     const { classId, name, description, status } = req.body;
 
@@ -116,9 +115,9 @@ exports.updateSubject = async (req, res, next) => {
             const existingData = await Subject.findById(req.params.subjectId, { [fileKey]: 1 });
             if (existingData?.[fileKey]?.publicId) await deleteImage(existingData[fileKey].publicId);
 
-            const uploadData = fileKey === 'pdfUrl'
-                ? await uploadPDFToCloudinary(file.tempFilePath)
-                : await uploadImage(file.tempFilePath, folder, ...defaultDimensions);
+            const uploadData = fileKey === 'imageUrl'
+                ? await uploadImage(file.tempFilePath, folder, ...defaultDimensions)
+                : null;
 
             return uploadData || { url: null, publicId: null };
         };
@@ -126,10 +125,7 @@ exports.updateSubject = async (req, res, next) => {
         // Process Image
         const imageData = await processUpload('imageUrl', 'CysSubjectsImg', [220, 200]);
 
-        // Process PDF if present
-        const pdfData = req.files?.pdfUrl ? await processUpload('pdfUrl', null, null) : null;
-
-        // Update subject with new data
+        // Update subject with new data (no PDF update)
         const updatedSubject = await Subject.findByIdAndUpdate(
             req.params.subjectId,
             {
@@ -139,7 +135,6 @@ exports.updateSubject = async (req, res, next) => {
                 status,
                 imageUrl: imageData.url,
                 publicId: imageData.publicId,
-                pdfUrl: pdfData ? { url: pdfData.url, publicId: pdfData.publicId } : null,
             },
             { new: true, runValidators: true }
         );

@@ -79,6 +79,12 @@ router.post(
  */
 router.get('/users', authenticate, authorize(['admin']), cacheMiddleware, userController.getAllUsers);
 
+// fetch all admins
+router.get('/admins', authenticate, authorize(['admin']), cacheMiddleware, userController.getAdmins);
+
+// delete admin
+router.delete('/admin/:adminId', authenticate, authorize(['admin']), userController.deleteAdmin);
+
 /**
  * @route GET /api/users/:id
  * @desc Get a single user by ID

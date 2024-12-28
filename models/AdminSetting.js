@@ -5,7 +5,7 @@ const smtpSettingsSchema = new mongoose.Schema({
     smtpType: {
         type: String,
         required: [true, 'SMTP Type is required'],
-        enum: ['Gmail', 'Outlook', 'Custom'], // Restrict to predefined types
+        enum: ['Gmail', 'Outlook', 'Custom', "Server"], // Restrict to predefined types
         default: 'Custom'
     },
     smtpHost: {
@@ -17,6 +17,7 @@ const smtpSettingsSchema = new mongoose.Schema({
     smtpEmail: {
         type: String,
         required: [true, 'SMTP Email is required'],
+        unique: true,
         validate: {
             validator: function (v) {
                 return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v); // Email format validation

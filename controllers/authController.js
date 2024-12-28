@@ -379,6 +379,7 @@ exports.createUser = async (req, res, next) => {
         flushCacheByKey('/api/auth/users');
         flushCacheByKey('/api/dashboard/new-users');
         flushCacheByKey('/api/dashboard/stats');
+        flushCacheByKey('/api/auth/admins');
 
         res.status(201).json({ success: true, message: 'User created successfully.', user: newUser });
     } catch (error) {
@@ -409,6 +410,46 @@ exports.getAllUsers = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+// fech all admins
+exports.getAdmins = async (req, res, next) => {
+    try {
+        const admins = await User.find(
+            { role: "admin" },
+            { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0, publicId: 0 }
+        ).lean();
+
+        if (admins.length === 0) return res.status(404).json({
+            success: false,
+            message: "No admins found",
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Admins fetched successfully...!",
+            data: admins
+        });
+
+    } catch (error) {
+        next(error);
+    };
+};
+
+// Delete an admin
+exports.deleteAdmin = async (req, res, next) => {
+    try {
+        const admin = await User.findOneAndDelete({ _id: req.params.adminId, role: "admin" });
+
+        if (!admin) return res.status(404).json({ 
+            success: false, 
+            message: "Admin not found or invalid role" 
+        });
+
+        res.status(200).json({ success: true, message: "Admin deleted successfully...!" });
+    } catch (error) {
+        next(error);
+    };
 };
 
 /**
@@ -476,6 +517,7 @@ exports.updateUser = async (req, res, next) => {
 
         flushCacheByKey('/api/auth/users');
         flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/auth/admins');
 
         await user.save();
         res.status(200).json({ success: true, message: 'User updated successfully.', user });

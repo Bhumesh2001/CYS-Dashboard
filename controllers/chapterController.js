@@ -1,5 +1,5 @@
 const Chapter = require('../models/Chapter');
-const { uploadImage, deleteImage } = require('../utils/image');
+const { uploadImage, deleteImage, uploadPDFToCloudinary } = require('../utils/image');
 const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Create Chapter**
@@ -14,12 +14,15 @@ exports.createChapter = async (req, res, next) => {
             });
         };
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysChaptersImg', 220, 200);
+        const pdfData = req.files?.pdfUrl ? await uploadPDFToCloudinary(req.files.pdfUrl.tempFilePath) : null;
+
         const newChapter = await Chapter.create({
             subjectId,
             name,
             description,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
+            pdfUrl: pdfData ? { url: pdfData.url, publicId: pdfData.publicId } : null,
             status,
         });
 
@@ -103,30 +106,38 @@ exports.getAllChapter = async (req, res, next) => {
 // **Update Chapter**
 exports.updateChapter = async (req, res, next) => {
     const { subjectId, name, description, status } = req.body;
+
     try {
-        let imageData = {}; // Initialize an empty object to store image data
-        if (req.files && Object.keys(req.files).length !== 0) {
-            // If a new image is uploaded
-            const chapterData = await Chapter.findById(req.params.chapterId, { publicId: 1 });
-            if (chapterData && chapterData.publicId) {
-                // If the category already has an image, delete the old one
-                await deleteImage(chapterData.publicId);
-            }
-            imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysChatpersImg', 220, 200);
-        } else {
-            // If no new image is provided, use the current image data
-            const chapterData = await Chapter.findById(req.params.chapterId, { imageUrl: 1, publicId: 1 });
-            imageData.url = chapterData.imageUrl;
-            imageData.publicId = chapterData.publicId;
+        // Helper function to handle image and PDF upload
+        const handleFileUpload = async (fileKey, folder, isPDF = false) => {
+            const file = req.files?.[fileKey];
+            if (!file) return { url: null, publicId: null };
+
+            const chapterData = await Chapter.findById(req.params.chapterId, isPDF ? { pdfUrl: 1 } : { imageUrl: 1, publicId: 1 });
+            if (chapterData?.[isPDF ? 'pdfUrl' : 'publicId']?.publicId) {
+                await deleteImage(chapterData[isPDF ? 'pdfUrl' : 'publicId'].publicId);
+            };
+
+            return isPDF
+                ? await uploadPDFToCloudinary(file.tempFilePath)
+                : await uploadImage(file.tempFilePath, folder, 220, 200);
         };
-        const updatedChapter = await Chapter.findByIdAndUpdate(req.params.chapterId,
+
+        // Process image and PDF
+        const imageData = await handleFileUpload('imageUrl', 'CysChatpersImg');
+        const pdfData = req.files?.pdfUrl ? await handleFileUpload('pdfUrl', null, true) : { url: null, publicId: null };
+
+        // Update chapter with new data
+        const updatedChapter = await Chapter.findByIdAndUpdate(
+            req.params.chapterId,
             {
                 subjectId,
                 name,
                 description,
                 status,
                 imageUrl: imageData.url,
-                publicId: imageData.publicId
+                publicId: imageData.publicId,
+                pdfUrl: pdfData.url ? { url: pdfData.url, publicId: pdfData.publicId } : null,
             },
             { new: true, runValidators: true }
         );
@@ -135,13 +146,14 @@ exports.updateChapter = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Chapter not found' });
         };
 
+        // Clear caches and respond
         flushCacheByKey(req.originalUrl);
         flushCacheByKey('/api/chapters');
 
         res.status(200).json({
             success: true,
             message: 'Chapter updated successfully...!',
-            data: updatedChapter
+            data: updatedChapter,
         });
     } catch (error) {
         next(error);
