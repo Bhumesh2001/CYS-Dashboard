@@ -340,38 +340,12 @@ exports.questionValidationRule = [
     body('options')
         .if(body('questionType').equals('Options'))
         .notEmpty().withMessage('Options are required for "Options" question type')
-        .isObject().withMessage('Options must be an object with keys a, b, c, d')
-        .custom((options) => {
-            const validKeys = ['a', 'b', 'c', 'd'];
-            const keys = Object.keys(options);
-            if (!keys.every(key => validKeys.includes(key))) {
-                throw new Error('Options must contain keys: a, b, c, d');
-            }
-            if (!keys.every(key => typeof options[key] === 'string' && options[key].trim() !== '')) {
-                throw new Error('Each option must be a non-empty string');
-            }
-            return true;
-        }),
+        .isObject().withMessage('Options must be an object with keys a, b, c, d'),
 
     // Validate answer
     body('answer')
         .notEmpty().withMessage('Answer is required')
-        .isString().withMessage('Answer must be a string')
-        .custom((answer, { req }) => {
-            if (req.body.questionType === 'Options' && !Object.keys(req.body.options).includes(answer)) {
-                throw new Error('Answer must be one of the keys in the options object (a, b, c, d)');
-            }
-            if (req.body.questionType === 'True/False' && !['True', 'False'].includes(answer)) {
-                throw new Error('Answer must be either "True" or "False" for True/False question type');
-            }
-            if (req.body.questionType === 'Guess Word' && typeof answer !== 'string') {
-                throw new Error('Answer must be a string for Guess Word question type');
-            }
-            if (req.body.questionType === 'Short Answer' && (typeof answer !== 'string' || answer.trim() === '')) {
-                throw new Error('Answer must be a non-empty string for Short Answer question type');
-            }
-            return true;
-        }),
+        .isString().withMessage('Answer must be a string'),
 
     // Validate status (optional)
     body('status')
@@ -560,7 +534,7 @@ exports.validateAppGeneralSettingsRule = [
         .withMessage('Contact is required.')
         .matches(/^\+?[1-9]\d{1,14}$/)
         .withMessage('Invalid contact number format.'),  // Matches international phone numbers
-    
+
     // Validate website - required and should be a valid URL
     body('website')
         .notEmpty()

@@ -28,7 +28,7 @@ const limiter = rateLimit({
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-// app.use(limiter);
+app.use(limiter);
 app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded form data
 app.use(express.json());
 app.use(fileUpload({

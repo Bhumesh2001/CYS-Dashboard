@@ -3,7 +3,7 @@ const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Add Question**
 exports.addQuestion = async (req, res, next) => {
-    try {
+    try {        
         const question = new Question(req.body);
         await question.save();
         flushCacheByKey('/api/questions');
