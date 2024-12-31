@@ -29,7 +29,7 @@ const GeneralSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Website URL is required'],
         validate: {
-            validator: (v) => /^(https?:\/\/)?([\w-]+)+([\w-]+)+(\/[\w-]*)*$/.test(v),
+            validator: (v) => /^(https?:\/\/)?([a-z0-9\-\.]+)(\.[a-z]{2,6})(\/[a-z0-9\-._~!$&'()*+,;=:@%]*)*(\?[;&a-z=\d\-_\.]*)?(\#[a-z\d_]*)?$/i.test(v),
             message: 'Invalid website URL',
         },
         trim: true,
@@ -90,7 +90,11 @@ const NotificationSchema = new mongoose.Schema({
 
 // Define schema for app updates
 const AppUpdateSchema = new mongoose.Schema({
-    isUpdateEnabled: { type: Boolean, default: false, required: true },
+    onOff: {
+        type: Boolean,
+        default: false,
+        required: true
+    },
     newAppVersion: {
         type: String,
         required: [true, 'New App Version is required'],
@@ -105,9 +109,10 @@ const AppUpdateSchema = new mongoose.Schema({
         type: String,
         required: [true, 'App Link is required'],
         validate: {
-            validator: (v) => /^(https?:\/\/)?([\w-]+)+([\w-]+)+(\/[\w-]*)*$/.test(v),
-            message: 'Invalid App Link URL',
+            validator: (v) => /^(https?:\/\/)?([a-z0-9\-\.]+)(\.[a-z]{2,6})(\/[a-z0-9\-._~!$&'()*+,;=:@%]*)*(\?[;&a-z=\d\-_\.]*)?(\#[a-z\d_]*)?$/i.test(v),
+            message: 'Invalid website URL',
         },
+        trim: true,
     },
 }, { timestamps: true });
 

@@ -473,13 +473,6 @@ exports.validateGeneralSettingsRule = [
     body('siteName')
         .isLength({ min: 3, max: 100 })
         .withMessage('Site Name must be 3-100 characters long.'),
-
-    (req, res, next) => {
-        if (!req.files || !req.files.siteLogo) {
-            return res.status(400).json({ success: false, message: 'Site Logo file is required.' });
-        }
-        next();
-    },
 ];
 
 // admin smtp setting rule
@@ -536,8 +529,13 @@ exports.validateAppGeneralSettingsRule = [
     body('website')
         .notEmpty()
         .withMessage('Website is required.')
-        .isURL()
-        .withMessage('Invalid website URL.'),
+        .custom(value => {
+            const regex = /^(https?:\/\/)?([a-z0-9\-\.]+)(\.[a-z]{2,6})(\/[a-z0-9\-._~!$&'()*+,;=:@%]*)*(\?[;&a-z=\d\-_\.]*)?(\#[a-z\d_]*)?$/i;
+            if (!regex.test(value)) {
+                throw new Error('Invalid website URL.');
+            }
+            return true;
+        }),
 
     // Validate developerBy - required and should be a string
     body('developerBy')
@@ -626,9 +624,9 @@ exports.validateNotificationRule = [
 exports.validateAppUpdateRule = [
     body('onOff')
         .isBoolean()
-        .withMessage('On/Off must be a boolean value.')
+        .withMessage('onOff must be a boolean value.')
         .notEmpty()
-        .withMessage('On/Off is required.'),
+        .withMessage('onOff is required.'),
     body('newAppVersion')
         .notEmpty()
         .withMessage('New App Version is required.')

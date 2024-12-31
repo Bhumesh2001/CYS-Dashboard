@@ -7,42 +7,57 @@ exports.createOrUpdateGeneralSettings = async (req, res, next) => {
         const { siteName } = req.body;
         const { siteLogo } = req.files || {}; // Destructure siteLogo from req.files directly
 
-        // Ensure siteName is provided
-        if (!siteName) {
-            return res.status(400).json({
-                success: false,
-                message: 'Site Name is required!',
-            });
-        };
-
         // Fetch existing settings to handle logo if needed
-        const existingSettings = await GeneralSettings.findOne({}, { siteLogo: 1, publicId: 1 }).lean();
-        let logoUrl = existingSettings?.siteLogo;
-        let publicId = existingSettings?.publicId;
+        const existingSettings = await GeneralSettings.findOne();
+
+        let logoUrl = existingSettings?.siteLogo || null;
+        let publicId = existingSettings?.publicId || null;
 
         // If new logo is provided, upload it and delete the old one
         if (siteLogo) {
             if (publicId) {
                 await deleteImage(publicId); // Delete old logo if it exists
-            };
+            }
 
-            const { url, publicId: newPublicId } = await uploadImage(siteLogo.tempFilePath, 'CysSiteLogos', 250, 150);
+            const { url, publicId: newPublicId } = await uploadImage(
+                siteLogo.tempFilePath,
+                'CysSiteLogos',
+                250,
+                150
+            );
             logoUrl = url;
             publicId = newPublicId;
         };
 
-        // Update or create settings in one query
-        const updatedSettings = await GeneralSettings.findOneAndUpdate(
-            {},
-            { siteName, siteLogo: logoUrl, publicId },
-            { upsert: true, new: true }
-        );
+        if (existingSettings) {
+            // Update the existing document
+            existingSettings.siteName = siteName;
+            existingSettings.siteLogo = logoUrl;
+            existingSettings.publicId = publicId;
 
-        res.status(200).json({
-            success: true,
-            message: 'General settings saved successfully.',
-            data: updatedSettings,
-        });
+            await existingSettings.save();
+
+            return res.status(200).json({
+                success: true,
+                message: 'General settings updated successfully.',
+                data: existingSettings,
+            });
+        } else {
+            // Create a new document if none exists
+            const newSettings = new GeneralSettings({
+                siteName,
+                siteLogo: logoUrl,
+                publicId,
+            });
+
+            await newSettings.save();
+
+            return res.status(201).json({
+                success: true,
+                message: 'General settings created successfully.',
+                data: newSettings,
+            });
+        }
     } catch (error) {
         next(error);
     };
@@ -72,21 +87,43 @@ exports.createOrUpdateSmtpSettings = async (req, res, next) => {
     try {
         const { smtpType, smtpHost, smtpEmail, smtpPassword, smtpSecure, smtpPort } = req.body;
 
-        if (!smtpType || !smtpHost || !smtpEmail || !smtpPassword || smtpSecure === undefined || !smtpPort) {
-            return res.status(400).json({ success: false, message: 'All SMTP fields are required.' });
-        };
+        // Check if a record already exists
+        const existingSettings = await SmtpSettings.findOne();
 
-        const updatedSettings = await SmtpSettings.findOneAndUpdate(
-            { createdAt: 0, updatedAt: 0, },
-            { smtpType, smtpHost, smtpEmail, smtpPassword, smtpSecure, smtpPort },
-            { upsert: true, new: true }
-        );
+        if (existingSettings) {
+            // Update the existing document
+            existingSettings.smtpType = smtpType;
+            existingSettings.smtpHost = smtpHost;
+            existingSettings.smtpEmail = smtpEmail;
+            existingSettings.smtpPassword = smtpPassword;
+            existingSettings.smtpSecure = smtpSecure;
+            existingSettings.smtpPort = smtpPort;
 
-        res.status(200).json({
-            success: true,
-            message: 'SMTP settings saved successfully.',
-            data: updatedSettings
-        });
+            await existingSettings.save();
+
+            return res.status(200).json({
+                success: true,
+                message: 'SMTP settings updated successfully.',
+                data: existingSettings,
+            });
+        } else {
+            // Create a new document if none exists
+            const newSettings = new SmtpSettings({
+                smtpType,
+                smtpHost,
+                smtpEmail,
+                smtpPassword,
+                smtpSecure,
+                smtpPort,
+            });
+            await newSettings.save();
+
+            res.status(201).json({
+                success: true,
+                message: 'SMTP settings created successfully.',
+                data: newSettings,
+            });
+        }
     } catch (error) {
         next(error);
     };
