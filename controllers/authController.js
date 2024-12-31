@@ -439,12 +439,24 @@ exports.getAdmins = async (req, res, next) => {
 // Delete an admin
 exports.deleteAdmin = async (req, res, next) => {
     try {
-        const admin = await User.findOneAndDelete({ _id: req.params.adminId, role: "admin" });
+        // Find the admin by ID and role, and get the profile image publicId
+        const admin = await User.findOneAndDelete(
+            { _id: req.params.adminId, role: "admin" },
+            { projection: { publicId: 1 } } // Fetch only the needed field
+        );
 
-        if (!admin) return res.status(404).json({ 
-            success: false, 
-            message: "Admin not found or invalid role" 
-        });
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found or invalid role",
+            });
+        };
+
+        // Delete the profile image if publicId exists
+        if (admin.publicId) await deleteImage(admin.publicId);
+
+        // Flush the cache
+        flushCacheByKey('/api/auth/admins');
 
         res.status(200).json({ success: true, message: "Admin deleted successfully...!" });
     } catch (error) {
@@ -544,6 +556,7 @@ exports.deleteUser = async (req, res, next) => {
         flushCacheByKey('/api/auth/users');
         flushCacheByKey(req.originalUrl);
         flushCacheByKey('/api/dashboard/new-users');
+        flushCacheByKey('/api/dashboard/stats');
 
         res.status(200).json({ success: true, message: 'User deleted successfully.' });
     } catch (error) {

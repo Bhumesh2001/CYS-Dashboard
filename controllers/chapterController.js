@@ -63,29 +63,30 @@ exports.getChapterById = async (req, res, next) => {
 exports.getChaptersBySubjectId = async (req, res, next) => {
     try {
         // Find active chapters by subjectId
-        const chapters = await Chapter.find(
-            { subjectId: req.params.subjectId, status: 'Active' },
-            { createdAt: 0, updatedAt: 0, publicId: 0 },
-        );
+        const chapters = await Chapter.find({ subjectId: req.params.subjectId })
+            .select('-createdAt -updatedAt -publicId')
+            .lean();
 
-        // Early return if no chapters found
-        if (!chapters.length) return res.status(404).json({
-            success: false,
-            status: 404,
-            message: 'No chapters found for this subject'
-        });
+        // Handle no chapters found
+        if (!chapters.length) {
+            return res.status(404).json({
+                success: false,
+                status: 404,
+                message: 'No chapters found for this subject'
+            });
+        };
 
-        // Return the found chapters
+        // Respond with found chapters
         res.status(200).json({
             success: true,
             message: 'Chapters retrieved successfully',
             totalChapters: chapters.length,
-            data: chapters
+            data: chapters,
         });
-
     } catch (error) {
+        console.log(error);
         next(error);
-    }
+    };
 };
 
 // **Get all Chapter**

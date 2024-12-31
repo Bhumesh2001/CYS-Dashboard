@@ -102,7 +102,6 @@ exports.getAllSubjects = async (req, res, next) => {
 };
 
 // **Update Subject**
-// **Update Subject**
 exports.updateSubject = async (req, res, next) => {
     const { classId, name, description, status } = req.body;
 
@@ -158,20 +157,33 @@ exports.updateSubject = async (req, res, next) => {
 // **Delete Subject**
 exports.deleteSubject = async (req, res, next) => {
     try {
-        const subjectData = await Subject.findById(req.params.subjectId, { publicId: 1 });
-        if (subjectData && subjectData.publicId) await deleteImage(subjectData.publicId);
-        if (subjectData && subjectData.pdfUrl.publicId) await deleteImage(subjectData.pdfUrl.publicId);
+        const { subjectId } = req.params;
 
-        const deletedSubject = await Subject.findByIdAndDelete(req.params.subjectId);
-        if (!deletedSubject) {
+        // Delete subject and get publicId in a single query
+        const subjectData = await Subject.findByIdAndDelete(subjectId, { publicId: 1 });
+
+        if (!subjectData) {
             return res.status(404).json({ success: false, message: 'Subject not found' });
         };
 
-        flushCacheByKey('/api/subjects');
-        flushCacheByKey(req.originalUrl);
+        // Delete associated image if publicId exists
+        if (subjectData.publicId) {
+            try {
+                await deleteImage(subjectData.publicId);
+            } catch (err) {
+                console.error('Image deletion failed:', err.message);
+            };
+        };
+
+        // Clear cache for subjects and the current URL
+        try {
+            await Promise.all(['/api/subjects', req.originalUrl].map(key => flushCacheByKey(key)));
+        } catch (err) {
+            console.error('Cache clearing failed:', err.message);
+        };
 
         res.status(200).json({ success: true, message: 'Subject deleted successfully' });
     } catch (error) {
-        next(error);
+        next(error); // Handle unexpected errors
     };
 };

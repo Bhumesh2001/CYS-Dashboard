@@ -18,7 +18,7 @@ exports.createQuiz = async (req, res, next) => {
             publicId: imageData.publicId,
         });
 
-        flushCacheByKey('/api/quizzess');
+        flushCacheByKey('/api/quizzes');
         flushCacheByKey('/api/dashboard/stats');
 
         await quiz.save();
@@ -225,7 +225,7 @@ exports.updateQuiz = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
         };
 
-        flushCacheByKey('/api/quizzess');
+        flushCacheByKey('/api/quizzes');
         flushCacheByKey(req.originalUrl);
 
         res.status(200).json({ success: false, message: 'Quiz updated successfully', quiz });
@@ -245,7 +245,7 @@ exports.deleteQuiz = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
         };
 
-        flushCacheByKey('/api/quizzess');
+        flushCacheByKey('/api/quizzes');
         flushCacheByKey(req.originalUrl);
         flushCacheByKey('/api/dashboard/stats');
 

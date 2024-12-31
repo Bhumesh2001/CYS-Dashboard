@@ -414,9 +414,6 @@ exports.reportValidationRule = [
     body('reportedModel')
         .isIn(['Chapter', 'Product', 'User']) // Adjust the allowed models as per your app
         .withMessage('Reported Model must be one of the allowed models'),
-    body('reporterId')
-        .isMongoId()
-        .withMessage('Reporter ID must be a valid MongoDB ObjectId'),
     body('reason')
         .isString()
         .trim()

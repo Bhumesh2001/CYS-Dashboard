@@ -4,8 +4,13 @@ const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 // Create a new report
 exports.createReport = async (req, res, next) => {
     try {
-        const { reportedId, reportedModel, reporterId, reason } = req.body;
-        const report = await Report.create({ reportedId, reportedModel, reporterId, reason });
+        const { reportedId, reportedModel, reason } = req.body;
+        const report = await Report.create({
+            reportedId,
+            reportedModel,
+            reporterId: req.user._id,
+            reason
+        });
 
         flushCacheByKey('/api/reports');
         flushCacheByKey('/api/dashboard/stats');
@@ -24,8 +29,8 @@ exports.createReport = async (req, res, next) => {
 exports.getAllReports = async (req, res, next) => {
     try {
         const reports = await Report.find({}, { updatedAt: 0 })
-        .populate('reporterId', 'fullName createdAt')
-        .lean();
+            .populate('reporterId', 'fullName createdAt')
+            .lean();
         res.status(200).json({
             success: true,
             message: 'Reports retrieved successfully',
@@ -43,7 +48,7 @@ exports.getReportById = async (req, res, next) => {
         const report = await Report.findById(req.params.reportId, { createdAt: 0, updatedAt: 0 }).lean();
 
         if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
-        
+
         res.status(200).json({ success: true, message: "Report fetched successfully...!", data: report });
     } catch (error) {
         next(error);

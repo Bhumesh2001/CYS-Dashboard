@@ -3,7 +3,7 @@ const { flushCacheByKey } = require("../middlewares/cacheMiddle");
 
 // **Add Question**
 exports.addQuestion = async (req, res, next) => {
-    try {        
+    try {
         const question = new Question(req.body);
         await question.save();
         flushCacheByKey('/api/questions');
@@ -70,15 +70,17 @@ exports.updateQuestion = async (req, res, next) => {
 // **Delete Question**
 exports.deleteQuestion = async (req, res, next) => {
     try {
-        const deletedQuestion = await Question.findByIdAndDelete(req.params.questionId);
+        const deletedQuestion = await Question.findByIdAndDelete({ _id: req.params.questionId });
 
         if (!deletedQuestion) {
             return res.status(404).json({ success: false, message: 'Question not found' });
-        };
-        flushCacheByKey('/api/questions');
-        flushCacheByKey(req.oiriginalUrl);
+        }
 
-        res.status(200).json({ success: true, message: 'Question deleted successfully' });
+        // Flush cache for the relevant keys
+        flushCacheByKey('/api/questions');
+        flushCacheByKey(req.originalUrl);
+
+        return res.status(200).json({ success: true, message: 'Question deleted successfully' });
     } catch (error) {
         next(error);
     };
