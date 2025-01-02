@@ -31,14 +31,32 @@ exports.createQuiz = async (req, res, next) => {
 // **Get All Quizzes**
 exports.getQuizzes = async (req, res, next) => {
     try {
-        const quizzes = await Quiz.find({},
-            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 }
-        ).lean();
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated quizzes
+        const quizzes = await Quiz.find(
+            {},
+            { quizTitle: 1, imageUrl: 1 }
+        )
+            .sort({ createdAt: -1 }) // Sort by creation date in descending order
+            .skip((pageNumber - 1) * pageSize) // Skip for pagination
+            .limit(pageSize) // Limit the number of results
+            .lean();
+
+        // Get the total count of quizzes
+        const totalQuizzes = await Quiz.countDocuments();
+
         res.status(200).json({
             success: true,
-            message: 'Quizes fetched successfully...!',
-            totaQuizess: quizzes.length,
-            data: quizzes
+            message: 'Quizzes fetched successfully...!',
+            totalQuizzes,
+            totalPages: Math.ceil(totalQuizzes / pageSize),
+            currentPage: pageNumber,
+            data: quizzes,
         });
     } catch (error) {
         next(error);

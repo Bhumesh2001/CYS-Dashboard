@@ -89,19 +89,35 @@ exports.getChaptersBySubjectId = async (req, res, next) => {
     };
 };
 
-// **Get all Chapter**
+// **Get all Chapters**
 exports.getAllChapter = async (req, res, next) => {
     try {
-        const ChapterData = await Chapter.find({}, { createdAt: 0, updatedAt: 0, __v: 0 }).lean();
+        const { page = 1, limit = 12 } = req.query; // Default to page 1 and limit 10 if not provided
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated data
+        const ChapterData = await Chapter.find({}, { name: 1, imageUrl: 1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .lean();
+
+        // Get the total count of chapters
+        const totalChapters = await Chapter.countDocuments();
+
         res.status(200).json({
             success: true,
-            message: 'Chapteres fetched successfully...!',
-            totalChapters: ChapterData.length,
-            data: ChapterData
+            message: 'Chapters fetched successfully...!',
+            totalChapters,
+            totalPages: Math.ceil(totalChapters / pageSize),
+            currentPage: pageNumber,
+            data: ChapterData,
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Update Chapter**

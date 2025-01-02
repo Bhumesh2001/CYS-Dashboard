@@ -25,16 +25,28 @@ exports.createReport = async (req, res, next) => {
     };
 };
 
-// Get all reports
+// Get all reports with pagination
 exports.getAllReports = async (req, res, next) => {
     try {
+        const { page = 1, limit = 10 } = req.query;
+        const skip = (page - 1) * limit;
+
+        // Fetch reports with pagination
         const reports = await Report.find({}, { updatedAt: 0 })
             .populate('reporterId', 'fullName createdAt')
+            .skip(skip)
+            .limit(Number(limit))
             .lean();
+
+        // Total count for pagination metadata
+        const totalReports = await Report.countDocuments();
+
         res.status(200).json({
             success: true,
             message: 'Reports retrieved successfully',
-            totalReports: reports.length,
+            totalReports,
+            currentPage: Number(page),
+            totalPages: Math.ceil(totalReports / limit),
             data: reports
         });
     } catch (error) {

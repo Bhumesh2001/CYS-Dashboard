@@ -16,13 +16,27 @@ exports.addQuestion = async (req, res, next) => {
 // **Get All Questions**
 exports.getAllQuestions = async (req, res, next) => {
     try {
-        const questions = await Question.find({}, { createdAt: 0, updatedAt: 0 })
-            .populate('chapterId', '-createdAt -updatedAt -subjectId -publicId')
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated data
+        const questions = await Question.find({}, { question: 1, status: 1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
             .lean();
+
+        // Get the total count of questions
+        const totalQuestions = await Question.countDocuments();
+
         res.status(200).json({
             success: true,
-            message: 'Question fetched successsfully...!',
-            totalQuestins: questions.length,
+            message: 'Questions fetched successfully...!',
+            totalQuestions,
+            totalPages: Math.ceil(totalQuestions / pageSize),
+            currentPage: pageNumber,
             data: questions,
         });
     } catch (error) {

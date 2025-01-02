@@ -86,15 +86,35 @@ exports.getSubjectByClassId = async (req, res, next) => {
     };
 };
 
-// **Get all subjects**
+// **Get all subjects with pagination**
 exports.getAllSubjects = async (req, res, next) => {
     try {
-        const subjects = await Subject.find({}, { createdAt: 0, updatedAt: 0, __v: 0, publicId: 0 }).lean();
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated subjects
+        const subjects = await Subject.find(
+            {},
+            { name: 1, imageUrl: 1 }
+        )
+            .sort({ name: 1 }) // Sort by name in ascending order (you can change this)
+            .skip((pageNumber - 1) * pageSize) // Skip for pagination
+            .limit(pageSize) // Limit the number of results
+            .lean();
+
+        // Get the total count of subjects
+        const totalSubjects = await Subject.countDocuments();
+
         res.status(200).json({
             success: true,
             message: 'Subjects fetched successfully...!',
-            totalSubjects: subjects.length,
-            data: subjects
+            totalSubjects,
+            totalPages: Math.ceil(totalSubjects / pageSize),
+            currentPage: pageNumber,
+            data: subjects,
         });
     } catch (error) {
         next(error);

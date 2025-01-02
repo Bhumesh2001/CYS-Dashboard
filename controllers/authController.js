@@ -392,45 +392,95 @@ exports.createUser = async (req, res, next) => {
  * @route GET /api/users
  * @access Admin only
  */
+// Fetch all users
 exports.getAllUsers = async (req, res, next) => {
     try {
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated users
         const users = await User.find(
             { role: 'user' },
-            { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0, publicId: 0 }
-        ).populate('classId', 'name')
-            .sort({ createdAt: -1 })
+            {
+                updatedAt: 0,
+                __v: 0, otp: 0,
+                otpExpires: 0,
+                otpVerified: 0,
+                publicId: 0,
+                classId: 0,
+                mobile: 0,
+                role: 0
+            }
+        )
+            .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+            .skip((pageNumber - 1) * pageSize) // Skip for pagination
+            .limit(pageSize) // Limit the number of results
             .lean();
+
+        // Get the total count of users with the role 'user'
+        const totalUsers = await User.countDocuments({ role: 'user' });
 
         res.status(200).json({
             success: true,
-            message: "User fetched successfully...!",
-            totalUsers: users.length,
-            data: users
+            message: "Users fetched successfully...!",
+            totalUsers,
+            totalPages: Math.ceil(totalUsers / pageSize),
+            currentPage: pageNumber,
+            data: users,
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
-// fech all admins
+// Fetch all admins
 exports.getAdmins = async (req, res, next) => {
     try {
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated data
         const admins = await User.find(
             { role: "admin" },
-            { updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0, publicId: 0 }
-        ).lean();
+            {
+                updatedAt: 0,
+                __v: 0,
+                otp: 0,
+                otpExpires: 0,
+                otpVerified: 0,
+                publicId: 0,
+                role: 0,
+                mobile: 0
+            }
+        )
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .lean();
 
-        if (admins.length === 0) return res.status(404).json({
-            success: false,
-            message: "No admins found",
-        });
+        // Get the total count of admins
+        const totalAdmins = await User.countDocuments({ role: "admin" });
+
+        if (admins.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No admins found",
+            });
+        }
 
         res.status(200).json({
             success: true,
             message: "Admins fetched successfully...!",
-            data: admins
+            totalAdmins,
+            totalPages: Math.ceil(totalAdmins / pageSize),
+            currentPage: pageNumber,
+            data: admins,
         });
-
     } catch (error) {
         next(error);
     };

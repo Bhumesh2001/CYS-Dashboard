@@ -16,15 +16,31 @@ exports.createClass = async (req, res, next) => {
     };
 };
 
-// **Get all Calsses**
+// **Get all Classes**
 exports.getAllClasses = async (req, res, next) => {
     try {
-        const classes = await Class.find({}, { createdAt: 0, updatedAt: 0, __v: 0 }).lean();
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated data
+        const classes = await Class.find({}, { name: 1, status: 1 })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .lean();
+
+        // Get the total count of classes
+        const totalClasses = await Class.countDocuments();
+
         res.status(200).json({
             success: true,
-            message: 'Classess fetched successfully...!',
-            totalClasses: classes.length,
-            data: classes
+            message: 'Classes fetched successfully...!',
+            totalClasses,
+            totalPages: Math.ceil(totalClasses / pageSize),
+            currentPage: pageNumber,
+            data: classes,
         });
     } catch (error) {
         next(error);
@@ -63,7 +79,7 @@ exports.updateClass = async (req, res, next) => {
         };
         flushCacheByKey('/api/classes');
         flushCacheByKey(req.originalUrl);
-        
+
         res.status(200).json({
             success: true,
             message: 'Class updated successfully...!',
