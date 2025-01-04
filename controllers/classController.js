@@ -11,6 +11,7 @@ exports.createClass = async (req, res, next) => {
             message: 'Class created successfully...!',
             data: newClass
         });
+        flushCacheByKey('/api/classes');
     } catch (error) {
         next(error);
     };
