@@ -39,7 +39,7 @@ app.use(fileUpload({
     responseOnLimit: 'File size limit exceeded!',
 })); // handle file data
 const corsOptions = {
-    origin: process.env.CLIENT_URL || 'http://127.0.0.1:5500',
+    origin: process.env.CLIENT_URL,
     credentials: true,
 };
 app.use(cors(corsOptions)); // CORS

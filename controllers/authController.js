@@ -250,7 +250,6 @@ exports.getProfile = async (req, res, next) => {
 };
 
 // Update User Profile
-// Update User Profile
 exports.updateProfile = async (req, res, next) => {
     try {
         const userId = req.params.userId;
@@ -270,7 +269,12 @@ exports.updateProfile = async (req, res, next) => {
 
         // Process profile image if provided
         if (req.files?.profileUrl?.tempFilePath) {
-            const imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
+            const imageData = await uploadImage(
+                req.files.profileUrl.tempFilePath,
+                'CysProfilesImg',
+                220,
+                200
+            );
             updateData.profileUrl = imageData.url;
             updateData.publicId = imageData.publicId;
         };
@@ -280,11 +284,19 @@ exports.updateProfile = async (req, res, next) => {
             userId,
             { $set: updateData },
             { new: true, runValidators: true }
-        );
+        )
+            .select('-password -createdAt -updatedAt -__v -otpVerified -otp -otpExpires -publicId')
+            .populate('classId', 'name')
 
         if (!updatedUser) {
             return res.status(404).json({ success: false, message: 'User not found' });
         };
+
+        const updated_user = {
+            ...updatedUser.toObject(),
+            className: updatedUser.classId?.name || null
+        };
+        delete updated_user.classId;
 
         // Invalidate relevant cache keys
         flushCacheByKey(req.originalUrl);
@@ -294,7 +306,7 @@ exports.updateProfile = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: 'Profile updated successfully',
-            data: updatedUser,
+            data: updated_user,
         });
     } catch (error) {
         next(error);
