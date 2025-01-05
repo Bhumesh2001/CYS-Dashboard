@@ -149,14 +149,18 @@ exports.getQuizById = async (req, res, next) => {
     try {
         const quiz = await Quiz.findById(
             req.params.quizId,
-            { createdAt: 0, updatedAt: 0, classId: 0, subjectId: 0, chapterId: 0 }
-        ).lean();
+            { createdAt: 0, updatedAt: 0, publicId: 0 }
+        )
+            .populate('classId', 'name')
+            .populate('subjectId', 'name')
+            .populate('chapterId', 'name')
+            .lean();
 
         if (!quiz) {
             return res.status(404).json({ success: false, message: 'Quiz not found' });
         };
 
-        res.json({ success: true, message: 'Quiz fetched successfully...!', quiz });
+        res.json({ success: true, message: 'Quiz fetched successfully...!', data: quiz });
     } catch (error) {
         next(error);
     };

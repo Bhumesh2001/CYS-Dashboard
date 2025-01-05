@@ -44,8 +44,10 @@ exports.getChapterById = async (req, res, next) => {
     try {
         const chapter = await Chapter.findById(
             req.params.chapterId,
-            { createdAt: 0, updatedAt: 0 }
-        ).lean();
+            { createdAt: 0, updatedAt: 0, publicId: 0 }
+        )
+            .populate('subjectId', 'name')
+            .lean();
 
         if (!Chapter) return res.status(404).json({ success: false, message: 'Chapter not found' });
 
@@ -56,7 +58,7 @@ exports.getChapterById = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // Get Chapters by Subject ID

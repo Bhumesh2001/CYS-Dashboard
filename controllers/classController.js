@@ -1,17 +1,16 @@
 const Class = require('../models/Class');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushCacheByKey, flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Class**
 exports.createClass = async (req, res, next) => {
     try {
         const newClass = await Class.create(req.body);
-        flushCacheByKey('/api/classes');
+        flushAllCache();
         res.status(201).json({
             success: true,
             message: 'Class created successfully...!',
             data: newClass
         });
-        flushCacheByKey('/api/classes');
     } catch (error) {
         next(error);
     };
@@ -80,6 +79,7 @@ exports.updateClass = async (req, res, next) => {
         };
         flushCacheByKey('/api/classes');
         flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         res.status(200).json({
             success: true,
@@ -100,6 +100,7 @@ exports.deleteClass = async (req, res, next) => {
         };
         flushCacheByKey('/api/classes');
         flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         res.status(200).json({ success: true, message: 'Class deleted successfully' });
     } catch (error) {

@@ -66,6 +66,7 @@ exports.getNewUsers = async (req, res, next) => {
         const newUsers = await User.find({ role: 'user', createdAt: { $gte: fiveDaysAgo } })
             .select('fullName email createdAt profileUrl') // Select relevant fields
             .sort({ createdAt: -1 }) // Sort by newest first
+            .limit(5) // Limit to 5 users
             .lean();
 
         // Convert createdAt to readable date format
@@ -81,5 +82,5 @@ exports.getNewUsers = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    };
+    }
 };

@@ -250,44 +250,40 @@ exports.getProfile = async (req, res, next) => {
 };
 
 // Update User Profile
+// Update User Profile
 exports.updateProfile = async (req, res, next) => {
     try {
-        const userId = req.user._id;
+        const userId = req.params.userId;
         const updates = req.body;
 
-        // Validate non-empty updates
-        if (!Object.keys(updates).length && (!req.files || !req.files.profileUrl)) {
-            return res.status(422).json({ success: false, message: 'No updates provided' });
+        // Initialize updateData with existing user profileUrl and publicId
+        const user = await User.findById(userId).select('profileUrl publicId');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
         };
 
-        // Allowed fields for update
-        const allowedUpdates = new Set(['fullName', 'email', 'mobile', 'profileUrl', 'classId']);
-        const isUpdateValid = Object.keys(updates).every((key) => allowedUpdates.has(key));
-
-        if (!isUpdateValid) {
-            return res.status(422).json({ success: false, status: 422, message: 'Invalid update fields' });
+        let updateData = {
+            ...updates,
+            profileUrl: user.profileUrl,
+            publicId: user.publicId,
         };
 
         // Process profile image if provided
-        let imageData = { url: null, publicId: null };
         if (req.files?.profileUrl?.tempFilePath) {
-            imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
+            const imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
+            updateData.profileUrl = imageData.url;
+            updateData.publicId = imageData.publicId;
         };
 
         // Find and update the user
         const updatedUser = await User.findByIdAndUpdate(
             userId,
-            {
-                $set: {
-                    ...updates,
-                    ...(imageData.url && { profileUrl: imageData.url, publicId: imageData.publicId }),
-                },
-            },
+            { $set: updateData },
             { new: true, runValidators: true }
         );
 
         if (!updatedUser) {
-            return res.status(404).json({ success: false, status: 404, message: 'User not found' });
+            return res.status(404).json({ success: false, message: 'User not found' });
         };
 
         // Invalidate relevant cache keys
@@ -523,12 +519,23 @@ exports.getUserById = async (req, res, next) => {
     try {
         const user = await User.findById(
             req.params.userId,
-            { createdAt: 0, updatedAt: 0, __v: 0, otp: 0, otpExpires: 0, otpVerified: 0 }
-        ).lean();
+            {
+                createdAt: 0,
+                updatedAt: 0,
+                __v: 0,
+                otp: 0,
+                otpExpires: 0,
+                otpVerified: 0,
+                publicId: 0,
+                status: 0
+            }
+        )
+            .populate('classId', 'name')
+            .lean();
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
-        res.status(200).json({ success: true, message: 'User fetched successfully...!', user });
+        res.status(200).json({ success: true, message: 'User fetched successfully...!', data: user });
     } catch (error) {
         next(error);
     }
@@ -541,7 +548,7 @@ exports.getUserById = async (req, res, next) => {
  */
 exports.updateUser = async (req, res, next) => {
     try {
-        const { fullName, email, password, role, className } = req.body;
+        const { fullName, email, role, classId } = req.body;
 
         const user = await User.findById(req.params.userId);
         if (!user) {
@@ -567,17 +574,12 @@ exports.updateUser = async (req, res, next) => {
         // Update fields if provided
         if (fullName) user.fullName = fullName;
         if (email) user.email = email;
-        if (password) user.password = password;
         if (role) user.role = role;
         if (profileUrl) usre.profileUrl = imageData.profileUrl;
         if (publicId) user.publicId = imageData.publicId;
-        if (role !== 'admin' && className) {
-            user.className = className;
-        } else if (role === 'admin') {
-            user.className = null;
-        };
+        if (classId) user.classId = role === 'admin' ? null : classId,
 
-        flushCacheByKey('/api/auth/users');
+            flushCacheByKey('/api/auth/users');
         flushCacheByKey(req.originalUrl);
         flushCacheByKey('/api/auth/admins');
 

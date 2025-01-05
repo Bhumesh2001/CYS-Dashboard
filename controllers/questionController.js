@@ -50,11 +50,16 @@ exports.getQuestionById = async (req, res, next) => {
         const question = await Question.findById(
             req.params.questionId,
             { createdAt: 0, updatedAt: 0 })
+            .populate('chapterId', 'name')
             .lean();
         if (!question) {
             return res.status(404).json({ success: true, message: 'Question not found' });
         }
-        res.status(200).json({ success: true, message: 'Question fetched successfully...!', question });
+        res.status(200).json({
+            success: true,
+            message: 'Question fetched successfully...!',
+            data: question
+        });
     } catch (error) {
         next(error);
     };

@@ -36,7 +36,7 @@ router.get(
 
 // **Get subject by id**
 router.get(
-    '/:subjectId/subject',
+    '/:subjectId',
     authenticate,
     authorize(['admin']),
     validateObjectIds(['subjectId'], 'params'),

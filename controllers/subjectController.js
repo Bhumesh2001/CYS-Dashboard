@@ -42,15 +42,17 @@ exports.getSubjectById = async (req, res, next) => {
     try {
         const subject = await Subject.findById(
             req.params.subjectId,
-            { createdAt: 0, updatedAt: 0, __v: 0 }
-        ).lean();
+            { createdAt: 0, updatedAt: 0, __v: 0, publicId: 0 }
+        )
+        .populate('classId', 'name')
+        .lean();
 
         if (!subject) res.status(404).json({ success: false, message: "Subject not found" });
 
         res.status(200).json({
             success: true,
             message: 'Subject fetched successfully...!',
-            subject,
+            data: subject,
         });
     } catch (error) {
         next(error);

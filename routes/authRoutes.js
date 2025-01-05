@@ -52,9 +52,16 @@ router.post(
 router.put('/change-password', authenticate, userController.changePassword);
 
 // **Get profile and update profile**
-router.route('/profile')
-    .get(authenticate, authorize(['admin', 'user']), cacheMiddleware, userController.getProfile)
-    .put(authenticate, authorize(['admin', 'user']), userController.updateProfile)
+router.get(
+    '/profile',
+    authenticate,
+    authorize(['admin', 'user']),
+    cacheMiddleware,
+    userController.getProfile
+);
+
+// **Update user**
+router.put('/profile/:userId', authenticate, authorize(['admin', 'user']), userController.updateProfile)
 
 // **Logout**
 router.post('/logout', userController.logout);
