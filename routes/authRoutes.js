@@ -27,6 +27,13 @@ router.post(
     userController.login
 );
 
+// **Admin login**
+router.post(
+    '/admin/login', 
+    validateFields(userValidation.loginValidationRules), 
+    userController.adminLogin
+);
+
 // **Forgot password**
 router.post(
     '/forgot-password',

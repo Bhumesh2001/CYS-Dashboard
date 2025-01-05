@@ -58,7 +58,8 @@ exports.login = async (req, res, next) => {
         const user = await User.findOne(
             { email },
             { fullName: 1, mobile: 1, email: 1, classId: 1, profileUrl: 1, role: 1 }
-        ).populate('classId', 'name')
+        )
+            .populate('classId', 'name')
             .select('+password');
 
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
@@ -85,6 +86,50 @@ exports.login = async (req, res, next) => {
             message: 'User logged in successful...!',
             user: userData,
             token
+        });
+    } catch (error) {
+        next(error);
+    };
+};
+
+// **Admin Login**
+exports.adminLogin = async (req, res, next) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find the admin by email
+        const admin = await User.findOne(
+            { email, role: 'admin' }, // Ensure it's an admin role
+            { fullName: 1, mobile: 1, email: 1, profileUrl: 1, role: 1 }
+        ).select('+password'); // Include password for comparison
+
+        if (!admin) {
+            return res.status(404).json({ success: false, message: 'Admin not found' });
+        };
+
+        // Check if the password matches
+        const isMatch = await admin.comparePassword(password, admin.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                status: 401,
+                message: 'Invalid credentials',
+            });
+        };
+
+        // Generate a token
+        const token = generateToken({ id: admin._id, role: admin.role });
+        storeToken(res, token, `${admin.role}_token`, 7 * 24 * 60 * 60 * 1000);
+
+        // Prepare admin data for response
+        const adminData = admin.toObject();
+        delete adminData.password; // Remove the password from the response
+
+        res.status(200).json({
+            success: true,
+            message: 'Admin logged in successfully...!',
+            admin: adminData,
+            token,
         });
     } catch (error) {
         next(error);
