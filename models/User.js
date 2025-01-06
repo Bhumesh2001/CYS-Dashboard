@@ -78,7 +78,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'user'],
+        enum: ['admin', 'user', 'teacher'],
         default: 'user',
     },
     otp: {
@@ -112,7 +112,7 @@ userSchema.index({ classId: 1, status: 1 });
 userSchema.pre('save', async function (next) {
     this.confirmPassword = undefined;
     if (this.isModified('password')) {
-        this.password = await bcrypt.hash(this.password, 12); // Increased salt rounds for better security
+        this.password = await bcrypt.hash(this.password, 12);
     }
     next();
 });

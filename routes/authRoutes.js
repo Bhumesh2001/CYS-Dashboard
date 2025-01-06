@@ -29,8 +29,8 @@ router.post(
 
 // **Admin login**
 router.post(
-    '/admin/login', 
-    validateFields(userValidation.loginValidationRules), 
+    '/admin/login',
+    validateFields(userValidation.loginValidationRules),
     userController.adminLogin
 );
 
@@ -73,6 +73,21 @@ router.put('/profile/:userId', authenticate, authorize(['admin', 'user']), userC
 // **Logout**
 router.post('/logout', userController.logout);
 
+// fetch all admins
+router.get('/admins', authenticate, authorize(['admin']), cacheMiddleware, userController.getAdmins);
+
+// fetch single admin
+router.get(
+    '/admin/:adminId',
+    authenticate,
+    authorize(['admin']),
+    cacheMiddleware,
+    userController.getAdminById
+);
+
+// delete admin
+router.delete('/admin/:adminId', authenticate, authorize(['admin']), userController.deleteAdmin);
+
 /**
  * @route POST /api/users
  * @desc Create a new user
@@ -92,12 +107,6 @@ router.post(
  * @access Admin only
  */
 router.get('/users', authenticate, authorize(['admin']), cacheMiddleware, userController.getAllUsers);
-
-// fetch all admins
-router.get('/admins', authenticate, authorize(['admin']), cacheMiddleware, userController.getAdmins);
-
-// delete admin
-router.delete('/admin/:adminId', authenticate, authorize(['admin']), userController.deleteAdmin);
 
 /**
  * @route GET /api/users/:id

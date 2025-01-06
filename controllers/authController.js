@@ -344,7 +344,7 @@ exports.updateProfile = async (req, res, next) => {
         delete updated_user.classId;
 
         // Invalidate relevant cache keys
-        flushCacheByKey(req.originalUrl);
+        flushCacheByKey('/api/auth/profile');
         flushCacheByKey('/api/auth/users');
 
         // Respond with success
@@ -387,6 +387,121 @@ exports.logout = async (req, res, next) => {
         next(error);
     };
 };
+
+// Fetch all admins
+exports.getAdmins = async (req, res, next) => {
+    try {
+        const { page = 1, limit = 12 } = req.query;
+
+        // Convert page and limit to integers
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10);
+
+        // Fetch paginated data
+        const admins = await User.find(
+            { role: "admin" },
+            {
+                updatedAt: 0,
+                __v: 0,
+                otp: 0,
+                otpExpires: 0,
+                otpVerified: 0,
+                publicId: 0,
+                role: 0,
+                mobile: 0
+            }
+        )
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .lean();
+
+        // Get the total count of admins
+        const totalAdmins = await User.countDocuments({ role: "admin" });
+
+        if (admins.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No admins found",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Admins fetched successfully...!",
+            totalAdmins,
+            totalPages: Math.ceil(totalAdmins / pageSize),
+            currentPage: pageNumber,
+            data: admins,
+        });
+    } catch (error) {
+        next(error);
+    };
+};
+
+// Fetch admin by ID
+exports.getAdminById = async (req, res, next) => {
+    try {
+        const adminId = req.params.adminId;
+
+        // Fetch admin by ID
+        const admin = await User.findOne(
+            { _id: adminId, role: "admin" },
+            {
+                updatedAt: 0,
+                createdAt: 0,
+                __v: 0,
+                otp: 0,
+                otpExpires: 0,
+                otpVerified: 0,
+                publicId: 0,
+            }
+        ).lean();
+
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found",
+            });
+        };
+
+        res.status(200).json({
+            success: true,
+            message: "Admin fetched successfully...!",
+            data: admin,
+        });
+    } catch (error) {
+        next(error);
+    };
+};
+
+// Delete an admin
+exports.deleteAdmin = async (req, res, next) => {
+    try {
+        // Find the admin by ID and role, and get the profile image publicId
+        const admin = await User.findOneAndDelete(
+            { _id: req.params.adminId, role: "admin" },
+            { projection: { publicId: 1 } } // Fetch only the needed field
+        );
+
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found or invalid role",
+            });
+        };
+
+        // Delete the profile image if publicId exists
+        if (admin.publicId) await deleteImage(admin.publicId);
+
+        // Flush the cache
+        flushCacheByKey('/api/auth/admins');
+
+        res.status(200).json({ success: true, message: "Admin deleted successfully...!" });
+    } catch (error) {
+        next(error);
+    };
+};
+
 
 /**
  * Create a new user
@@ -484,84 +599,6 @@ exports.getAllUsers = async (req, res, next) => {
             currentPage: pageNumber,
             data: users,
         });
-    } catch (error) {
-        next(error);
-    };
-};
-
-// Fetch all admins
-exports.getAdmins = async (req, res, next) => {
-    try {
-        const { page = 1, limit = 12 } = req.query;
-
-        // Convert page and limit to integers
-        const pageNumber = parseInt(page, 10);
-        const pageSize = parseInt(limit, 10);
-
-        // Fetch paginated data
-        const admins = await User.find(
-            { role: "admin" },
-            {
-                updatedAt: 0,
-                __v: 0,
-                otp: 0,
-                otpExpires: 0,
-                otpVerified: 0,
-                publicId: 0,
-                role: 0,
-                mobile: 0
-            }
-        )
-            .skip((pageNumber - 1) * pageSize)
-            .limit(pageSize)
-            .lean();
-
-        // Get the total count of admins
-        const totalAdmins = await User.countDocuments({ role: "admin" });
-
-        if (admins.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: "No admins found",
-            });
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Admins fetched successfully...!",
-            totalAdmins,
-            totalPages: Math.ceil(totalAdmins / pageSize),
-            currentPage: pageNumber,
-            data: admins,
-        });
-    } catch (error) {
-        next(error);
-    };
-};
-
-// Delete an admin
-exports.deleteAdmin = async (req, res, next) => {
-    try {
-        // Find the admin by ID and role, and get the profile image publicId
-        const admin = await User.findOneAndDelete(
-            { _id: req.params.adminId, role: "admin" },
-            { projection: { publicId: 1 } } // Fetch only the needed field
-        );
-
-        if (!admin) {
-            return res.status(404).json({
-                success: false,
-                message: "Admin not found or invalid role",
-            });
-        };
-
-        // Delete the profile image if publicId exists
-        if (admin.publicId) await deleteImage(admin.publicId);
-
-        // Flush the cache
-        flushCacheByKey('/api/auth/admins');
-
-        res.status(200).json({ success: true, message: "Admin deleted successfully...!" });
     } catch (error) {
         next(error);
     };

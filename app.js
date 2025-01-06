@@ -60,6 +60,7 @@ const questionRoutes = require('./routes/questionRoutes');
 const quizRecordRoutes = require('./routes/quizRecordRoutes');
 const adminSettingRoutes = require('./routes/adminSettingRoutes');
 const appSettingRoutes = require('./routes/appSettingRoutes');
+const permissionRoutes = require('./routes/permissionRoutes');
 
 // **Main routes**
 app.use('/api/auth', authRoutes);
@@ -73,6 +74,7 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/quiz-record', quizRecordRoutes);
 app.use('/api/setting/admin-setting', adminSettingRoutes);
 app.use('/api/setting/app-setting', appSettingRoutes);
+app.use('/api/permissions', permissionRoutes);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
