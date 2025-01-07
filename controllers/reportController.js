@@ -1,5 +1,5 @@
 const Report = require('../models/Report');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // Create a new report
 exports.createReport = async (req, res, next) => {
@@ -12,8 +12,7 @@ exports.createReport = async (req, res, next) => {
             reason
         });
 
-        flushCacheByKey('/api/reports');
-        flushCacheByKey('/api/dashboard/stats');
+        flushAllCache();
 
         res.status(201).json({
             success: true,
@@ -34,6 +33,7 @@ exports.getAllReports = async (req, res, next) => {
         // Fetch reports with pagination
         const reports = await Report.find({}, { updatedAt: 0 })
             .populate('reporterId', 'fullName createdAt')
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(Number(limit))
             .lean();
@@ -78,8 +78,7 @@ exports.updateReportStatus = async (req, res, next) => {
         );
         if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
 
-        flushCacheByKey('/api/reports');
-        flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         res.status(200).json({ success: true, message: "Report updated successfully...!", data: report });
     } catch (error) {
@@ -93,9 +92,7 @@ exports.deleteReport = async (req, res, next) => {
         const report = await Report.findByIdAndDelete(req.params.reportId);
         if (!report) return res.status(404).json({ success: false, message: 'Report not found' });
 
-        flushCacheByKey('/api/reports');
-        flushCacheByKey('/api/dashboard/stats');
-        flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         res.status(200).json({ success: true, message: 'Report deleted successfully' });
     } catch (error) {

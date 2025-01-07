@@ -58,7 +58,7 @@ router.post(
 // Route for changing password
 router.put('/change-password', authenticate, userController.changePassword);
 
-// **Get profile and update profile**
+// **Get profile**
 router.get(
     '/profile',
     authenticate,
@@ -67,7 +67,7 @@ router.get(
     userController.getProfile
 );
 
-// **Update user**
+// **Update profile**
 router.put('/profile/:userId', authenticate, authorize(['admin', 'user']), userController.updateProfile)
 
 // **Logout**

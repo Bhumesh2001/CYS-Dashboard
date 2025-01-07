@@ -315,6 +315,54 @@ exports.chapterValidationRule = [
         .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
 ];
 
+// chapter validation rule
+exports.editChapterValidationRule = [
+    // Validate subjectId
+    body('subjectId')
+        .notEmpty().withMessage('Subject ID is required')
+        .isMongoId().withMessage('Invalid Subject ID'),
+
+    // Validate name
+    body('name')
+        .notEmpty().withMessage('Chapter name is required')
+        .isLength({ min: 2 }).withMessage('Chapter name must be at least 2 characters long')
+        .isLength({ max: 200 }).withMessage('Chapter name must be less than 200 characters')
+        .trim(),
+
+    // Validate description (optional)
+    body('description')
+        .optional()
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate imageUrl
+    body('imageUrl')
+        .optional()
+        .custom((value, { req }) => {
+
+            const imageFile = req.files.imageUrl;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
+            // Check the file type
+            if (!allowedTypes.includes(imageFile.mimetype)) {
+                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            };
+
+            // Check the file size
+            if (imageFile.size > maxSize) {
+                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            };
+
+            return true;
+        }),
+
+    // Validate status (optional)
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
 // question validation rule
 exports.questionValidationRule = [
     // Validate chapterId
@@ -383,6 +431,55 @@ exports.subjectValidationRule = [
                 throw new Error('Image file is required');
             };
 
+            const imageFile = req.files.imageUrl;
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
+            // Check the file type
+            if (!allowedTypes.includes(imageFile.mimetype)) {
+                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            };
+
+            // Check the file size
+            if (imageFile.size > maxSize) {
+                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            };
+
+            return true;
+        }),
+
+    // Validate status (optional)
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
+// edit subject validation rule
+exports.editSubjectValidationRule = [
+    // Validate classId
+    body('classId')
+        .notEmpty().withMessage('Class ID is required')
+        .isMongoId().withMessage('Invalid Class ID format'),
+
+    // Validate name
+    body('name')
+        .notEmpty().withMessage('Subject name is required')
+        .isString().withMessage('Subject name must be a string')
+        .isLength({ min: 2 }).withMessage('Subject name must be at least 2 characters long')
+        .isLength({ max: 100 }).withMessage('Subject name must be less than 100 characters')
+        .trim(),
+
+    // Validate description
+    body('description')
+        .optional()
+        .isString().withMessage('Description must be a string')
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate imageUrl
+    body('imageUrl')
+        .optional()
+        .custom((value, { req }) => {
             const imageFile = req.files.imageUrl;
             const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit

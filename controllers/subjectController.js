@@ -1,6 +1,6 @@
 const Subject = require('../models/Subject');
 const { uploadImage, deleteImage, uploadPDFToCloudinary } = require('../utils/image');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Subject**
 exports.createSubject = async (req, res, next) => {
@@ -26,7 +26,7 @@ exports.createSubject = async (req, res, next) => {
         });
 
         // Clear cache and respond
-        flushCacheByKey('/api/subjects');
+        flushAllCache();
         res.status(201).json({
             success: true,
             message: 'Subject created successfully!',
@@ -44,8 +44,8 @@ exports.getSubjectById = async (req, res, next) => {
             req.params.subjectId,
             { createdAt: 0, updatedAt: 0, __v: 0, publicId: 0 }
         )
-        .populate('classId', 'name')
-        .lean();
+            .populate('classId', 'name')
+            .lean();
 
         if (!subject) res.status(404).json({ success: false, message: "Subject not found" });
 
@@ -102,7 +102,7 @@ exports.getAllSubjects = async (req, res, next) => {
             {},
             { name: 1, imageUrl: 1 }
         )
-            .sort({ name: 1 }) // Sort by name in ascending order (you can change this)
+            .sort({ createdAt: -1 })
             .skip((pageNumber - 1) * pageSize) // Skip for pagination
             .limit(pageSize) // Limit the number of results
             .lean();
@@ -131,22 +131,24 @@ exports.updateSubject = async (req, res, next) => {
         // Helper function to process file upload or fetch existing data
         const processUpload = async (fileKey, folder, defaultDimensions) => {
             const file = req.files?.[fileKey];
-            if (!file) return { url: null, publicId: null };
+            let existingData = await Subject.findById(req.params.subjectId, { [fileKey]: 1 });
 
-            const existingData = await Subject.findById(req.params.subjectId, { [fileKey]: 1 });
-            if (existingData?.[fileKey]?.publicId) await deleteImage(existingData[fileKey].publicId);
+            // If file is provided, delete the existing image and upload the new one
+            if (file) {
+                if (existingData?.[fileKey]?.publicId) {
+                    await deleteImage(existingData[fileKey].publicId);
+                }
+                return await uploadImage(file.tempFilePath, folder, ...defaultDimensions);
+            };
 
-            const uploadData = fileKey === 'imageUrl'
-                ? await uploadImage(file.tempFilePath, folder, ...defaultDimensions)
-                : null;
-
-            return uploadData || { url: null, publicId: null };
+            // If no new file, return existing data
+            return existingData[fileKey] || { url: null, publicId: null };
         };
 
         // Process Image
         const imageData = await processUpload('imageUrl', 'CysSubjectsImg', [220, 200]);
 
-        // Update subject with new data (no PDF update)
+        // Update subject with new or existing image data
         const updatedSubject = await Subject.findByIdAndUpdate(
             req.params.subjectId,
             {
@@ -163,8 +165,7 @@ exports.updateSubject = async (req, res, next) => {
         if (!updatedSubject) return res.status(404).json({ success: false, message: 'Subject not found' });
 
         // Clear caches and respond
-        flushCacheByKey('/api/subjects');
-        flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         res.status(200).json({
             success: true,
@@ -198,11 +199,7 @@ exports.deleteSubject = async (req, res, next) => {
         };
 
         // Clear cache for subjects and the current URL
-        try {
-            await Promise.all(['/api/subjects', req.originalUrl].map(key => flushCacheByKey(key)));
-        } catch (err) {
-            console.error('Cache clearing failed:', err.message);
-        };
+        flushAllCache();
 
         res.status(200).json({ success: true, message: 'Subject deleted successfully' });
     } catch (error) {

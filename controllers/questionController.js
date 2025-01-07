@@ -1,12 +1,12 @@
 const Question = require('../models/Question');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Add Question**
 exports.addQuestion = async (req, res, next) => {
     try {
         const question = new Question(req.body);
         await question.save();
-        flushCacheByKey('/api/questions');
+        flushAllCache();
         res.status(201).json({ success: true, message: 'Question added successfully', question });
     } catch (error) {
         next(error);
@@ -24,6 +24,7 @@ exports.getAllQuestions = async (req, res, next) => {
 
         // Fetch paginated data
         const questions = await Question.find({}, { question: 1, status: 1 })
+            .sort({ createdAt: -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .lean();
@@ -53,7 +54,7 @@ exports.getQuestionById = async (req, res, next) => {
             .populate('chapterId', 'name')
             .lean();
         if (!question) {
-            return res.status(404).json({ success: true, message: 'Question not found' });
+            return res.status(404).json({ success: true, status: 404, message: 'Question not found' });
         }
         res.status(200).json({
             success: true,
@@ -68,6 +69,17 @@ exports.getQuestionById = async (req, res, next) => {
 // **Update Question**
 exports.updateQuestion = async (req, res, next) => {
     try {
+        const { options, answer } = req.body;
+
+        // Validate that the answer exists as a key in the options
+        if (options && answer && !options.hasOwnProperty(answer)) {
+            return res.status(400).json({
+                success: false,
+                status: 404,
+                message: 'Answer must match one of the option keys (a, b, c, d).'
+            });
+        };
+
         const updatedQuestion = await Question.findByIdAndUpdate(
             req.params.questionId,
             req.body,
@@ -75,12 +87,16 @@ exports.updateQuestion = async (req, res, next) => {
         );
 
         if (!updatedQuestion) {
-            return res.status(404).json({ success: false, message: 'Question not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Question not found' });
         };
-        flushCacheByKey('/api/questions');
-        flushCacheByKey(req.oiriginalUrl);
 
-        res.status(200).json({ success: true, message: 'Question updated successfully', updatedQuestion });
+        flushAllCache();
+
+        res.status(200).json({
+            success: true,
+            message: 'Question updated successfully',
+            data: updatedQuestion
+        });
     } catch (error) {
         next(error);
     };
@@ -92,12 +108,11 @@ exports.deleteQuestion = async (req, res, next) => {
         const deletedQuestion = await Question.findByIdAndDelete({ _id: req.params.questionId });
 
         if (!deletedQuestion) {
-            return res.status(404).json({ success: false, message: 'Question not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Question not found' });
         }
 
         // Flush cache for the relevant keys
-        flushCacheByKey('/api/questions');
-        flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         return res.status(200).json({ success: true, message: 'Question deleted successfully' });
     } catch (error) {

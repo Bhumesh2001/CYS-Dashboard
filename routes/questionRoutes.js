@@ -13,19 +13,25 @@ const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 router.post(
     '/',
     authenticate,
-    authorize(['admin']),
+    authorize(['admin', 'teacher']),
     validateFields(questionValidation.questionValidationRule),
     questonController.addQuestion
 );
 
 // Get all questions
-router.get('/', authenticate, authorize(['admin']), cacheMiddleware, questonController.getAllQuestions);
+router.get(
+    '/',
+    authenticate,
+    authorize(['admin', 'teacher']),
+    cacheMiddleware,
+    questonController.getAllQuestions
+);
 
 // Get a Question by ID
 router.get(
     '/:questionId',
     authenticate,
-    authorize(['admin']),
+    authorize(['admin', 'teacher']),
     validateObjectIds(['questionId'], 'params'),
     cacheMiddleware,
     questonController.getQuestionById
@@ -35,7 +41,7 @@ router.get(
 router.put(
     '/:questionId',
     authenticate,
-    authorize(['admin']),
+    authorize(['admin', 'teacher']),
     validateObjectIds(['questionId'], 'params'),
     validateFields(questionValidation.questionValidationRule),
     questonController.updateQuestion

@@ -16,43 +16,64 @@ const { message } = require('./utils/message');
 dotenv.config();
 const app = express();
 
-app.use(compression()); // Use compression for response bodies
-app.use(helmet()); // Set security headers
-app.use(xss()); // Prevent XSS attacks
-app.use(cookieParser()); // Enable parsing of cookies
-app.set('trust proxy', 1); // Trust proxy configuration
+// Middleware for response compression
+app.use(compression());
+
+// Security middleware to set HTTP headers
+app.use(helmet());
+
+// Middleware to sanitize user input and prevent XSS attacks
+app.use(xss());
+
+// Middleware to parse cookies
+app.use(cookieParser());
+
+// Trust proxy configuration for rate limiting
+app.set('trust proxy', 1);
+
+// Rate limiting middleware to limit requests per IP
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000, // 15 minutes window
+    max: 100, // Limit each IP to 100 requests per window
     message: { success: false, message: 'Too many requests, please try again later' },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 app.use(limiter);
-app.use(express.urlencoded({ extended: true })); // Middleware to parse URL-encoded form data
+
+// Middleware to parse URL-encoded form data
+app.use(express.urlencoded({ extended: true }));
+
+// Middleware to parse JSON request bodies
 app.use(express.json());
+
+// Middleware to handle file uploads
 app.use(fileUpload({
     useTempFiles: true,
     tempFileDir: '/tmp/',
-    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
     abortOnLimit: true,
     responseOnLimit: 'File size limit exceeded!',
-})); // handle file data
+}));
+
+// CORS configuration
 const corsOptions = {
     origin: process.env.CLIENT_URL,
     credentials: true,
 };
-app.use(cors(corsOptions)); // CORS
-connectDB(); // Connect to MongoDB
+app.use(cors(corsOptions));
 
-// welcome message
+// Connect to MongoDB
+connectDB();
+
+// Welcome message route
 app.get('/', (req, res) => res.send(message));
 
-// **Routes**
+// Importing route modules
 const authRoutes = require('./routes/authRoutes');
 const classRoutes = require('./routes/classRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
-const chapterController = require('./routes/chapterRoutes');
+const chapterRoutes = require('./routes/chapterRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const reportRoutes = require('./routes/reportRoutes');
@@ -60,13 +81,12 @@ const questionRoutes = require('./routes/questionRoutes');
 const quizRecordRoutes = require('./routes/quizRecordRoutes');
 const adminSettingRoutes = require('./routes/adminSettingRoutes');
 const appSettingRoutes = require('./routes/appSettingRoutes');
-const permissionRoutes = require('./routes/permissionRoutes');
 
-// **Main routes**
+// Setting up main routes
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/subjects', subjectRoutes);
-app.use('/api/chapters', chapterController);
+app.use('/api/chapters', chapterRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
@@ -74,7 +94,6 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/quiz-record', quizRecordRoutes);
 app.use('/api/setting/admin-setting', adminSettingRoutes);
 app.use('/api/setting/app-setting', appSettingRoutes);
-app.use('/api/permissions', permissionRoutes);
 
 // Handle undefined routes
 app.all('*', (req, res, next) => {
@@ -83,28 +102,31 @@ app.all('*', (req, res, next) => {
     next(err);
 });
 
-// Centralized error handler
+// Centralized error handling middleware
 app.use((err, req, res, next) => errorHandler(err, req, res, next));
 
-// Cluster for multi-core CPUs
+// Set up clustering for multi-core CPU support
 if (cluster.isMaster) {
     const numWorkers = os.cpus().length;
     console.log(`Master process is running with PID: ${process.pid}`);
+
     // Fork workers
     for (let i = 0; i < numWorkers; i++) {
         cluster.fork();
     };
+
+    // Handle worker exit and restart
     cluster.on('exit', (worker, code, signal) => {
         console.log(`Worker ${worker.process.pid} died`);
-        setTimeout(() => cluster.fork(), 5000);
+        setTimeout(() => cluster.fork(), 5000); // Restart the worker
     });
 } else {
-    // Worker processes have an HTTP server
+    // Start the server on worker processes
     const PORT = process.env.PORT || 8000;
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT} (PID: ${process.pid})`);
     });
 };
 
-// Export the app for use in other modules
+// Export the app for testing or other uses
 module.exports = app;

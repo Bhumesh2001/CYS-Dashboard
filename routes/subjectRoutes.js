@@ -50,7 +50,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['subjectId'], 'params'),
-    validateFields(subjectValidation.subjectValidationRule),
+    validateFields(subjectValidation.editSubjectValidationRule),
     subjectController.updateSubject
 );
 

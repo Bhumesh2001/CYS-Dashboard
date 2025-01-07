@@ -50,7 +50,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['chapterId'], 'params'),
-    validateFields(chapterValidation.chapterValidationRule),
+    validateFields(chapterValidation.editChapterValidationRule),
     chapterController.updateChapter
 );
 

@@ -3,13 +3,13 @@ const Quiz = require('../models/Quiz');
 const QuizRecord = require('../models/QuizRecord');
 const { ObjectId } = mongoose.Types;
 const { uploadImage, deleteImage } = require('../utils/image');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
     try {
         if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(422).json({ success: false, messeage: 'No files were uploaded.' });
+            return res.status(422).json({ success: false, status: 422, messeage: 'No files were uploaded.' });
         };
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
         const quiz = new Quiz({
@@ -18,8 +18,7 @@ exports.createQuiz = async (req, res, next) => {
             publicId: imageData.publicId,
         });
 
-        flushCacheByKey('/api/quizzes');
-        flushCacheByKey('/api/dashboard/stats');
+        flushAllCache();
 
         await quiz.save();
         res.status(201).json({ success: true, message: 'Quiz created successfully', quiz });
@@ -130,6 +129,8 @@ exports.submitQuiz = async (req, res, next) => {
             { upsert: true, new: true }
         );
 
+        flushAllCache();
+
         // Return response with correct and incorrect count, and the question-by-question results
         res.status(200).json({
             success: true,
@@ -157,7 +158,7 @@ exports.getQuizById = async (req, res, next) => {
             .lean();
 
         if (!quiz) {
-            return res.status(404).json({ success: false, message: 'Quiz not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Quiz not found' });
         };
 
         res.json({ success: true, message: 'Quiz fetched successfully...!', data: quiz });
@@ -244,13 +245,12 @@ exports.updateQuiz = async (req, res, next) => {
         );
 
         if (!quiz) {
-            return res.status(404).json({ success: false, message: 'Quiz not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Quiz not found' });
         };
 
-        flushCacheByKey('/api/quizzes');
-        flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
-        res.status(200).json({ success: false, message: 'Quiz updated successfully', quiz });
+        res.status(200).json({ success: true, message: 'Quiz updated successfully', data: quiz });
     } catch (error) {
         next(error);
     };
@@ -264,14 +264,12 @@ exports.deleteQuiz = async (req, res, next) => {
 
         const quiz = await Quiz.findByIdAndDelete(req.params.quizId);
         if (!quiz) {
-            return res.status(404).json({ success: false, message: 'Quiz not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Quiz not found' });
         };
 
-        flushCacheByKey('/api/quizzes');
-        flushCacheByKey(req.originalUrl);
-        flushCacheByKey('/api/dashboard/stats');
+        flushAllCache();
 
-        res.status(200).json({ success: false, message: 'Quiz deleted successfully' });
+        res.status(200).json({ success: true, message: 'Quiz deleted successfully' });
     } catch (error) {
         next(error);
     };

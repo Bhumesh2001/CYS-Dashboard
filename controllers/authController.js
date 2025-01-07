@@ -1,10 +1,11 @@
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const { generateToken, storeToken } = require('../utils/token');
 const { generateOTP } = require('../utils/otp');
 const { sendOTP } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
-const { flushCacheByKey } = require('../middlewares/cacheMiddle');
+const { flushAllCache } = require('../middlewares/cacheMiddle');
 
 //**Register**
 exports.register = async (req, res, next) => {
@@ -33,10 +34,7 @@ exports.register = async (req, res, next) => {
         storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
 
         // Clear relevant caches
-        flushCacheByKey('/api/auth/users');
-        flushCacheByKey('/api/dashboard/stats');
-        flushCacheByKey('/api/dashboard/new-users');
-        flushCacheByKey('/api/auth/profile');
+        flushAllCache()
 
         // Respond with success
         res.status(201).json({
@@ -344,8 +342,7 @@ exports.updateProfile = async (req, res, next) => {
         delete updated_user.classId;
 
         // Invalidate relevant cache keys
-        flushCacheByKey('/api/auth/profile');
-        flushCacheByKey('/api/auth/users');
+        flushAllCache()
 
         // Respond with success
         res.status(200).json({
@@ -494,14 +491,13 @@ exports.deleteAdmin = async (req, res, next) => {
         if (admin.publicId) await deleteImage(admin.publicId);
 
         // Flush the cache
-        flushCacheByKey('/api/auth/admins');
+        flushAllCache()
 
         res.status(200).json({ success: true, message: "Admin deleted successfully...!" });
     } catch (error) {
         next(error);
     };
 };
-
 
 /**
  * Create a new user
@@ -544,10 +540,7 @@ exports.createUser = async (req, res, next) => {
         });
         await newUser.save();
 
-        flushCacheByKey('/api/auth/users');
-        flushCacheByKey('/api/dashboard/new-users');
-        flushCacheByKey('/api/dashboard/stats');
-        flushCacheByKey('/api/auth/admins');
+        flushAllCache()
 
         res.status(201).json({ success: true, message: 'User created successfully.', user: newUser });
     } catch (error) {
@@ -644,40 +637,54 @@ exports.updateUser = async (req, res, next) => {
     try {
         const { fullName, email, role, classId } = req.body;
 
+        // Fetch the user by ID
         const user = await User.findById(req.params.userId);
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
+            return res.status(404).json({ success: false, status: 404, message: 'User not found.' });
         };
 
-        let imageData = {}; // Initialize an empty object to store image data
-        if (req.files && Object.keys(req.files).length !== 0) {
-            // If a new image is uploaded
-            const userData = await User.findById(req.params.userId, { publicId: 1 });
-            if (userData && userData.publicId) {
-                // If the category already has an image, delete the old one
-                await deleteImage(userData.publicId);
+        // Default to the existing role if no new role is provided
+        let updatedRole = user.role;
+
+        // If a new role is provided, check if it's a valid ObjectId and update it
+        if (role && mongoose.Types.ObjectId.isValid(role)) {
+            const roleUser = await User.findById(role).select('role'); // Fetch the role from the user collection
+            if (roleUser) {
+                updatedRole = roleUser.role; // Set the updated role from the user object
+            } else {
+                return res.status(400).json({ success: false, status: 400, message: 'Invalid role user ID.' });
             };
+        };
+
+        // Handle profile image update (upload or keep existing)
+        let imageData = {};
+        if (req.files && req.files.profileUrl) {
+            const userData = await User.findById(req.params.userId, { publicId: 1 });
+            if (userData?.publicId) await deleteImage(userData.publicId);
+
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
         } else {
-            // If no new image is provided, use the current image data
-            const userData = await User.findById(req.params.userId, { profileUrl: 1, publicId: 1 });
-            imageData.url = userData.profileUrl;
-            imageData.publicId = userData.publicId;
+            const { profileUrl: existingProfileUrl, publicId }
+                = await User.findById(req.params.userId, { profileUrl: 1, publicId: 1 });
+            imageData.url = existingProfileUrl;
+            imageData.publicId = publicId;
         };
 
-        // Update fields if provided
-        if (fullName) user.fullName = fullName;
-        if (email) user.email = email;
-        if (role) user.role = role;
-        if (profileUrl) usre.profileUrl = imageData.profileUrl;
-        if (publicId) user.publicId = imageData.publicId;
-        if (classId) user.classId = role === 'admin' ? null : classId,
+        // Update the user fields with the provided or existing values
+        Object.assign(user, {
+            fullName: fullName || user.fullName,
+            email: email || user.email,
+            role: updatedRole, // Set the role after looking it up
+            classId: role === 'admin' ? null : classId || user.classId,
+            profileUrl: imageData.url,
+            publicId: imageData.publicId
+        });
 
-            flushCacheByKey('/api/auth/users');
-        flushCacheByKey(req.originalUrl);
-        flushCacheByKey('/api/auth/admins');
+        // Clear cache and save updated user
+        flushAllCache()
 
         await user.save();
+
         res.status(200).json({ success: true, message: 'User updated successfully.', user });
     } catch (error) {
         next(error);
@@ -698,11 +705,7 @@ exports.deleteUser = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         };
-
-        flushCacheByKey('/api/auth/users');
-        flushCacheByKey(req.originalUrl);
-        flushCacheByKey('/api/dashboard/new-users');
-        flushCacheByKey('/api/dashboard/stats');
+        flushAllCache();
 
         res.status(200).json({ success: true, message: 'User deleted successfully.' });
     } catch (error) {

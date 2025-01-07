@@ -1,6 +1,6 @@
 const Chapter = require('../models/Chapter');
 const { uploadImage, deleteImage, uploadPDFToCloudinary } = require('../utils/image');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Chapter**
 exports.createChapter = async (req, res, next) => {
@@ -26,8 +26,7 @@ exports.createChapter = async (req, res, next) => {
             status,
         });
 
-        flushCacheByKey('/api/chapters');
-        flushCacheByKey('/api/dashboard/stats');
+        flushAllCache();
 
         res.status(201).json({
             success: true,
@@ -102,6 +101,7 @@ exports.getAllChapter = async (req, res, next) => {
 
         // Fetch paginated data
         const ChapterData = await Chapter.find({}, { name: 1, imageUrl: 1 })
+            .sort({ createdAt: -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .lean();
@@ -130,23 +130,30 @@ exports.updateChapter = async (req, res, next) => {
         // Helper function to handle image and PDF upload
         const handleFileUpload = async (fileKey, folder, isPDF = false) => {
             const file = req.files?.[fileKey];
-            if (!file) return { url: null, publicId: null };
+            const chapterData = await Chapter.findById(
+                req.params.chapterId,
+                isPDF ? { pdfUrl: 1 } : { imageUrl: 1, publicId: 1 }
+            );
 
-            const chapterData = await Chapter.findById(req.params.chapterId, isPDF ? { pdfUrl: 1 } : { imageUrl: 1, publicId: 1 });
-            if (chapterData?.[isPDF ? 'pdfUrl' : 'publicId']?.publicId) {
-                await deleteImage(chapterData[isPDF ? 'pdfUrl' : 'publicId'].publicId);
+            // If file is provided, delete the existing file and upload the new one
+            if (file) {
+                if (chapterData?.[isPDF ? 'pdfUrl' : 'publicId']?.publicId) {
+                    await deleteImage(chapterData[isPDF ? 'pdfUrl' : 'publicId'].publicId);
+                };
+                return isPDF
+                    ? await uploadPDFToCloudinary(file.tempFilePath)
+                    : await uploadImage(file.tempFilePath, folder, 220, 200);
             };
 
-            return isPDF
-                ? await uploadPDFToCloudinary(file.tempFilePath)
-                : await uploadImage(file.tempFilePath, folder, 220, 200);
+            // If no new file, retain the existing data
+            return chapterData[isPDF ? 'pdfUrl' : 'imageUrl'] || { url: null, publicId: null };
         };
 
         // Process image and PDF
         const imageData = await handleFileUpload('imageUrl', 'CysChatpersImg');
-        const pdfData = req.files?.pdfUrl ? await handleFileUpload('pdfUrl', null, true) : { url: null, publicId: null };
+        const pdfData = await handleFileUpload('pdfUrl', null, true);
 
-        // Update chapter with new data
+        // Update chapter with new or existing data
         const updatedChapter = await Chapter.findByIdAndUpdate(
             req.params.chapterId,
             {
@@ -162,12 +169,11 @@ exports.updateChapter = async (req, res, next) => {
         );
 
         if (!updatedChapter) {
-            return res.status(404).json({ success: false, message: 'Chapter not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Chapter not found' });
         };
 
         // Clear caches and respond
-        flushCacheByKey(req.originalUrl);
-        flushCacheByKey('/api/chapters');
+        flushAllCache();
 
         res.status(200).json({
             success: true,
@@ -190,9 +196,7 @@ exports.deleteChapter = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Chapter not found' });
         };
 
-        flushCacheByKey(req.originalUrl);
-        flushCacheByKey('/api/chapters');
-        flushCacheByKey('/api/dashboard/stats');
+        flushAllCache();
 
         res.status(200).json({ success: true, message: 'Chapter deleted successfully' });
     } catch (error) {

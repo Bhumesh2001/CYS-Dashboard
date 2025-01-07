@@ -1,11 +1,13 @@
 const Class = require('../models/Class');
-const { flushCacheByKey, flushAllCache } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Class**
 exports.createClass = async (req, res, next) => {
     try {
         const newClass = await Class.create(req.body);
+        
         flushAllCache();
+
         res.status(201).json({
             success: true,
             message: 'Class created successfully...!',
@@ -27,6 +29,7 @@ exports.getAllClasses = async (req, res, next) => {
 
         // Fetch paginated data
         const classes = await Class.find({}, { name: 1, status: 1 })
+            .sort({ createdAt: -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .lean();
@@ -77,8 +80,6 @@ exports.updateClass = async (req, res, next) => {
         if (!updatedClass) {
             return res.status(404).json({ success: false, message: 'Class not found' });
         };
-        flushCacheByKey('/api/classes');
-        flushCacheByKey(req.originalUrl);
         flushAllCache();
 
         res.status(200).json({
@@ -98,8 +99,7 @@ exports.deleteClass = async (req, res, next) => {
         if (!deletedClass) {
             return res.status(404).json({ success: false, message: 'Class not found' });
         };
-        flushCacheByKey('/api/classes');
-        flushCacheByKey(req.originalUrl);
+        
         flushAllCache();
 
         res.status(200).json({ success: true, message: 'Class deleted successfully' });

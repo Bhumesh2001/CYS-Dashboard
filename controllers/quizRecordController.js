@@ -1,5 +1,5 @@
 const QuizRecord = require('../models/QuizRecord');
-const { flushCacheByKey } = require("../middlewares/cacheMiddle");
+const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 /**
  * Controller for getting all quiz records of a particular user
@@ -103,7 +103,7 @@ exports.updateQuizRecord = async (req, res, next) => {
             });
         };
 
-        flushCacheByKey(req.originalUrl);
+        flushAllCache();
 
         res.status(200).json({
             success: true,
