@@ -55,7 +55,6 @@ const quizSchema = new mongoose.Schema({
         minlength: [5, 'Quiz title must be at least 5 characters long'],
         maxlength: [200, 'Quiz title cannot exceed 200 characters'],
         trim: true,
-        lowercase: true,
     },
     /**
      * Quiz Time
