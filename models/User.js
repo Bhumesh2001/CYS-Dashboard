@@ -73,9 +73,8 @@ const userSchema = new mongoose.Schema({
     },
     publicId: {
         type: String,
-        unique: true,
         trim: true,
-    },
+    },    
     role: {
         type: String,
         enum: ['admin', 'user', 'teacher'],

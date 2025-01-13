@@ -13,7 +13,7 @@ exports.register = async (req, res, next) => {
 
     try {
         // Initialize imageData with default values
-        let imageData = { url: null, publicId: null };
+        let imageData = { url: "", publicId: "" };
 
         // Validate and process the uploaded file if it exists
         if (req.files && req.files.profileUrl && req.files.profileUrl.tempFilePath) {

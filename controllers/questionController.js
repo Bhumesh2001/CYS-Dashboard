@@ -1,6 +1,33 @@
 const Question = require('../models/Question');
 const { flushAllCache } = require("../middlewares/cacheMiddle");
 
+// create bulk question
+exports.createBulkquestion = async (req, res, next) => {
+    try {
+        if (!Array.isArray(req.body)) {
+            return res.status(400).json({
+                success: false,
+                status: 400,
+                message: 'Invalid input, expected an array of questions'
+            });
+        };
+
+        // Insert multiple questions at once using Mongoose
+        const insertedQuestions = await Question.insertMany(req.body);
+
+        // Optionally, flush cache if needed
+        flushAllCache();
+
+        res.status(201).json({
+            success: true,
+            message: 'Questions added successfully',
+            questions: insertedQuestions
+        });
+    } catch (error) {
+        next(error);
+    };
+};
+
 // **Add Question**
 exports.addQuestion = async (req, res, next) => {
     try {

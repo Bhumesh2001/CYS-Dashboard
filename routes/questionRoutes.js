@@ -9,6 +9,9 @@ const questionValidation = require('../validation/validator');
 const { validateFields } = require('../middlewares/validateMiddle');
 const { cacheMiddleware } = require("../middlewares/cacheMiddle");
 
+// create bulk question
+router.post('/bulk', authenticate, authorize(['admin']), questonController.createBulkquestion);
+
 // Create a new Question
 router.post(
     '/',
