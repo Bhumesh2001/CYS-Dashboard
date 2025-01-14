@@ -65,16 +65,10 @@ const userSchema = new mongoose.Schema({
     },
     profileUrl: {
         type: String,
-        trim: true,
-        match: [
-            /^(https?:\/\/)?([\w.-]+)\.[a-z]{2,}\/?.*$/,
-            'Please enter a valid URL',
-        ],
     },
     publicId: {
         type: String,
-        trim: true,
-    },    
+    },
     role: {
         type: String,
         enum: ['admin', 'user', 'teacher'],
