@@ -13,8 +13,7 @@ const subjectSchema = new mongoose.Schema({
      */
     classId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Class',  // Assuming you have a 'Class' model
-        required: [true, 'Class ID is required'],
+        ref: 'Class',
     },
     /**
      * Subject Name
@@ -23,10 +22,6 @@ const subjectSchema = new mongoose.Schema({
      */
     name: {
         type: String,
-        required: [true, 'Subject name is required'],
-        minlength: [2, 'Subject name must be at least 2 characters long'],
-        maxlength: [100, 'Subject name must be less than 100 characters'],
-        trim: true,
     },
     /**
      * Subject Description
@@ -35,8 +30,6 @@ const subjectSchema = new mongoose.Schema({
      */
     description: {
         type: String,
-        maxlength: [500, 'Description must be less than 500 characters'],
-        trim: true,
     },
     /**
     * Image URL for the category.
@@ -46,21 +39,12 @@ const subjectSchema = new mongoose.Schema({
     */
     imageUrl: {
         type: String,
-        required: [true, 'Image URL is required'],
-        match: [
-            /^(https?:\/\/)?[\w-]+(\.[\w-]+)+[\w.,@?^=%&:;#/~+-]*$/,
-            'Please provide a valid URL',
-        ],
-        trim: true,
     },
     /**
      * public_id of the imageUrl
      */
     publicId: {
         type: String,
-        required: [true, 'Public ID is required'], // Field is mandatory
-        unique: true, // Ensures no duplicate public_id
-        trim: true, // Removes any leading/trailing spaces
     },
     /**
     * Status of the subject.
@@ -68,7 +52,6 @@ const subjectSchema = new mongoose.Schema({
     */
     status: {
         type: String,
-        enum: ['Active', 'Inactive'],
         default: 'Active',
     },
 }, {

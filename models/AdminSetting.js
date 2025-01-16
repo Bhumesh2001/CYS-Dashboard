@@ -4,46 +4,22 @@ const mongoose = require('mongoose');
 const smtpSettingsSchema = new mongoose.Schema({
     smtpType: {
         type: String,
-        required: [true, 'SMTP Type is required'],
-        enum: ['Gmail', 'Outlook', 'Custom', "Server"], // Restrict to predefined types
         default: 'Custom'
     },
     smtpHost: {
         type: String,
-        required: [true, 'SMTP Host is required'],
-        trim: true,
-        maxlength: [255, 'SMTP Host must be less than 255 characters']
     },
     smtpEmail: {
         type: String,
-        required: [true, 'SMTP Email is required'],
-        unique: true,
-        validate: {
-            validator: function (v) {
-                return /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v); // Email format validation
-            },
-            message: 'Invalid SMTP Email format'
-        },
     },
     smtpPassword: {
         type: String,
-        required: [true, 'SMTP Password is required'],
-        minlength: [8, 'SMTP Password must be at least 8 characters long']
     },
     smtpSecure: {
         type: String,
-        required: [true, 'SMTP Secure is required'],
-        enum: ['TLS', 'SSL'],
     },
     smtpPort: {
         type: Number,
-        required: [true, 'SMTP Port is required'],
-        validate: {
-            validator: function (v) {
-                return v > 0 && v <= 65535; // Valid port range
-            },
-            message: 'SMTP Port must be a number between 1 and 65535'
-        }
     }
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt
@@ -55,11 +31,11 @@ smtpSettingsSchema.pre('save', function (next) {
     if (this.smtpType === 'Gmail') {
         this.smtpHost = 'smtp.gmail.com';
         this.smtpPort = 587;
-        this.smtpSecure = true;
+        this.smtpSecure = 'TLS';
     } else if (this.smtpType === 'Outlook') {
         this.smtpHost = 'smtp.office365.com';
         this.smtpPort = 587;
-        this.smtpSecure = true;
+        this.smtpSecure = 'SSL';
     }
     next();
 });
@@ -68,27 +44,13 @@ smtpSettingsSchema.pre('save', function (next) {
 const generalSettingsSchema = new mongoose.Schema({
     siteName: {
         type: String,
-        required: [true, 'Site Name is required'],
-        trim: true,
-        minlength: [3, 'Site Name must be at least 3 characters long'],
-        maxlength: [100, 'Site Name must be less than 100 characters'],
         index: true // Adding an index for faster searches if needed
     },
     siteLogo: {
         type: String,
-        required: [true, 'Site Logo is required'],
-        validate: {
-            validator: function (v) {
-                return /^https?:\/\/.+/.test(v); // Validates URL format
-            },
-            message: 'Site Logo must be a valid URL'
-        }
     },
     publicId: {
         type: String,
-        required: [true, 'Public ID is required'], // Field is mandatory
-        unique: true, // Ensures no duplicate public_id
-        trim: true, // Removes any leading/trailing spaces
     },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt

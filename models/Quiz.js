@@ -9,12 +9,7 @@ const quizSchema = new mongoose.Schema({
      */
     classId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Class', // References the Class model
-        required: [true, 'Class ID is required'],
-        validate: {
-            validator: (v) => mongoose.Types.ObjectId.isValid(v),
-            message: '{VALUE} is not a valid class ID',
-        },
+        ref: 'Class',
     },
     /**
      * Subject ID (reference to Subject model)
@@ -23,12 +18,7 @@ const quizSchema = new mongoose.Schema({
      */
     subjectId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Subject', // References the Subject model
-        required: [true, 'Subject ID is required'],
-        validate: {
-            validator: (v) => mongoose.Types.ObjectId.isValid(v),
-            message: '{VALUE} is not a valid subject ID',
-        },
+        ref: 'Subject',
     },
     /**
      * Chapter ID (reference to Chapter model)
@@ -37,12 +27,7 @@ const quizSchema = new mongoose.Schema({
      */
     chapterId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Chapter', // References the Chapter model
-        required: [true, 'Chapter ID is required'],
-        validate: {
-            validator: (v) => mongoose.Types.ObjectId.isValid(v),
-            message: '{VALUE} is not a valid chapter ID',
-        },
+        ref: 'Chapter',
     },
     /**
      * Quiz Title
@@ -51,10 +36,6 @@ const quizSchema = new mongoose.Schema({
      */
     quizTitle: {
         type: String,
-        required: [true, 'Quiz title is required'],
-        minlength: [5, 'Quiz title must be at least 5 characters long'],
-        maxlength: [200, 'Quiz title cannot exceed 200 characters'],
-        trim: true,
     },
     /**
      * Quiz Time
@@ -63,9 +44,6 @@ const quizSchema = new mongoose.Schema({
      */
     quizTime: {
         type: Number,
-        required: [true, 'Quiz time is required'],
-        min: [1, 'Quiz time must be at least 1 minute'],
-        max: [360, 'Quiz time cannot exceed 360 minutes'],
     },
     /**
      * Description
@@ -74,8 +52,6 @@ const quizSchema = new mongoose.Schema({
      */
     description: {
         type: String,
-        maxlength: [1000, 'Description cannot exceed 1000 characters'],
-        trim: true,
     },
     /**
      * Image URL
@@ -84,21 +60,12 @@ const quizSchema = new mongoose.Schema({
      */
     imageUrl: {
         type: String,
-        required: [true, 'Image URL is required'],
-        trim: true,
-        validate: {
-            validator: (v) => /^https?:\/\/[^\s]+$/i.test(v),
-            message: '{VALUE} is not a valid image URL',
-        },
     },
     /**
      * public_id of the imageUrl
      */
     publicId: {
         type: String,
-        required: [true, 'Public ID is required'], // Field is mandatory
-        unique: true, // Ensures no duplicate public_id
-        trim: true, // Removes any leading/trailing spaces
     },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

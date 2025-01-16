@@ -12,12 +12,7 @@ const quizRecordSchema = new mongoose.Schema({
      */
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference to the User model
-        required: [true, 'User ID is required'],
-        validate: {
-            validator: mongoose.Types.ObjectId.isValid,
-            message: '{VALUE} is not a valid user ID',
-        },
+        ref: 'User',
     },
 
     /**
@@ -26,12 +21,7 @@ const quizRecordSchema = new mongoose.Schema({
      */
     quizId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Quiz', // Reference to the Quiz model
-        required: [true, 'Quiz ID is required'],
-        validate: {
-            validator: mongoose.Types.ObjectId.isValid,
-            message: '{VALUE} is not a valid quiz ID',
-        },
+        ref: 'Quiz',
     },
 
     /**
@@ -40,8 +30,6 @@ const quizRecordSchema = new mongoose.Schema({
      */
     score: {
         type: Number,
-        required: [true, 'Score is required'],
-        min: [0, 'Score cannot be negative'],
     },
 
     /**
@@ -50,8 +38,6 @@ const quizRecordSchema = new mongoose.Schema({
      */
     attempts: {
         type: Number,
-        required: [true, 'Attempts are required'],
-        min: [1, 'Attempts cannot be less than 1'],
         default: 1,
     },
 
@@ -61,7 +47,6 @@ const quizRecordSchema = new mongoose.Schema({
      */
     attemptedAt: {
         type: Date,
-        required: [true, 'Attempt date is required'],
         default: Date.now,
     },
 }, {

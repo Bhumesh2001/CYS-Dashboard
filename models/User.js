@@ -5,63 +5,23 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     fullName: {
         type: String,
-        trim: true,
-        required: [true, 'Full name is required'],
-        minlength: [3, 'Full name must be at least 3 characters long'],
-        maxlength: [50, 'Full name cannot exceed 50 characters'],
     },
     email: {
         type: String,
-        required: [true, 'Email is required'],
-        unique: true, // Ensures email is unique
-        lowercase: true,
-        trim: true,
-        match: [
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-            'Please enter a valid email address',
-        ],
     },
     mobile: {
         type: String,
-        required: [true, 'Mobile number is required'],
-        match: [
-            /^\d{10}$/,
-            'Mobile number must be a valid 10-digit number',
-        ],
-        unique: true, // Ensures mobile number is unique
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
-        minlength: [8, 'Password must be at least 8 characters long'],
-        maxlength: [100, 'Password cannot exceed 100 characters'],
-        select: false, // Prevent password from being returned in queries
+        select: false,
     },
     confirmPassword: {
         type: String,
-        validate: {
-            validator: function (value) {
-                // `this.password` is the password field; it works during save only
-                return value === this.password;
-            },
-            message: 'Passwords do not match',
-        },
     },
     classId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Class', // References the Class model
-        required: function () {
-            // Check if role is 'user' and it's not a password reset/forget operation
-            return this.role === 'user' && !this.isPasswordReset;
-        },
-        validate: {
-            validator: function (v) {
-                // Skip validation for admins or during password reset/forget
-                if ((!v && this.role === 'admin') || this.isPasswordReset) return true;
-                return mongoose.Types.ObjectId.isValid(v); // Validate for users
-            },
-            message: (props) => `${props.value} is not a valid class ID`,
-        },
+        ref: 'Class',
     },
     profileUrl: {
         type: String,
@@ -71,7 +31,6 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'user', 'teacher'],
         default: 'user',
     },
     otp: {
@@ -88,7 +47,6 @@ const userSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Active', 'Inactive'],
         default: 'Active',
     },
 }, {
@@ -106,7 +64,7 @@ userSchema.pre('save', async function (next) {
     this.confirmPassword = undefined;
     if (this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 12);
-    }
+    };
     next();
 });
 
@@ -114,7 +72,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (candidatePassword) {
     if (!this.password || !candidatePassword) {
         throw new Error('Password comparison failed: missing password data');
-    }
+    };
     return await bcrypt.compare(candidatePassword, this.password);
 };
 

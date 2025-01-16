@@ -150,7 +150,7 @@ exports.updateChapter = async (req, res, next) => {
         };
 
         // Process image and PDF
-        const imageData = await handleFileUpload('imageUrl', 'CysChatpersImg');
+        const imageData = await handleFileUpload('imageUrl', 'CysChaptersImg');
         const pdfData = await handleFileUpload('pdfUrl', null, true);
 
         // Update chapter with new or existing data

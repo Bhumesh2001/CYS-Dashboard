@@ -128,43 +128,26 @@ exports.updateSubject = async (req, res, next) => {
     const { classId, name, description, status } = req.body;
 
     try {
-        // Helper function to process file upload or fetch existing data
-        const processUpload = async (fileKey, folder, defaultDimensions) => {
-            const file = req.files?.[fileKey];
-            let existingData = await Subject.findById(req.params.subjectId, { [fileKey]: 1 });
+        const file = req.files?.imageUrl;
 
-            // If file is provided, delete the existing image and upload the new one
-            if (file) {
-                if (existingData?.[fileKey]?.publicId) {
-                    await deleteImage(existingData[fileKey].publicId);
-                }
-                return await uploadImage(file.tempFilePath, folder, ...defaultDimensions);
-            };
+        // Fetch existing subject and handle image
+        const existingSubject = await Subject.findById(req.params.subjectId, 'imageUrl publicId');
+        if (!existingSubject) return res.status(404).json({ success: false, message: 'Subject not found' });
 
-            // If no new file, return existing data
-            return existingData[fileKey] || { url: null, publicId: null };
+        let imageData = existingSubject.imageUrl || { url: null, publicId: null };
+
+        if (file) {
+            if (imageData.publicId) await deleteImage(imageData.publicId);
+            imageData = await uploadImage(file.tempFilePath, 'CysSubjectsImg', 220, 200);
         };
 
-        // Process Image
-        const imageData = await processUpload('imageUrl', 'CysSubjectsImg', [220, 200]);
-
-        // Update subject with new or existing image data
+        // Update subject
         const updatedSubject = await Subject.findByIdAndUpdate(
             req.params.subjectId,
-            {
-                classId,
-                name,
-                description,
-                status,
-                imageUrl: imageData.url,
-                publicId: imageData.publicId,
-            },
+            { classId, name, description, status, imageUrl: imageData.url, publicId: imageData.publicId },
             { new: true, runValidators: true }
         );
 
-        if (!updatedSubject) return res.status(404).json({ success: false, message: 'Subject not found' });
-
-        // Clear caches and respond
         flushAllCache();
 
         res.status(200).json({

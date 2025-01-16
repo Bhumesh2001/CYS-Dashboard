@@ -47,13 +47,18 @@ exports.uploadPDFToCloudinary = async (pdfPath) => {
         // Use a promise to handle async file upload
         const uploadResponse = await new Promise((resolve, reject) => {
             const stream = cloudinary.uploader.upload_stream(
-                { resource_type: 'auto', folder: "CysPdfs" },
+                {
+                    resource_type: 'raw', // Specify the resource type as 'raw' for non-image files
+                    folder: "CysPdfs",    // Upload to the specified folder in Cloudinary
+                    format: 'pdf',        // Ensure the file is treated as a PDF
+                    type: 'upload',       // Set type to 'upload' for direct access via URL
+                },
                 (error, result) => {
                     if (error) {
                         reject(error);  // Reject if an error occurs
                     } else {
                         resolve(result);  // Resolve if the upload is successful
-                    }
+                    };
                 }
             );
 

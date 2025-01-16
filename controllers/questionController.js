@@ -96,17 +96,6 @@ exports.getQuestionById = async (req, res, next) => {
 // **Update Question**
 exports.updateQuestion = async (req, res, next) => {
     try {
-        const { options, answer } = req.body;
-
-        // Validate that the answer exists as a key in the options
-        if (options && answer && !options.hasOwnProperty(answer)) {
-            return res.status(400).json({
-                success: false,
-                status: 404,
-                message: 'Answer must match one of the option keys (a, b, c, d).'
-            });
-        };
-
         const updatedQuestion = await Question.findByIdAndUpdate(
             req.params.questionId,
             req.body,

@@ -17,11 +17,6 @@ const classSchema = new mongoose.Schema({
      */
     name: {
         type: String,
-        required: [true, 'Class name is required'],
-        minlength: [2, 'Class name must be at least 2 characters long'],
-        maxlength: [50, 'Class name must be less than 50 characters'],
-        trim: true,
-        unique: true,
     },
     /**
      * Class description.
@@ -31,8 +26,6 @@ const classSchema = new mongoose.Schema({
      */
     description: {
         type: String,
-        maxlength: [500, 'Description must be less than 500 characters'],
-        trim: true,
     },
     /**
      * Status of the class.
@@ -40,12 +33,11 @@ const classSchema = new mongoose.Schema({
      */
     status: {
         type: String,
-        enum: ['Active', 'Inactive'],
         default: 'Active',
     },
 }, {
     timestamps: true,
-    collection: 'classes', // specify the collection name
+    collection: 'classes',
 });
 
 // Indexing for faster lookups

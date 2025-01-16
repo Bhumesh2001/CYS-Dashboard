@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const { generateToken, storeToken } = require('../utils/token');
 const { generateOTP } = require('../utils/otp');
-const { sendOTP } = require('../services/emailService');
+const { sendOTP, sendWelcomeMessage } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
 const { flushAllCache } = require('../middlewares/cacheMiddle');
 
@@ -18,7 +18,7 @@ exports.register = async (req, res, next) => {
         // Validate and process the uploaded file if it exists
         if (req.files && req.files.profileUrl && req.files.profileUrl.tempFilePath) {
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
-        }
+        };
 
         // Create a new user document
         const user = new User({
@@ -34,7 +34,10 @@ exports.register = async (req, res, next) => {
         storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
 
         // Clear relevant caches
-        flushAllCache()
+        flushAllCache();
+
+        // send welcome message viva email to user
+        await sendWelcomeMessage(user.email, user.fullName);
 
         // Respond with success
         res.status(201).json({
@@ -522,8 +525,8 @@ exports.createUser = async (req, res, next) => {
             });
         };
 
-        let imageData = {};
-        if (req.files || Object.keys(req.files).length !== 0) {
+        let imageData = { url: null, publicId: null };
+        if (req.files && req.files.profileUrl) {
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
         };
 

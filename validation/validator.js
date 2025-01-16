@@ -1,7 +1,11 @@
 const { body } = require('express-validator');
 const mongoose = require('mongoose');
 const Quiz = require('../models/Quiz');
-const Question = require('../models/Question'); // Assuming Question model is defined here
+const Question = require('../models/Question');
+const Class = require('../models/Class');
+const Subject = require('../models/Subject');
+const User = require('../models/User');
+const Chapter = require('../models/Chapter');
 
 // **Rgister validation rules**
 exports.registerValidationRules = [
@@ -21,7 +25,13 @@ exports.registerValidationRules = [
         .withMessage('Email is required.')
         .isEmail()
         .withMessage('Invalid email address.')
-        .normalizeEmail(),
+        .normalizeEmail()
+        .custom(async (email) => {
+            const existingEmail = await User.findOne({ email });
+            if (existingEmail) {
+                throw new Error('Email must be unique');
+            };
+        }),
 
     // Validate mobile
     body('mobile')
@@ -29,7 +39,13 @@ exports.registerValidationRules = [
         .withMessage('Mobile is required.')
         .trim()
         .matches(/^\d{10}$/)
-        .withMessage('Mobile must be a valid 10-digit number.'),
+        .withMessage('Mobile must be a valid 10-digit number.')
+        .custom(async (mobile) => {
+            const existingMobile = await User.findOne({ mobile });
+            if (existingMobile) {
+                throw new Error('Mobile must be unique');
+            }
+        }),
 
     // Validate password
     body('password')
@@ -38,9 +54,13 @@ exports.registerValidationRules = [
         .isLength({ min: 8 })
         .withMessage('Password must be at least 8 characters long.')
         .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]+$/)
-        .withMessage(
-            'Password must contain at least one letter, one number, and may include special characters.'
-        ),
+        .withMessage('Password must be strong !')
+        .custom(async (password) => {
+            const existingPassword = await User.findOne({ password });
+            if (existingPassword) {
+                throw new Error('password must be unique');
+            };
+        }),
 
     // Validate confirmPassword
     body('confirmPassword')
@@ -64,25 +84,23 @@ exports.registerValidationRules = [
     body('profileUrl')
         .optional()
         .custom((value, { req }) => {
-            if (req.file) { // Check if file exists
-                const imageFile = req.file;
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+            const imageFile = req.files?.profileUrl;
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-                if (!allowedTypes.includes(imageFile.mimetype)) {
-                    throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
-                }
+            if (!imageFile) return true;
+
+            if (req.file) {
                 if (imageFile.size > maxSize) {
                     throw new Error('File is too large. Maximum allowed size is 50MB.');
-                }
-            }
+                };
+            };
             return true;
         }),
 
     // Validate role
     body('role')
         .optional()
-        .isIn(['admin', 'user'])
+        .isIn(['admin', 'user', 'teacher'])
         .withMessage('Role must be either "admin" or "user".'),
 ];
 
@@ -213,18 +231,12 @@ exports.quizValidationRules = [
     // Validate imageUrl
     body('imageUrl')
         .custom((value, { req }) => {
+            const imageFile = req.files.imageUrl;
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
             // Check if there's no file uploaded
             if (!req.files || !req.files.imageUrl) {
                 throw new Error('Image file is required');
-            };
-
-            const imageFile = req.files.imageUrl;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
-
-            // Check the file type
-            if (!allowedTypes.includes(imageFile.mimetype)) {
-                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
             };
 
             // Check the file size
@@ -242,9 +254,36 @@ exports.quizValidationRules = [
         .withMessage('Description must be between 10 and 1000 characters'),
 ];
 
-// validate class field
+// Validate class field
 exports.classValidationRule = [
-    // Validate name
+    // Validate name with uniqueness check
+    body('name')
+        .notEmpty().withMessage('Class name is required')
+        .isLength({ min: 2 }).withMessage('Class name must be at least 2 characters long')
+        .isLength({ max: 50 }).withMessage('Class name must be less than 50 characters')
+        .trim()
+        .custom(async (name) => {
+            const existingClass = await Class.findOne({ name });
+            if (existingClass) {
+                throw new Error('Class name must be unique');
+            }
+        }),
+
+    // Validate description
+    body('description')
+        .optional()
+        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+        .trim(),
+
+    // Validate status
+    body('status')
+        .optional()
+        .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
+];
+
+// validate update class
+exports.editClassValidationRule = [
+    // Validate name with uniqueness check
     body('name')
         .notEmpty().withMessage('Class name is required')
         .isLength({ min: 2 }).withMessage('Class name must be at least 2 characters long')
@@ -261,7 +300,6 @@ exports.classValidationRule = [
     body('status')
         .optional()
         .isIn(['Active', 'Inactive']).withMessage('Invalid status value'),
-
 ];
 
 // chapter validation rule
@@ -276,7 +314,13 @@ exports.chapterValidationRule = [
         .notEmpty().withMessage('Chapter name is required')
         .isLength({ min: 2 }).withMessage('Chapter name must be at least 2 characters long')
         .isLength({ max: 200 }).withMessage('Chapter name must be less than 200 characters')
-        .trim(),
+        .trim()
+        .custom(async (name) => {
+            const existingChapter = await Chapter.findOne({ name });
+            if (existingChapter) {
+                throw new Error('Chapter name must be unique');
+            };
+        }),
 
     // Validate description (optional)
     body('description')
@@ -287,18 +331,12 @@ exports.chapterValidationRule = [
     // Validate imageUrl
     body('imageUrl')
         .custom((value, { req }) => {
+            const imageFile = req.files?.imageUrl;
+            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
+
             // Check if there's no file uploaded
             if (!req.files || !req.files.imageUrl) {
                 throw new Error('Image file is required');
-            };
-
-            const imageFile = req.files.imageUrl;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            const maxSize = 50 * 1024 * 1024; // 50MB file size limit
-
-            // Check the file type
-            if (!allowedTypes.includes(imageFile.mimetype)) {
-                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
             };
 
             // Check the file size
@@ -339,15 +377,10 @@ exports.editChapterValidationRule = [
     body('imageUrl')
         .optional()
         .custom((value, { req }) => {
-
-            const imageFile = req.files.imageUrl;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // Check the file type
-            if (!allowedTypes.includes(imageFile.mimetype)) {
-                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
-            };
+            if (!imageFile) return true;
 
             // Check the file size
             if (imageFile.size > maxSize) {
@@ -387,13 +420,15 @@ exports.questionValidationRule = [
     // Validate options (for 'Options' question type)
     body('options')
         .if(body('questionType').equals('Options'))
-        .notEmpty().withMessage('Options are required for "Options" question type')
+        .notEmpty().withMessage('Options are required')
         .isObject().withMessage('Options must be an object with keys a, b, c, d'),
 
     // Validate answer
     body('answer')
         .notEmpty().withMessage('Answer is required')
-        .isString().withMessage('Answer must be a string'),
+        .isString().withMessage('Answer must be a string')
+        .isIn(['a', 'b', 'c', 'd'])
+        .withMessage('Invalid answer! please give answer in a, b, c, d format'),
 
     // Validate status (optional)
     body('status')
@@ -414,7 +449,13 @@ exports.subjectValidationRule = [
         .isString().withMessage('Subject name must be a string')
         .isLength({ min: 2 }).withMessage('Subject name must be at least 2 characters long')
         .isLength({ max: 100 }).withMessage('Subject name must be less than 100 characters')
-        .trim(),
+        .trim()
+        .custom(async (name) => {
+            const existingSubject = await Subject.findOne({ name });
+            if (existingSubject) {
+                throw new Error('Subject name must be unique');
+            };
+        }),
 
     // Validate description
     body('description')
@@ -427,17 +468,11 @@ exports.subjectValidationRule = [
     body('imageUrl')
         .custom((value, { req }) => {
             // Check if there's no file uploaded
-            if (!req.files || !req.files.imageUrl) {
-                throw new Error('Image file is required');
-            };
-
             const imageFile = req.files.imageUrl;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // Check the file type
-            if (!allowedTypes.includes(imageFile.mimetype)) {
-                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            if (!req.files || !req.files.imageUrl) {
+                throw new Error('Image file is required');
             };
 
             // Check the file size
@@ -480,14 +515,11 @@ exports.editSubjectValidationRule = [
     body('imageUrl')
         .optional()
         .custom((value, { req }) => {
-            const imageFile = req.files.imageUrl;
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // Check the file type
-            if (!allowedTypes.includes(imageFile.mimetype)) {
-                throw new Error('Invalid image file type. Only JPEG, PNG, GIF, and WebP are allowed.');
-            };
+            // If no file is provided, pass the validation
+            if (!imageFile) return true;
 
             // Check the file size
             if (imageFile.size > maxSize) {
@@ -539,27 +571,25 @@ exports.validateQuizSubmissionRule = [
             const quiz = await Quiz.findById(req.body.quizId);
             if (!quiz) {
                 throw new Error('Quiz not found');
-            }
+            };
 
             // Step 2: Ensure the quiz has a valid chapterId
             const chapterId = quiz.chapterId; // Assuming `chapterId` exists in the Quiz model
             if (!chapterId) {
                 throw new Error('Quiz does not have a valid chapterId');
-            }
+            };
 
             // Step 3: Fetch all questions for the chapter
             const questions = await Question.find({ chapterId });
             if (!questions || questions.length === 0) {
                 throw new Error('No questions found for the specified chapter');
-            }
+            };
 
             // Step 4: Validate the length of userAnswers
             const questionCount = questions.length;
             if (value.length !== questionCount) {
-                throw new Error(
-                    `userAnswers should contain exactly ${questionCount} answers. You provided ${value.length}.`
-                );
-            }
+                throw new Error(`userAnswers should contain exactly ${questionCount} answers. You provided ${value.length}.`);
+            };
 
             return true;
         }),
@@ -592,7 +622,9 @@ exports.validateSmtpSettingsRule = [
 
     body('smtpSecure')
         .notEmpty()
-        .withMessage('SMTP Secure is required!'),
+        .withMessage('SMTP Secure is required!')
+        .isIn(['TLS', 'SSL'])
+        .withMessage('smtpSecure will be in this TLS or SSL'),
 
     body('smtpPort')
         .isInt({ min: 1, max: 65535 })
@@ -630,7 +662,7 @@ exports.validateAppGeneralSettingsRule = [
             const regex = /^(https?:\/\/)?([a-z0-9\-\.]+)(\.[a-z]{2,6})(\/[a-z0-9\-._~!$&'()*+,;=:@%]*)*(\?[;&a-z=\d\-_\.]*)?(\#[a-z\d_]*)?$/i;
             if (!regex.test(value)) {
                 throw new Error('Invalid website URL.');
-            }
+            };
             return true;
         }),
 
@@ -658,26 +690,31 @@ exports.validateAppSettingRule = [
         .withMessage('RTL must be a boolean value.')
         .notEmpty()
         .withMessage('RTL is required.'),
+
     body('appMaintenance')
         .isBoolean()
         .withMessage('App Maintenance must be a boolean value.')
         .notEmpty()
         .withMessage('App Maintenance is required.'),
+
     body('googleLogin')
         .isBoolean()
         .withMessage('Google Login must be a boolean value.')
         .notEmpty()
         .withMessage('Google Login is required.'),
+
     body('firstOpenLogin')
         .isBoolean()
         .withMessage('First Open Login must be a boolean value.')
         .notEmpty()
         .withMessage('First Open Login is required.'),
+
     body('screenshotBlock')
         .isBoolean()
         .withMessage('Screenshot Block must be a boolean value.')
         .notEmpty()
         .withMessage('Screenshot Block is required.'),
+
     body('vpnBlock')
         .isBoolean()
         .withMessage('VPN Block must be a boolean value.')

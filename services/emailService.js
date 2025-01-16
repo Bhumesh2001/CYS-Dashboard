@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const { EMAIL, EMAIL_PASSWORD } = process.env;
-const { otpHtmlTemplate } = require('../utils/message');
+const { otpHtmlTemplate, welcomeMessage } = require('../utils/message');
 
 // **Transporter with Connection Pooling and TLS**
 const transporter = nodemailer.createTransport({
@@ -26,7 +26,23 @@ exports.sendOTP = async (email, otp) => {
         to: email,
         from: EMAIL,
         subject: '🔑 Reset Your Password - CYS App',
-        html: otpHtmlTemplate(otp)
+        html: otpHtmlTemplate(otp),
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+    } catch (error) {
+        console.error(`Failed to send OTP to ${email}:`, error);
+    };
+};
+
+// **Send OTP with Error Handling and Logging**
+exports.sendWelcomeMessage = async (email, name) => {
+    const mailOptions = {
+        to: email,
+        from: EMAIL,
+        subject: "👋 Thank You for Joining CYS! Let's Get Started",
+        html: welcomeMessage(name),
     };
 
     try {

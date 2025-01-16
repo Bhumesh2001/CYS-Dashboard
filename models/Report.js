@@ -14,7 +14,6 @@ const reportSchema = new mongoose.Schema({
      */
     reportedId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Reported ID is required'],
         refPath: 'reportedModel', // Dynamically references the model type
     },
 
@@ -26,8 +25,6 @@ const reportSchema = new mongoose.Schema({
      */
     reportedModel: {
         type: String,
-        required: [true, 'Reported model is required'],
-        enum: ['Question', 'User', 'Chapter'], // Add other models if needed
     },
 
     /**
@@ -38,7 +35,6 @@ const reportSchema = new mongoose.Schema({
      */
     reporterId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Reporter ID is required'],
         ref: 'User',
     },
 
@@ -51,10 +47,6 @@ const reportSchema = new mongoose.Schema({
      */
     reason: {
         type: String,
-        required: [true, 'Report reason is required'],
-        minlength: [10, 'Reason must be at least 10 characters long'],
-        maxlength: [300, 'Reason must be less than 300 characters long'],
-        trim: true,
     },
 
     /**

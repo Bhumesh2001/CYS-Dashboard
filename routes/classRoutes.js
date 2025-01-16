@@ -40,7 +40,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['classId'], 'params'),
-    validateFields(classValidation.classValidationRule),
+    validateFields(classValidation.editClassValidationRule),
     classController.updateClass
 );
 
