@@ -6,6 +6,12 @@ const { generateOTP } = require('../utils/otp');
 const { sendOTP, sendWelcomeMessage } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
 const { flushAllCache } = require('../middlewares/cacheMiddle');
+const { OAuth2Client } = require('google-auth-library');
+const client = new OAuth2Client(
+    process.env.CLIENT_ID,
+    process.env.ClIENT_SECRET,
+    process.env.CALLBACK_URL
+);
 
 //**Register**
 exports.register = async (req, res, next) => {
@@ -63,7 +69,7 @@ exports.login = async (req, res, next) => {
             .populate('classId', 'name')
             .select('+password');
 
-        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        if (!user) return res.status(404).json({ success: false, status: 404, message: 'User not found' });
 
         const isMatch = await user.comparePassword(password, user.password);
         if (!isMatch) return res.status(401).json({
@@ -84,9 +90,58 @@ exports.login = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: 'User logged in successful...!',
+            message: 'Logged in successful...!',
             user: userData,
             token
+        });
+    } catch (error) {
+        next(error);
+    };
+};
+
+// **login with google**
+exports.redirectToGoogleProfile = async (req, res, next) => {
+    try {
+        const googleUrl = client.generateAuthUrl({
+            access_type: 'offline',
+            scope: [
+                'https://www.googleapis.com/auth/userinfo.profile',
+                'https://www.googleapis.com/auth/userinfo.email'
+            ],
+        });
+        res.status(200).json({
+            success: true,
+            message: 'Past this link into the browser',
+            googleUrl,
+        });
+    } catch (error) {
+        next(error);
+    };
+};
+
+// **get google profile**
+exports.getGoogleProfile = async (req, res, next) => {
+    const { code } = req.query;
+
+    try {
+        const { tokens } = await client.getToken(code);
+        client.setCredentials(tokens);
+
+        const ticket = await client.verifyIdToken({
+            idToken: tokens.id_token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const userId = payload['sub'];
+
+        const token = generateToken({ id: userId, role: 'user' });
+        storeToken(res, token, `user_token`, 7 * 24 * 60 * 60 * 1000);
+
+        res.status(200).json({
+            success: true,
+            message: 'Logged in successful...!',
+            userId,
+            token,
         });
     } catch (error) {
         next(error);
@@ -105,7 +160,7 @@ exports.adminLogin = async (req, res, next) => {
         ).select('+password'); // Include password for comparison
 
         if (!admin) {
-            return res.status(404).json({ success: false, message: 'Admin not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Admin not found' });
         };
 
         // Check if the password matches

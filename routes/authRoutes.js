@@ -27,6 +27,10 @@ router.post(
     userController.login
 );
 
+// google login
+router.get('/google', userController.redirectToGoogleProfile);
+router.get('/google/callback', userController.getGoogleProfile);
+
 // **Admin login**
 router.post(
     '/admin/login',
