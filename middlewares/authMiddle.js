@@ -8,6 +8,7 @@ exports.authenticate = async (req, res, next) => {
     if (!token) {
         return res.status(401).json({
             success: false,
+            status: 401,
             message: 'Access Denied'
         });
     };
@@ -28,7 +29,8 @@ exports.authorize = (roles = []) => {
         if (roles.length && !roles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: 'Permission Denied: You do not have the required role'
+                status: 403,
+                message: 'Permission Denied!'
             });
         }
         next();

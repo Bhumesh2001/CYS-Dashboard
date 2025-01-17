@@ -5,7 +5,7 @@ const { generateToken, storeToken } = require('../utils/token');
 const { generateOTP } = require('../utils/otp');
 const { sendOTP, sendWelcomeMessage } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
-const { flushAllCache } = require('../middlewares/cacheMiddle');
+const { flushAllCache, flushCacheByKey } = require('../middlewares/cacheMiddle');
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(
     process.env.CLIENT_ID,
@@ -87,6 +87,7 @@ exports.login = async (req, res, next) => {
             className: user.classId?.name || null, // Extract the name field as className
         };
         delete userData.classId;
+        delete userData.password;
 
         res.status(200).json({
             success: true,
@@ -132,15 +133,40 @@ exports.getGoogleProfile = async (req, res, next) => {
             audience: process.env.GOOGLE_CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        const userId = payload['sub'];
+        const email = payload['email'];
+        const name = payload['name'];
 
-        const token = generateToken({ id: userId, role: 'user' });
-        storeToken(res, token, `user_token`, 7 * 24 * 60 * 60 * 1000);
+        let user = await User.findOne(
+            { email },
+            { fullName: 1, mobile: 1, email: 1, classId: 1, profileUrl: 1, role: 1 }
+        )
+            .populate('classId', 'name')
+            .select('+password');
+
+        if (!user) {
+            user = new User({
+                fullName: name,
+                email,
+            });
+            await user.save();
+            flushAllCache();
+        };
+
+        const token = generateToken({ id: user._id, role: 'user' });
+        storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
+
+        // Convert `classId` object to a key-value pair
+        const userData = {
+            ...user.toObject(),
+            className: user.classId?.name || null, // Extract the name field as className
+        };
+        delete userData.classId;
+        delete userData.password;
 
         res.status(200).json({
             success: true,
-            message: 'Logged in successful...!',
-            userId,
+            message: 'Logged in successfully...!',
+            user: userData,
             token,
         });
     } catch (error) {
@@ -290,7 +316,7 @@ exports.changePassword = async (req, res, next) => {
 
     try {
         // Fetch the user by ID, including password for comparison
-        const user = await User.findById(req.user._id).select('+password');;
+        const user = await User.findById(req.user._id).select('+password');
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -316,7 +342,7 @@ exports.changePassword = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: 'Password updated successfully'
+            message: 'Password updated successfully...!'
         });
     } catch (error) {
         next(error);
@@ -764,6 +790,7 @@ exports.deleteUser = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'User not found.' });
         };
         flushAllCache();
+        flushCacheByKey('api/dashboard/new-users');
 
         res.status(200).json({ success: true, message: 'User deleted successfully.' });
     } catch (error) {
