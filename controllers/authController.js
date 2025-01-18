@@ -6,12 +6,6 @@ const { generateOTP } = require('../utils/otp');
 const { sendOTP, sendWelcomeMessage } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
 const { flushAllCache, flushCacheByKey } = require('../middlewares/cacheMiddle');
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(
-    process.env.CLIENT_ID,
-    process.env.ClIENT_SECRET,
-    process.env.CALLBACK_URL
-);
 
 //**Register**
 exports.register = async (req, res, next) => {
@@ -100,48 +94,16 @@ exports.login = async (req, res, next) => {
     };
 };
 
-// **login with google**
-exports.redirectToGoogleProfile = async (req, res, next) => {
-    try {
-        const googleUrl = client.generateAuthUrl({
-            access_type: 'offline',
-            scope: [
-                'https://www.googleapis.com/auth/userinfo.profile',
-                'https://www.googleapis.com/auth/userinfo.email'
-            ],
-        });
-        res.status(200).json({
-            success: true,
-            message: 'Past this link into the browser',
-            googleUrl,
-        });
-    } catch (error) {
-        next(error);
-    };
-};
-
-// **get google profile**
-exports.getGoogleProfile = async (req, res, next) => {
-    const { code } = req.query;
+// **Login with Google**
+exports.loginWithGoogle = async (req, res, next) => {
+    const { name, email } = req.body;
 
     try {
-        const { tokens } = await client.getToken(code);
-        client.setCredentials(tokens);
-
-        const ticket = await client.verifyIdToken({
-            idToken: tokens.id_token,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        const email = payload['email'];
-        const name = payload['name'];
-
         let user = await User.findOne(
             { email },
-            { fullName: 1, mobile: 1, email: 1, classId: 1, profileUrl: 1, role: 1 }
+            { otp: 0, otpExpires: 0, otpVerified: 0, createdAt: 0, updatedAt: 0, __v: 0 }
         )
-            .populate('classId', 'name')
-            .select('+password');
+            .populate('classId', 'name');
 
         if (!user) {
             user = new User({
@@ -152,20 +114,18 @@ exports.getGoogleProfile = async (req, res, next) => {
             flushAllCache();
         };
 
-        const token = generateToken({ id: user._id, role: 'user' });
+        const token = generateToken({ id: user._id, role: user.role });
         storeToken(res, token, `${user.role}_token`, 7 * 24 * 60 * 60 * 1000);
 
-        // Convert `classId` object to a key-value pair
-        const userData = {
-            ...user.toObject(),
-            className: user.classId?.name || null, // Extract the name field as className
-        };
+        // Convert Mongoose document to plain object
+        const userData = user.toObject();
+        userData.className = user.classId?.name || null;  // Extract the name field as className
         delete userData.classId;
         delete userData.password;
 
         res.status(200).json({
             success: true,
-            message: 'Logged in successfully...!',
+            message: 'Logged in successfully!',
             user: userData,
             token,
         });
