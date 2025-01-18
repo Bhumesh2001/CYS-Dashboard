@@ -28,7 +28,11 @@ router.post(
 );
 
 // google login
-router.post('/google', userController.loginWithGoogle);
+router.post(
+    '/google',
+    validateFields(userValidation.loginWithGoogleValidationRule),
+    userController.loginWithGoogle
+);
 
 // **Admin login**
 router.post(

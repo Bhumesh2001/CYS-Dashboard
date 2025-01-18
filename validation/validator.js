@@ -119,6 +119,26 @@ exports.loginValidationRules = [
         .withMessage('Password must be at least 8 characters long'),
 ];
 
+// **Login with google validation rule**
+exports.loginWithGoogleValidationRule = [
+    // validate name
+    body('name')
+        .notEmpty()
+        .withMessage('fullName is required.')
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Full name must be between 2 and 100 characters.')
+        .matches(/^[a-zA-Z\s]+$/)
+        .withMessage('Full name can only contain alphabets and spaces.'),
+
+    body('email')
+        .notEmpty()
+        .withMessage('Email is required')
+        .isEmail()
+        .withMessage('Invalid email address')
+        .normalizeEmail(),
+];
+
 // **Validate login user field**
 exports.validateResetPasswordRules = [
     // Email Validation
