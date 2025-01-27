@@ -7,11 +7,6 @@ exports.createSubject = async (req, res, next) => {
     const { classId, name, description, status } = req.body;
 
     try {
-        // Check for files in the request
-        if (!req.files?.imageUrl) {
-            return res.status(400).json({ success: false, message: 'Image file is required.' });
-        };
-
         // Upload image and PDF (if available)
         const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
 

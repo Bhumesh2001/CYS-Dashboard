@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const { generateToken, storeToken } = require('../utils/token');
-const { generateOTP } = require('../utils/otp');
+const { generateOTP, generateRandomPhoneNumber } = require('../utils/otp');
 const { sendOTP, sendWelcomeMessage } = require('../services/emailService');
 const { uploadImage, deleteImage } = require('../utils/image');
 const { flushAllCache, flushCacheByKey } = require('../middlewares/cacheMiddle');
@@ -42,7 +42,7 @@ exports.register = async (req, res, next) => {
         // Respond with success
         res.status(201).json({
             success: true,
-            message: 'User registered successfully',
+            message: 'Registered successful...!',
             _id: user._id,
             token,
         });
@@ -69,7 +69,7 @@ exports.login = async (req, res, next) => {
         if (!isMatch) return res.status(401).json({
             success: false,
             status: 401,
-            message: 'Invalid credentials'
+            message: 'Invalid email or password !'
         });
 
         const token = generateToken({ id: user._id, role: user.role });
@@ -101,14 +101,14 @@ exports.loginWithGoogle = async (req, res, next) => {
     try {
         let user = await User.findOne(
             { email },
-            { otp: 0, otpExpires: 0, otpVerified: 0, createdAt: 0, updatedAt: 0, __v: 0 }
-        )
-            .populate('classId', 'name');
+            { otp: 0, otpExpires: 0, otpVerified: 0, createdAt: 0, updatedAt: 0, __v: 0, publicId: 0 }
+        ).populate('classId', 'name');
 
         if (!user) {
             user = new User({
                 fullName: name,
                 email,
+                mobile: await generateRandomPhoneNumber(),
             });
             await user.save();
             flushAllCache();
@@ -125,7 +125,7 @@ exports.loginWithGoogle = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: 'Logged in successfully!',
+            message: 'Logged in successful...!',
             user: userData,
             token,
         });
@@ -155,7 +155,7 @@ exports.adminLogin = async (req, res, next) => {
             return res.status(401).json({
                 success: false,
                 status: 401,
-                message: 'Invalid credentials',
+                message: 'Invalid email or password !',
             });
         };
 
@@ -169,7 +169,7 @@ exports.adminLogin = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            message: 'Admin logged in successfully...!',
+            message: 'Logged in successful...!',
             admin: adminData,
             token,
         });
@@ -203,7 +203,7 @@ exports.forgotPassword = async (req, res, next) => {
         res.status(200).json({ success: true, message: 'OTP sent to your email.' });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Verify reset password otp**
@@ -228,7 +228,7 @@ exports.verifyOtp = async (req, res, next) => {
         res.status(200).json({ success: true, message: "OTP verified successfully." });
     } catch (error) {
         next(error);
-    }
+    };
 };
 
 // **Reset password**
@@ -345,7 +345,7 @@ exports.updateProfile = async (req, res, next) => {
         // Initialize updateData with existing user profileUrl and publicId
         const user = await User.findById(userId).select('profileUrl publicId');
         if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'User not found' });
         };
 
         let updateData = {
@@ -376,7 +376,7 @@ exports.updateProfile = async (req, res, next) => {
             .populate('classId', 'name')
 
         if (!updatedUser) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'User not found' });
         };
 
         const updated_user = {

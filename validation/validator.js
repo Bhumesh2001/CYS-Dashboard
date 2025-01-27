@@ -488,11 +488,11 @@ exports.subjectValidationRule = [
     body('imageUrl')
         .custom((value, { req }) => {
             // Check if there's no file uploaded
-            const imageFile = req.files.imageUrl;
+            const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
             if (!req.files || !req.files.imageUrl) {
-                throw new Error('Image file is required');
+                throw new Error('Image file is required!');
             };
 
             // Check the file size
