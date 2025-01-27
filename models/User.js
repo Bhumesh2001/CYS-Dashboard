@@ -11,7 +11,6 @@ const userSchema = new mongoose.Schema({
     },
     mobile: {
         type: String,
-        unique: true,
         sparse: true, // Allow users to not have a mobile number
     },
     password: {
