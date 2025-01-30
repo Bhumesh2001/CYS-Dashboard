@@ -8,8 +8,6 @@ dotenv.config();
 exports.connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
             serverSelectionTimeoutMS: 30000, // Wait up to 30s for DB connection
             socketTimeoutMS: 45000, // Increase query timeout
             maxPoolSize: 10, // Allow multiple concurrent connections

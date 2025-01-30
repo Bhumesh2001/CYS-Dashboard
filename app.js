@@ -58,7 +58,7 @@ app.use(fileUpload({
 
 // CORS configuration
 const corsOptions = {
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL || 'https://cys-app.netlify.app',
     credentials: true,
 };
 app.use(cors(corsOptions));
