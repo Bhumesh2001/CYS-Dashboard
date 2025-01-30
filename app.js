@@ -56,12 +56,13 @@ app.use(fileUpload({
     responseOnLimit: 'File size limit exceeded!',
 }));
 
-// CORS configuration
-const corsOptions = {
-    origin: process.env.CLIENT_URL || 'https://cys-app.netlify.app',
-    credentials: true,
-};
-app.use(cors(corsOptions));
+// ✅ Correct CORS Setup
+app.use(cors({
+    origin: process.env.CLIENT_URL || "https://cys-app.netlify.app", // Allow frontend domain
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+    credentials: true // Allow cookies/auth headers
+}));
 
 // ✅ Handle Preflight Requests for All Routes
 app.options("*", cors());
