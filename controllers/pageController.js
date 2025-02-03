@@ -1,0 +1,12 @@
+exports.renderIndex = (req, res) => res.render("index");
+exports.renderDashboard = (req, res) => res.render("dashboard", { nonce: res.locals.nonce });
+exports.renderAdmin = (req, res) => res.render("admin");
+exports.renderUser = (req, res) => res.render("user");
+exports.renderClass = (req, res) => res.render("class");
+exports.renderChapter = (req, res) => res.render("chapter");
+exports.renderSubject = (req, res) => res.render("subject");
+exports.renderSetting1 = (req, res) => res.render("setting1");
+exports.renderSetting2 = (req, res) => res.render("setting2");
+exports.renderReport = (req, res) => res.render("report");
+exports.renderQuiz = (req, res) => res.render("quiz");
+exports.renderQuestion = (req, res) => res.render("question");

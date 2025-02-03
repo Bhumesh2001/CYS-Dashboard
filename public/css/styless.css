@@ -1,0 +1,1005 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #eef0f2;
+  font-family: Arial, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Header Styles */
+.header {
+  top: 0;
+  z-index: 1030;
+  width: 100%;
+  background-color: #f1f2f3;
+  box-shadow: rgba(0, 0, 0, 0.04) 0px 3px 5px;
+}
+
+#class,
+#subject,
+#chapter,
+#quiz,
+#user,
+#report,
+#category,
+#question,
+#admin,
+#admin_setting,
+#admin_setting2 {
+  background-color: #ffffff;
+  padding: 20px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px,
+    rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+}
+
+#admin_setting,
+#admin_setting2 {
+  border-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px -2px 6px, rgba(0, 0, 0, 0.05) 2px 0px 6px,
+    rgba(0, 0, 0, 0.05) -2px 0px 6px;
+  padding: 25px;
+}
+
+.button-section {
+  background-color: #ffffff;
+  padding: 20px 20px 0px 20px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px -2px 6px, rgba(0, 0, 0, 0.05) 2px 0px 6px,
+    rgba(0, 0, 0, 0.05) -2px 0px 6px;
+}
+
+/* Sidebar Styles */
+.sidebar-container {
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+  position: fixed;
+  width: 16%;
+  background-color: #fff;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 2px 8px;
+  z-index: 1000;
+}
+
+#nestedSettingsMenu {
+  padding: 5px;
+}
+
+#nestedSettingsMenu i {
+  font-size: 12px;
+}
+
+.nested-menu {
+  overflow: hidden;
+  height: 0; /* Initially hidden */
+  transition: height 0.3s ease; /* Smooth height transition */
+}
+
+#settingsLink .dropdown-icon {
+  font-size: 12px;
+}
+
+.dropdown-icon {
+  transition: transform 0.3s ease; /* Smooth rotation transition */
+  padding-left: 20px;
+}
+
+.dropdown-icon.open {
+  transform: rotate(180deg); /* Rotate when open */
+}
+
+.sidebar-container div {
+  cursor: pointer; /* Indicates the div is clickable */
+  border-radius: 5px; /* Smooth rounded corners */
+  transition: all 0.3s ease; /* Smooth transitions for hover effects */
+  padding: 10px;
+}
+
+/* Text Link Styles */
+.sidebar-container div a {
+  color: #333333; /* Text color for better readability */
+  text-decoration: none; /* No underline for links */
+  transition: color 0.3s ease; /* Smooth text color transition */
+  text-decoration: none;
+}
+
+/* Sidebar Link */
+.sidebar-container .sidebar-link {
+  text-decoration: none;
+  color: black;
+  margin-bottom: 2px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+/* Hover Effect */
+.sidebar-container .sidebar-link:hover {
+  background-color: #f5f3f4;
+  transform: translateY(-2px);
+}
+
+/* Active Link */
+.sidebar-container a.active {
+  box-shadow: none;
+  background-color: #f1f2f3;
+  color: #0496ff;
+}
+
+.sidebar-item span {
+  padding-left: 10px;
+}
+
+/* Sidebar Icons */
+.sidebar-container .sidebar-item i {
+  font-size: 1.1rem;
+  color: #0496ff;
+  transition: color 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f5f3f4;
+}
+
+.dropdown-menu a:active {
+  background-color: #eff0f1;
+  color: black;
+}
+
+.dropdown-item i {
+  color: #0496ff;
+  padding-right: 5px;
+}
+
+/* Sidebar Text */
+.sidebar-container .sidebar-item span {
+  font-size: 15px;
+  display: inline-block;
+}
+
+.sidebar-item:hover,
+.nested-link:hover {
+  color: #0496ff; /* Highlight on hover */
+}
+
+.sidebar-item.active + .nested-menu {
+  display: block;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #fff;
+  height: 55px;
+}
+
+/* Button Styles */
+.button {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.dark-light-btn {
+  background-color: gray;
+  color: #ffffff;
+  padding: 6px; /* Smaller padding */
+  width: 35px; /* Set fixed width */
+  height: 35px; /* Set fixed height */
+  font-size: 16px; /* Reduce icon size */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%; /* Ensures circular shape */
+}
+
+/* General Styles for Circular Buttons */
+.profile-btn {
+  width: 35px; /* Fixed width for a circular shape */
+  height: 35px; /* Fixed height for a circular shape */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%; /* Makes the button circular */
+  overflow: hidden; /* Ensures the image fits perfectly */
+  padding: 0; /* Removes extra padding for a clean fit */
+}
+
+/* Profile Image */
+.profile-img {
+  width: 100%; /* Ensure the image fills the button */
+  height: 100%; /* Maintain aspect ratio */
+  object-fit: cover; /* Ensures the image looks good inside the circle */
+  border-radius: 50%; /* Keeps the image circular */
+}
+
+.fa-house {
+  cursor: pointer;
+  color: #0496ff;
+}
+
+/* Card Styles */
+.card {
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fff;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.card img {
+  height: 200px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.d-card-title {
+  font-size: 15px;
+}
+
+.createButton,
+.backButton {
+  font-size: 15px;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  text-align: center;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quiz-card {
+  background-color: #ffffff;
+  color: black;
+  border-left: 4px solid #0d6efd;
+  border-radius: 7px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.chapter-card {
+  background-color: #ffffff;
+  color: black;
+  border-left: 4px solid #0dc8ed;
+  border-radius: 7px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.report-card {
+  background-color: #ffffff;
+  color: black;
+  border-left: 4px solid #dc3545;
+  border-radius: 7px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.user-card {
+  background-color: #ffffff;
+  color: black;
+  border-left: 4px solid #198754;
+  border-radius: 7px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+canvas {
+  padding: 15px;
+  background-color: #ffffff;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-icon {
+  font-size: calc(1.5rem + 1vw); /* Adjust size based on viewport */
+  width: auto; /* Let the width adjust based on content */
+  height: auto; /* Maintain aspect ratio */
+  display: inline-block; /* Ensures the icon scales nicely */
+  text-align: center; /* Center align if needed */
+  color: #333; /* Icon color */
+}
+
+.fa-question-circle {
+  color: #686cff;
+}
+
+.fa-book {
+  color: #0dc8ed;
+}
+
+.fa-chart-line {
+  color: #ff4120;
+}
+
+.fa-users {
+  color: #71dd39;
+}
+
+#user_card_container {
+  max-height: 480px;
+}
+
+.new-users,
+.user-analytics {
+  height: 427px;
+}
+
+#user_cards_container {
+  overflow: hidden;
+}
+
+/* New User Styles */
+._user-card {
+  background: #ffffff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+._user-card h2 {
+  margin-bottom: 16px;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.user-list li:last-child {
+  border-bottom: none;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  flex: 1;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: black;
+}
+
+.user-email {
+  font-size: 14px;
+  color: #343a40;
+}
+
+.user-date {
+  font-size: 12px;
+  color: #495057;
+  font-style: italic;
+  text-align: right;
+}
+
+.user-avatar img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Text Styles */
+h4 {
+  color: #333;
+}
+
+.date {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Table Styles */
+.table {
+  margin: 0px;
+  font-size: 16px;
+}
+
+.table th {
+  background-color: #f1f2f3;
+  color: #5c5552;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.3s;
+}
+
+.table td img {
+  max-height: 50px;
+  object-fit: cover;
+  margin: 0 auto;
+  height: 50px;
+  width: 50px;
+}
+
+/* Badge Styles */
+.badge {
+  font-size: 0.8rem;
+  padding: 0.5em 0.8em;
+}
+
+/* Buttons */
+.btn-custom {
+  background-color: #0d6efd;
+  color: #fff;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+  background-color: #084298;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .table {
+    font-size: 14px;
+  }
+}
+
+/* create form css */
+.form-container_ {
+  max-width: 100%;
+  margin: auto;
+  background-color: #ffffff;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px,
+    rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+}
+.form-select,
+.form-control {
+  border: 2px solid #ccc;
+  color: #495057;
+}
+
+.fa-asterisk {
+  font-size: 10px; /* Adjust the size */
+  color: red;      /* Change the color to red */
+}
+
+.form-header h1 {
+  font-weight: bold;
+  font-size: 1.8rem; /* Default size for medium to large screens */
+  color: #333333;
+  text-align: center; /* Optional: Center align for better responsiveness */
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+  transition: font-size 0.3s ease-in-out; /* Smooth scaling */
+}
+
+/* Adjust font size for smaller screens */
+@media (max-width: 768px) {
+  .form-header h1 {
+    font-size: 1.5rem; /* Slightly smaller font for tablets */
+  }
+}
+
+/* Adjust font size for very small screens */
+@media (max-width: 480px) {
+  .form-header h1 {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    font-size: 1.3em; /* Smaller font for mobile devices */
+  }
+}
+
+#dynamicForm label {
+  color: black;
+}
+
+.form-select,
+.form-control:focus {
+  outline: none; /* Removes the default focus outline */
+  border: 2px solid #00c6ff; /* Adds a custom border to indicate focus */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Adds a subtle glow effect */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effect */
+}
+/* When the select is focused (clicked) */
+.form-select:focus {
+  outline: none; /* Removes default outline */
+  border: 2px solid #00c6ff; /* Apply custom border when focused */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add subtle glow */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+}
+
+/* Revert styles when not focused */
+.form-select:not(:focus) {
+  border: 2px solid #ccc;
+  box-shadow: none; /* Remove shadow */
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.submit-btn {
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  border: none;
+  border-radius: 25px;
+  padding: 9px 18px;
+  font-weight: bold;
+  font-size: 15px;
+  color: #fff;
+  /* transition: background 0.3s ease; */
+  transition: all 0.3s ease;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+#loading-btn,
+#loading-btn1,
+#loading-btn2,
+#loading-btn3,
+#loading-btn4,
+#loading-btn5,
+#loading-btn6,
+#loading-btn7,
+#loading-btn8,
+#_loading-btn {
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(90deg, #00c6ff, #007bff);
+  color: black;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.backButton,
+#createCategoryButton,
+#createClassButton,
+#createSubjectButton,
+#createChapterButton,
+#createQuestionButton,
+#createQuizButton,
+#createUserButton,
+#createAdminButton {
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.06);
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  padding: 9px 18px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  /* transition: background 0.3s ease; */
+}
+
+.backButton:hover,
+#createCategoryButton:hover,
+#createClassButton:hover,
+#createSubjectButton:hover,
+#createChapterButton:hover,
+#createQuestionButton:hover,
+#createQuizButton:hover,
+#createUserButton:hover,
+#createAdminButton:hover {
+  background: linear-gradient(90deg, #00c6ff, #007bff);
+  border: none;
+  color: black;
+  /* transition: background 0.3s ease;  */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.backButton:active,
+#createCategoryButton:active,
+#createClassButton:active,
+#createSubjectButton:active,
+#createChapterButton:active,
+#createQuestionButton:active,
+#createQuizButton:active,
+#createUserButton:active,
+#createAdminButton:active {
+  transform: translateY(0);
+}
+
+/* Overlay for popup */
+.delete-popup-overlay {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent background */
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Popup box styling */
+.delete-popup {
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Popup heading */
+.delete-popup h2 {
+  font-size: 24px;
+  color: #e74c3c; /* Red color for delete confirmation */
+  margin-bottom: 15px;
+}
+
+/* Popup paragraph */
+.delete-popup p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+/* Buttons container */
+.buttons {
+  display: flex;
+  justify-content: space-around;
+}
+
+/* Cancel button */
+.cancel-btn {
+  background-color: #f5f5f5;
+  border: 2px solid #ccc;
+  color: #333;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 25px;
+  transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+  background-color: #f0f0f0;
+  transform: scale(1.05);
+}
+
+/* Confirm button */
+.confirm-btn {
+  background-color: #e74c3c;
+  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  border: 2px solid black;
+  transition: all 0.3s;
+}
+
+.confirm-btn:hover {
+  background-color: #c0392b;
+  transform: scale(1.05);
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slide-up animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .delete-popup {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .delete-popup h2 {
+    font-size: 20px;
+  }
+
+  .delete-popup p {
+    font-size: 14px;
+  }
+
+  .buttons_ {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cancel-btn,
+  .confirm-btn {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+/* Loader Styles */
+.loader_ {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  width: 100%;
+  height: 100%;
+  background: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.fa-spinner {
+  font-size: 2rem;
+}
+
+/* For devices with screen width between 768px and 1200px */
+@media only screen and (min-width: 320px) and (max-width: 1200px) {
+  .sidebar-container {
+    width: 200px;
+  }
+}
+
+/* notification css */
+.notifications-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  z-index: 9999;
+}
+
+.notification-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slide-in 0.5s forwards; /* Slide in animation */
+}
+
+.notification-card.success {
+  border-left: 5px solid #28a745;
+  background-color: #e9f7ec;
+}
+
+.notification-card.error {
+  border-left: 5px solid #dc3545;
+  background-color: #f8d7da;
+}
+
+.notification-card.info {
+  border-left: 5px solid #17a2b8;
+  background-color: #d1ecf1;
+}
+
+.notification-card.warning {
+  border-left: 5px solid #ffc107;
+  background-color: #fff3cd;
+}
+
+.notification-card .icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.notification-card .message {
+  flex-grow: 1;
+}
+
+.notification-card .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0px 8px 0px 8px;
+}
+
+.notification-card .close-btn:hover {
+  color: #000;
+}
+
+/* Slide-in animation */
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* setting1 css */
+.btn-save,
+.save-btn {
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+.btn-save:hover,
+.save-btn:hover {
+  background: linear-gradient(90deg, #00c6ff, #007bff);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  color: black;
+}
+.btn-save:active,
+.save-btn:active {
+  transform: translateY(0);
+}
+
+/* site logo */
+#logoImage,
+#_imageUrl,
+#_profileUrl {
+  width: 140px; /* Set your desired width */
+  height: 100px; /* Set your desired height */
+  object-fit: cover; /* Adjust how the image fits into the container */
+  border: 3px solid #00c6ff;
+  border-radius: 5px;
+}
+
+/* Custom styles for password toggle */
+.toggle-password {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.input-group {
+  position: relative;
+  display: block;
+}
+
+.input-group .form-control {
+  padding-right: 40px;
+}
+
+.input-group .toggle-password {
+  position: absolute;
+  top: 60%;
+  right: 22px;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+
+#smtp-password {
+  position: absolute;
+  top: 74%;
+  right: 18px;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+
+.input-group .toggle-password:hover {
+  color: #000;
+}
+
+.page-link:hover {
+  color: #0090ff;
+}
+
+.page-link {
+  color: black;
+  border-radius: 50%;
+  text-align: center;
+  outline: none; /* Prevent the default focus border */
+}
+
+.page-link:focus {
+  outline: none; /* Removes the focus outline when clicked */
+  box-shadow: none; /* Prevents any additional browser-specific focus styling */
+}
+
+.page-item a.page-link {
+  text-decoration: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-size: 16px;
+  background-color: white;
+  outline: none;
+  border: none;
+}
+
+.page-item.active a.page-link {
+  background-color: #0090ff;
+  color: white;
+  border-color: #0090ff;
+  outline: none;
+  border: none;
+}
+
+.page-item.disabled a.page-link {
+  color: black;
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+page-item a.page-link:hover {
+  color: #0090ff;
+}
+
+.nav-item .nav-link {
+  color: black;
+}
+
+.nav-item .nav-link.active {
+  color: #007bff;
+}

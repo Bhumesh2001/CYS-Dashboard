@@ -13,7 +13,7 @@ exports.connectDB = async () => {
             maxPoolSize: 10, // Allow multiple concurrent connections
         });
     } catch (error) {
-        console.error("❌ MongoDB Connection Error:", error.message);
+        console.error("MongoDB Connection Error:", error.message);
         process.exit(1); // Exit process if DB connection fails
     }
 };

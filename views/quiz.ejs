@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/icons/cys_logo.jpeg" />
+    
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+
+    <!-- Include Font Awesome -->
+    <link rel="stylesheet" href="/css/all.min.css" />
+    <link rel="stylesheet" href="/css/all.css" />
+    <link rel="stylesheet" href="/css/fontawesome.css">
+
+    <!-- dashboard2 css -->
+    <link rel="stylesheet" href="/css/styless.css" />
+  </head>
+  <body>
+    <!-- header -->
+    <header class="header position-sticky px-2 pt-2 pb-0" id="header__">
+      <nav class="navbar navbar-expand-lg rounded">
+        <div class="container-fluid">
+          <!-- Right Section (Logo and Three-Line Button) -->
+          <div class="d-flex align-items-center gap-3">
+            <!-- Three-Line Button -->
+            <button class="btn btn-light border btn-sm" id="toggleButton">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <!-- Logo -->
+            <img
+              src="/assets/icons/cys_logo.jpeg"
+              alt="Company Logo"
+              class="img-fluid"
+              style="height: 35px; width: 35px"
+            />
+            <!-- Company Name -->
+            <span class="text-dark fw-bold">CYS Dashboard</span>
+          </div>
+
+          <!-- Left Section (Dark/Light Button and Admin Profile) -->
+          <div class="d-flex align-items-center gap-3 ms-auto">
+            <!-- Dark/Light Button -->
+            <button class="btn btn-secondary rounded-circle dark-light-btn">
+              <i class="fas fa-sun"></i>
+            </button>
+
+            <!-- Admin Profile -->
+            <div class="dropdown">
+              <!-- button -->
+              <button
+                class="btn btn-light rounded-circle profile-btn"
+                type="button"
+                id="adminDropdown"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <img
+                  src="/assets/icons/profile-default.svg"
+                  alt="Admin Profile"
+                  class="profile-img"
+                  draggable="false"
+                />
+              </button>
+
+              <!-- option -->
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="adminDropdown"
+              >
+                <li>
+                  <a class="dropdown-item" href="/admin/admin_">
+                    <i class="fas fa-user-circle"></i> Profile</a
+                  >
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    id="setting_id"
+                    href="/admin/settings/setting1"
+                    ><i class="fas fa-cog"></i> Settings</a
+                  >
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" id="logoutButton" href="#"
+                    ><i class="fas fa-sign-out-alt"></i> Logout</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+      <div class="container-fluid">
+        <div class="row">
+          <!-- sidebar -->
+          <div class="col-xl-2 d-none d-xl-block p-2" id="sidebar__">
+            <div class="sidebar-container rounded d-flex flex-column p-3">
+              <!-- dashboard -->
+              <a
+                href="/admin/dashboard"
+                class="sidebar-link"
+                id="dashboardLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-tachometer-alt"></i>
+                  <span>Dashboard</span>
+                </div>
+              </a>
+
+              <!-- class -->
+              <a
+                href="/admin/class"
+                class="sidebar-link"
+                id="class_"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-chalkboard"></i>
+                  <span>Class</span>
+                </div>
+              </a>
+
+              <!-- subject -->
+              <a
+                href="/admin/subject"
+                class="sidebar-link"
+                id="subjects"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-book-open"></i>
+                  <span>Subject</span>
+                </div>
+              </a>
+
+              <!-- chapter -->
+              <a
+                href="/admin/chapter"
+                class="sidebar-link"
+                id="chapterLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-scroll"></i>
+                  <span>Chapter</span>
+                </div>
+              </a>
+
+              <!-- question -->
+              <a
+                href="/admin/question"
+                class="sidebar-link"
+                id="questionLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fa-solid fa-seal-question"></i>
+                  <span>Question</span>
+                </div>
+              </a>
+
+              <!-- quiz -->
+              <a
+                href="/admin/quiz"
+                class="sidebar-link"
+                id="quizLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-question-circle"></i>
+                  <span>Quiz</span>
+                </div>
+              </a>
+
+              <!-- user -->
+              <a
+                href="/admin/user"
+                class="sidebar-link"
+                id="userLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-users"></i>
+                  <span>User</span>
+                </div>
+              </a>
+
+              <!-- report -->
+              <a
+                href="/admin/report"
+                class="sidebar-link"
+                id="reportLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fas fa-chart-bar"></i>
+                  <span>Report</span>
+                </div>
+              </a>
+
+              <!-- admin -->
+              <a
+                href="/admin/admin_"
+                class="sidebar-link"
+                id="adminLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fa-solid fa-user"></i>
+                  <span>Admin</span>
+                </div>
+              </a>
+
+              <!-- setting -->
+              <a
+                href="javascript:void(0);"
+                class="sidebar-link"
+                id="settingsLink"
+                draggable="false"
+              >
+                <div class="sidebar-item">
+                  <i class="fa-solid fa-gear"></i>
+                  <!-- Settings icon -->
+                  <span>Settings</span>
+                  <i class="fa-solid fa-chevron-down dropdown-icon"></i>
+                </div>
+              </a>
+
+              <!-- nested setting -->
+              <div class="nested-menu" id="nestedSettingsMenu">
+                <a href="/admin/settings/setting1" class="sidebar-link nested-link">
+                  <div class="sidebar-item pt-0">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <!-- Admin settings icon -->
+                    <span>Admin Setting</span>
+                  </div>
+                </a>
+
+                <a href="/admin/settings/setting2" class="sidebar-link nested-link">
+                  <div class="sidebar-item">
+                    <i class="fa-solid fa-cogs"></i>
+                    <!-- App settings icon -->
+                    <span>App Setting</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- heading, footer and content -->
+          <div class="col-xl-10 p-2">
+            <div class="content-container rounded px-md-3 px-2">
+              <!-- heading -->
+              <div
+                class="d-flex gap-2 align-items-center rounded mb-2"
+                id="heading__"
+              >
+                <span class="p-2">
+                  <a href="/admin/dashboard">
+                    <i class="fa-solid fa-house"></i>
+                  </a> </span
+                >/
+                <h6 id="title" class="m-0 p-1">Quiz</h6>
+              </div>
+
+              <!-- main content -->
+              <div class="content mb-3">
+                <!-- quiz section -->
+                <section class="quiz_section">
+                  <!-- button section -->
+                  <div
+                    class="d-flex justify-content-between align-items-center pb-2 button-section"
+                    id="quiz-id"
+                  >
+                    <!-- back button -->
+                    <button
+                      class="btn btn-secondary fw-bold backButton d-none"
+                      data-id="quiz_createQuiz"
+                    >
+                      <i class="fas fa-arrow-left"></i> Back
+                    </button>
+
+                    <!-- create chapter button -->
+                    <button
+                      class="btn btn-primary fw-bold createButton"
+                      id="createQuizButton"
+                      data-id="quiz_createQuiz"
+                      data-class="classId_subjectId_categoryId_chapterId_userId"
+                    >
+                      <i class="fas fa-plus"></i>
+                      Create Quiz
+                    </button>
+                  </div>
+
+                  <div class="content-section" id="quiz">
+                    <!-- show quizzes -->
+                    <div
+                      class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mb-3"
+                      id="quizContainer"
+                    >
+                      <h5 class="text-center py-2">No quizzes found !</h5>
+                    </div>
+
+                    <!-- Enhanced Circular Pagination -->
+                    <nav
+                      aria-label="Page navigation example"
+                      class="pagination-container d-none"
+                      draggable="false"
+                    >
+                      <ul
+                        class="pagination justify-content-center pt-3 m-0"
+                        id="pagination"
+                      >
+                        <!-- Previous Button -->
+                        <li class="page-item disabled px-1" id="prev-btn">
+                          <a
+                            draggable="false"
+                            class="page-link"
+                            href="#"
+                            aria-label="Previous"
+                            tabindex="-1"
+                          >
+                            Pre
+                          </a>
+                        </li>
+
+                        <!-- Dynamic Page Numbers will be appended here -->
+
+                        <!-- Next Button -->
+                        <li class="page-item px-2" id="next-btn">
+                          <a
+                            draggable="false"
+                            class="page-link"
+                            href="#"
+                            aria-label="Next"
+                          >
+                            Next
+                          </a>
+                        </li>
+                      </ul>
+                    </nav>
+                  </div>
+                </section>
+
+                <!-- create quiz -->
+                <div class="form-container_ px-4 pb-4 d-none" id="createQuiz">
+                  <!-- headin part -->
+                  <div class="form-header text-center mb-2">
+                    <h1 class="mb-0" id="form-title">Create Quiz</h1>
+                  </div>
+
+                  <!-- form part -->
+                  <form
+                    id="dynamicForm"
+                    class="row g-3"
+                    enctype="multipart/form-data"
+                  >
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="classId" class="form-label"
+                          >Class
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="classId"
+                          id="classId"
+                          autocomplete="on"
+                        >
+                          <option value="select class">Select Class</option>
+                          <option value="class1">Class1</option>
+                          <option value="class2">Class2</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="subjectId" class="form-label"
+                          >Subject
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="subjectId"
+                          id="subjectId"
+                          autocomplete="off"
+                        >
+                          <option value="select subject">Select Subject</option>
+                          <option value="subject1">Subject1</option>
+                          <option value="subject2">Subject2</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="chapterId" class="form-label"
+                          >Chapter
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="chapterId"
+                          id="chapterId"
+                          autocomplete="off"
+                        >
+                          <option value="select chapter">Select Chapter</option>
+                          <option value="chapter1">Chapter1</option>
+                          <option value="chapter2">Chapter2</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="quizTitle" class="form-label"
+                          >Quiz Title
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><input
+                          type="text"
+                          placeholder="Enter Quiz title"
+                          class="form-control"
+                          name="quizTitle"
+                          id="quizTitle"
+                          autocomplete="off"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="quizTime" class="form-label"
+                          >Quiz Time
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><input
+                          type="number"
+                          placeholder="Enter Quiz time"
+                          class="form-control"
+                          name="quizTime"
+                          id="quizTime"
+                          autocomplete="off"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="description" class="form-label"
+                          >Description
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><textarea
+                          placeholder="Write description"
+                          class="form-control"
+                          rows="4"
+                          name="description"
+                          id="description"
+                          autocomplete="off"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="imageUrl" class="form-label"
+                          >Image
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><input
+                          type="file"
+                          placeholder=""
+                          class="form-control"
+                          name="imageUrl"
+                          id="imageUrl"
+                          autocomplete="off"
+                          accept="image/*"
+                        />
+                      </div>
+                    </div>
+                  </form>
+
+                  <!-- button part -->
+                  <div class="text-end d-flex justify-content-end">
+                    <!-- submit button -->
+                    <button
+                      id="submitBtn"
+                      type="button"
+                      class="btn btn-primary submit-btn"
+                      data-title="Create Quiz"
+                    >
+                      Submit
+                    </button>
+
+                    <!-- loadin button -->
+                    <button
+                      class="btn btn-primary d-none"
+                      type="button"
+                      id="loading-btn"
+                    >
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="visually-hidden" role="status"
+                        >Loading...</span
+                      >
+                    </button>
+                  </div>
+                </div>
+
+                <!-- edit quiz -->
+                <div class="form-container_ px-4 pb-4 d-none" id="editQuiz">
+                  <!-- headin part -->
+                  <div class="form-header text-center mb-2">
+                    <h1 class="mb-0" id="form-title">Edit Quiz</h1>
+                  </div>
+
+                  <!-- form part -->
+                  <form
+                    id="_dynamicForm"
+                    class="row g-3"
+                    enctype="multipart/form-data"
+                  >
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="classId" class="form-label"
+                          >Class
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="classId"
+                          id="_classId"
+                          autocomplete="on"
+                        ></select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="subjectId" class="form-label"
+                          >Subject
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="subjectId"
+                          id="_subjectId"
+                          autocomplete="off"
+                        ></select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="chapterId" class="form-label"
+                          >Chapter
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="chapterId"
+                          id="_chapterId"
+                          autocomplete="off"
+                        ></select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="quizTitle" class="form-label"
+                          >Quiz Title
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><input
+                          type="text"
+                          placeholder="Enter Quiz title"
+                          class="form-control"
+                          name="quizTitle"
+                          id="_quizTitle"
+                          autocomplete="off"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="quizTime" class="form-label"
+                          >Quiz Time
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><input
+                          type="number"
+                          placeholder="Enter Quiz time"
+                          class="form-control"
+                          name="quizTime"
+                          id="_quizTime"
+                          autocomplete="off"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="description" class="form-label"
+                          >Description
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><textarea
+                          placeholder="Write description"
+                          class="form-control"
+                          rows="4"
+                          name="description"
+                          id="_description"
+                          autocomplete="off"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="imageUrl" class="form-label"
+                          >Image
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><input
+                          type="file"
+                          placeholder=""
+                          class="form-control"
+                          name="imageUrl"
+                          id="imageUrl"
+                          autocomplete="off"
+                          accept="image/*"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Preview Image -->
+                    <div id="logoPreview" class="my-2">
+                      <img
+                        id="_imageUrl"
+                        src=""
+                        alt="image Preview"
+                        class="img-fluid"
+                        style="max-width: 200px"
+                      />
+                    </div>
+                  </form>
+
+                  <!-- button part -->
+                  <div class="text-end d-flex justify-content-end">
+                    <!-- submit button -->
+                    <button
+                      id="editBtn"
+                      type="button"
+                      class="btn btn-primary submit-btn"
+                      data-title="Edit Quiz"
+                    >
+                      Submit
+                    </button>
+
+                    <!-- loadin button -->
+                    <button
+                      class="btn btn-primary d-none"
+                      type="button"
+                      id="_loading-btn"
+                    >
+                      <span
+                        class="spinner-border spinner-border-sm"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="visually-hidden" role="status"
+                        >Loading...</span
+                      >
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- footer -->
+              <div
+                class="footer d-flex rounded align-items-center"
+                id="footer__"
+              >
+                <small class="me-auto p-2 m-0">
+                  Copyright © 2024 <strong>cys</strong> All rights reserved.
+                </small>
+                <small class="p-2 m-0">Cys</small>
+                <small class="p-2 m-0">Telegram</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Loader -->
+    <div id="loader" class="loader_ d-none">
+      <i class="fas fa-spinner fa-spin"></i>
+    </div>
+
+    <!-- Delete Confirmation Popup -->
+    <div class="delete-popup-overlay" id="deletePopup">
+      <div class="delete-popup">
+        <h2>Are you sure?</h2>
+        <p>You are about to delete this item. This action cannot be undone.</p>
+        <div
+          class="buttons_ d-flex justify-content-center align-items-center gap-2"
+        >
+          <button class="cancel-btn" id="cancelDelete">Cancel</button>
+          <button class="confirm-btn" id="confirmDelete">
+            <span class="button-text">Delete</span>
+            <span
+              class="spinner-border spinner-border-sm d-none"
+              role="status"
+              aria-hidden="true"
+            ></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications will be dynamically inserted -->
+    <div class="notifications-container" id="notifications-container"></div>
+
+    <!-- bootstrap js -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+
+    <!-- js file -->
+    <script src="/js/script.js"></script>
+  </body>
+</html>

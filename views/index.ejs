@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | Login</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/icons/cys_logo.jpeg" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    
+    <!-- font-awesome cdn -->
+    <link rel="stylesheet" href="/css/all.min.css" />
+    <link rel="stylesheet" href="/css/all.css" />
+    <link rel="stylesheet" href="/css/fontawesome.css">
+
+    <link rel="stylesheet" href="/css/login.css" />
+  </head>
+  <body>
+    <!-- login form -->
+    <div
+      class="container-fluid d-flex justify-content-center align-items-center vh-100"
+    >
+      <div class="login-form card shadow">
+        <!-- logo -->
+        <div class="d-flex justify-content-center align-items-center">
+          <img
+            src="/assets/icons/cys_logo.jpeg"
+            height="80px"
+            width="80px"
+            alt="Cys logo"
+          />
+        </div>
+
+        <!-- title -->
+        <h4 class="text-center">Welcome to CYS</h4>
+        <p class="text-center">Please login to your account!</p>
+
+        <!-- login form -->
+        <form id="loginForm">
+          <!-- email field -->
+          <div class="mb-4">
+            <i class="input-icon fas fa-envelope"></i>
+            <label for="email" class="form-label fw-medium"
+              >Email <i class="fa fa-asterisk" aria-hidden="true"></i
+            ></label>
+            <input
+              type="text"
+              autocomplete="off"
+              class="form-control"
+              id="email"
+              required
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <!-- password field -->
+          <div class="mb-4" id="password-container">
+            <i class="input-icon fas fa-lock"></i>
+            <label for="password" class="form-label fw-medium"
+              >Password <i class="fa fa-asterisk" aria-hidden="true"></i
+            ></label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              required
+              placeholder="Enter your password"
+            />
+            <button type="button" id="togglePassword" class="btn btn-light">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <!-- submit btn -->
+          <button type="submit" id="submit-btn" class="btn btn-primary w-100">
+            <strong>Login</strong>
+          </button>
+
+          <!-- loader btn -->
+          <button
+            type="button"
+            id="spinner-btn"
+            class="btn btn-primary w-100 d-none"
+          >
+            <div class="spinner-border custom-spinner" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Notifications will be dynamically inserted -->
+    <div class="notifications-container" id="notifications-container"></div>
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/login.js"></script>
+  </body>
+</html>

@@ -94,6 +94,21 @@ exports.login = async (req, res, next) => {
     };
 };
 
+// **Get token**
+exports.getToken = (req, res, next) => {
+    try {
+        const token = req.cookies.admin_token; // Get token from cookies
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: "No token found" });
+        };
+
+        res.status(200).json({ success: true, message: 'Token fetched successfully...!', token });
+    } catch (error) {
+        next(error);
+    };
+};
+
 // **Login with Google**
 exports.loginWithGoogle = async (req, res, next) => {
     const { name, email } = req.body;

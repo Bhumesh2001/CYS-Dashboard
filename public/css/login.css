@@ -1,0 +1,171 @@
+body {
+  background: linear-gradient(to right, #ffffff, #d9e8f5);
+  font-family: Arial, sans-serif;
+}
+
+.login-form {
+  border-radius: 15px;
+  background-color: white;
+  width: 400px;
+  padding: 30px;
+}
+
+.fa-asterisk {
+  font-size: 10px; /* Adjust the size */
+  color: red; /* Change the color to red */
+}
+
+h2 {
+  color: #2575fc;
+  font-weight: bold;
+}
+
+.form-control {
+  border-radius: 6px;
+  border: 2px solid #ccc;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  color: #495057;
+}
+
+.form-control:focus {
+  outline: none; /* Removes the default focus outline */
+  border: 2px solid #00c6ff; /* Adds a custom border to indicate focus */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Adds a subtle glow effect */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for focus effect */
+}
+
+.btn-primary {
+  background-color: #00c6ff;
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  border: none;
+  color: #fff; /* Ensures text is visible */
+  transition: background 0.3s ease; /* Adds a smooth transition effect */
+  padding-top: 8px;
+  padding-bottom: 8px;
+  /* Box shadow added */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(90deg, #00c6ff, #007bff);
+  color: #fff;
+}
+
+#password {
+  padding-right: 45px;
+}
+
+/* Container styling */
+#password-container {
+  position: relative;
+}
+
+/* Toggle button styling */
+#togglePassword {
+  position: absolute;
+  top: 71%;
+  right: -2px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1rem;
+  background: none;
+  border: none;
+}
+
+/* spinner css */
+.custom-spinner {
+  width: 1.2rem; /* Adjust width */
+  height: 1.2rem; /* Adjust height */
+}
+
+i {
+  color: #495057;
+  padding-right: 6px;
+}
+
+/* notification css */
+.notifications-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  z-index: 9999;
+}
+
+.notification-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slide-in 0.5s forwards; /* Slide in animation */
+}
+
+.notification-card.success {
+  border-left: 5px solid #28a745;
+  background-color: #e9f7ec;
+}
+
+.notification-card.error {
+  border-left: 5px solid #dc3545;
+  background-color: #f8d7da;
+}
+
+.notification-card.info {
+  border-left: 5px solid #17a2b8;
+  background-color: #d1ecf1;
+}
+
+.notification-card.warning {
+  border-left: 5px solid #ffc107;
+  background-color: #fff3cd;
+}
+
+.notification-card .icon {
+  font-size: 24px;
+  margin-right: 15px;
+}
+
+.notification-card .message {
+  flex-grow: 1;
+}
+
+.notification-card .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0px 8px 0px 8px;
+}
+
+.notification-card .close-btn:hover {
+  color: #000;
+}
+
+/* Slide-in animation */
+@keyframes slide-in {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

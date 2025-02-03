@@ -6,12 +6,13 @@ const compression = require('compression');
 const fileUpload = require('express-fileupload');
 const helmet = require('helmet');
 const xss = require('xss-clean');
-const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
+const path = require("path");
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./middlewares/errorMiddle');
 const { message } = require('./utils/message');
+const { helmetConfig } = require('./config/configure');
 
 dotenv.config();
 const app = express();
@@ -20,7 +21,7 @@ const app = express();
 app.use(compression());
 
 // Security middleware to set HTTP headers
-app.use(helmet());
+app.use(helmet.contentSecurityPolicy(helmetConfig));
 
 // Middleware to sanitize user input and prevent XSS attacks
 app.use(xss());
@@ -39,7 +40,7 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
-app.use(limiter);
+// app.use(limiter);
 
 // Middleware to parse URL-encoded form data
 app.use(express.urlencoded({ extended: true }));
@@ -56,24 +57,21 @@ app.use(fileUpload({
     responseOnLimit: 'File size limit exceeded!',
 }));
 
-// ✅ Correct CORS Setup
-app.use(cors({
-    origin: process.env.CLIENT_URL || "https://cys-app.netlify.app", // Allow frontend domain
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-    credentials: true // Allow cookies/auth headers
-}));
-
-// ✅ Handle Preflight Requests for All Routes
-app.options("*", cors());
-
 // Connect to MongoDB
 connectDB();
 
 // Welcome message route
 app.get('/', (req, res) => res.send(message));
 
+// ✅ Set views folder & template engine (EJS)
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
+
+// ✅ Serve static files from public folder
+app.use(express.static(path.join(__dirname, "public")));
+
 // Importing route modules
+const pageRoutes = require("./routes/pageRoutes");
 const authRoutes = require('./routes/authRoutes');
 const classRoutes = require('./routes/classRoutes');
 const subjectRoutes = require('./routes/subjectRoutes');
@@ -87,6 +85,7 @@ const adminSettingRoutes = require('./routes/adminSettingRoutes');
 const appSettingRoutes = require('./routes/appSettingRoutes');
 
 // Setting up main routes
+app.use("/admin", pageRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/subjects', subjectRoutes);

@@ -27,6 +27,9 @@ router.post(
     userController.login
 );
 
+// **get token**
+router.get('/get-token', userController.getToken);
+
 // google login
 router.post(
     '/google',

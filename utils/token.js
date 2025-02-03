@@ -9,8 +9,8 @@ exports.generateToken = (payload, expiresIn = '1d') => {
 exports.storeToken = (res, token, tokenName, maxAge = 24 * 60 * 60 * 1000) => { // default maxAge: 1 day    
     res.cookie(tokenName, token, {
         httpOnly: true,       // Prevents client-side JS from accessing the cookie
-        secure: process.env.NODE_ENV_ === 'production', // Ensures cookie is sent over HTTPS in production
-        maxAge,               // Expiration of the cookie in milliseconds
+        secure: true, // Ensures cookie is sent over HTTPS in production
         sameSite: 'Strict',   // Controls when cookies are sent (Strict is the most secure)
+        maxAge,               // Expiration of the cookie in milliseconds
     });
 };
