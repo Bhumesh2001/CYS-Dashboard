@@ -23,6 +23,7 @@ exports.helmetConfig = {
             "'self'",
             "https://cdnjs.cloudflare.com",
             "https://res.cloudinary.com",  // ✅ Cloudinary Allowed
+            "https://via.placeholder.com",
             "data:"
         ], // Allow icons
         scriptSrcAttr: ["'unsafe-inline'"],

@@ -19,15 +19,6 @@ const classSchema = new mongoose.Schema({
         type: String,
     },
     /**
-     * Class description.
-     * 
-     * @type {String}
-     * @maxlength 500
-     */
-    description: {
-        type: String,
-    },
-    /**
      * Status of the class.
      * Indicates if the class is active or archived.
      */

@@ -205,7 +205,7 @@ exports.quizValidationRules = [
         .notEmpty().withMessage('Class ID is required')
         .isMongoId().withMessage('Class ID must be a valid ObjectId')
         .custom(async (value) => {
-            const classExists = await mongoose.model('Class').findById(value);
+            const classExists = await mongoose.model('Class').findById(value).lean();
             if (!classExists) {
                 throw new Error('Class not found');
             }
@@ -217,7 +217,7 @@ exports.quizValidationRules = [
         .notEmpty().withMessage('Subject ID is required')
         .isMongoId().withMessage('Subject ID must be a valid ObjectId')
         .custom(async (value) => {
-            const subjectExists = await mongoose.model('Subject').findById(value);
+            const subjectExists = await mongoose.model('Subject').findById(value).lean();
             if (!subjectExists) {
                 throw new Error('Subject not found');
             }
@@ -229,7 +229,7 @@ exports.quizValidationRules = [
         .notEmpty().withMessage('Chapter ID is required')
         .isMongoId().withMessage('Chapter ID must be a valid ObjectId')
         .custom(async (value) => {
-            const chapterExists = await mongoose.model('Chapter').findById(value);
+            const chapterExists = await mongoose.model('Chapter').findById(value).lean();
             if (!chapterExists) {
                 throw new Error('Chapter not found');
             }
@@ -250,28 +250,26 @@ exports.quizValidationRules = [
 
     // Validate imageUrl
     body('imageUrl')
+        .optional()
         .custom((value, { req }) => {
-            const imageFile = req.files.imageUrl;
+            const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // Check if there's no file uploaded
-            if (!req.files || !req.files.imageUrl) {
-                throw new Error('Image file is required');
-            };
-
             // Check the file size
-            if (imageFile.size > maxSize) {
-                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            if (imageFile) {
+                if (imageFile.size > maxSize) {
+                    throw new Error('File is too large. Maximum allowed size is 50MB.');
+                };
             };
 
             return true;
         }),
 
     // Validate description
-    body('description')
-        .optional()
-        .isLength({ min: 10, max: 1000 })
-        .withMessage('Description must be between 10 and 1000 characters'),
+    // body('description')
+    //     .optional()
+    //     .isLength({ min: 10, max: 1000 })
+    //     .withMessage('Description must be between 10 and 1000 characters'),
 ];
 
 // Validate class field
@@ -283,17 +281,17 @@ exports.classValidationRule = [
         .isLength({ max: 50 }).withMessage('Class name must be less than 50 characters')
         .trim()
         .custom(async (name) => {
-            const existingClass = await Class.findOne({ name });
+            const existingClass = await Class.findOne({ name }).lean();;
             if (existingClass) {
                 throw new Error('Class name must be unique');
-            }
+            };
         }),
 
     // Validate description
-    body('description')
-        .optional()
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
+    // body('description')
+    //     .optional()
+    //     .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+    //     .trim(),
 
     // Validate status
     body('status')
@@ -311,10 +309,10 @@ exports.editClassValidationRule = [
         .trim(),
 
     // Validate description
-    body('description')
-        .optional()
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
+    // body('description')
+    //     .optional()
+    //     .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+    //     .trim(),
 
     // Validate status
     body('status')
@@ -324,44 +322,55 @@ exports.editClassValidationRule = [
 
 // chapter validation rule
 exports.chapterValidationRule = [
+    // validate classId
+    body('classId')
+        .notEmpty().withMessage('ClassId ID is required')
+        .isMongoId().withMessage('Invalid ClassId ID')
+        .custom(async (value) => {
+            const classExists = await mongoose.model('Class').findById(value).lean();
+            if (!classExists) {
+                throw new Error('Class not found');
+            }
+            return true;
+        }),
+
     // Validate subjectId
     body('subjectId')
         .notEmpty().withMessage('Subject ID is required')
-        .isMongoId().withMessage('Invalid Subject ID'),
+        .isMongoId().withMessage('Invalid Subject ID')
+        .custom(async (value) => {
+            const subjectExists = await mongoose.model('Subject').findById(value).lean();
+            if (!subjectExists) {
+                throw new Error('Subject not found');
+            }
+            return true;
+        }),
 
     // Validate name
     body('name')
         .notEmpty().withMessage('Chapter name is required')
         .isLength({ min: 2 }).withMessage('Chapter name must be at least 2 characters long')
         .isLength({ max: 200 }).withMessage('Chapter name must be less than 200 characters')
-        .trim()
-        .custom(async (name) => {
-            const existingChapter = await Chapter.findOne({ name });
-            if (existingChapter) {
-                throw new Error('Chapter name must be unique');
-            };
-        }),
+        .trim(),
 
     // Validate description (optional)
-    body('description')
-        .optional()
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
+    // body('description')
+    //     .optional()
+    //     .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+    //     .trim(),
 
     // Validate imageUrl
     body('imageUrl')
+        .optional()
         .custom((value, { req }) => {
             const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // Check if there's no file uploaded
-            if (!req.files || !req.files.imageUrl) {
-                throw new Error('Image file is required');
-            };
-
             // Check the file size
-            if (imageFile.size > maxSize) {
-                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            if (imageFile) {
+                if (imageFile.size > maxSize) {
+                    throw new Error('File is too large. Maximum allowed size is 50MB.');
+                };
             };
 
             return true;
@@ -375,10 +384,29 @@ exports.chapterValidationRule = [
 
 // chapter validation rule
 exports.editChapterValidationRule = [
+    // validate classId
+    body('classId')
+        .notEmpty().withMessage('ClassId ID is required')
+        .isMongoId().withMessage('Invalid ClassId ID')
+        .custom(async (value) => {
+            const classExists = await mongoose.model('Class').findById(value).lean();
+            if (!classExists) {
+                throw new Error('Class not found');
+            }
+            return true;
+        }),
+
     // Validate subjectId
     body('subjectId')
         .notEmpty().withMessage('Subject ID is required')
-        .isMongoId().withMessage('Invalid Subject ID'),
+        .isMongoId().withMessage('Invalid Subject ID')
+        .custom(async (value) => {
+            const subjectExists = await mongoose.model('Subject').findById(value).lean();
+            if (!subjectExists) {
+                throw new Error('Subject not found');
+            }
+            return true;
+        }),
 
     // Validate name
     body('name')
@@ -388,10 +416,10 @@ exports.editChapterValidationRule = [
         .trim(),
 
     // Validate description (optional)
-    body('description')
-        .optional()
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
+    // body('description')
+    //     .optional()
+    //     .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+    //     .trim(),
 
     // Validate imageUrl
     body('imageUrl')
@@ -400,11 +428,11 @@ exports.editChapterValidationRule = [
             const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            if (!imageFile) return true;
-
             // Check the file size
-            if (imageFile.size > maxSize) {
-                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            if (imageFile) {
+                if (imageFile.size > maxSize) {
+                    throw new Error('File is too large. Maximum allowed size is 50MB.');
+                };
             };
 
             return true;
@@ -418,6 +446,16 @@ exports.editChapterValidationRule = [
 
 // question validation rule
 exports.questionValidationRule = [
+    // validate class id
+    body('classId')
+        .notEmpty().withMessage('Class ID is required')
+        .isMongoId().withMessage('Invalid Class ID format'),
+
+    // validate subjectId
+    body('subjectId')
+        .notEmpty().withMessage('Subject ID is required')
+        .isMongoId().withMessage('Invalid Subject ID format'),
+
     // Validate chapterId
     body('chapterId')
         .notEmpty().withMessage('Chapter ID is required')
@@ -432,10 +470,10 @@ exports.questionValidationRule = [
         .trim(),
 
     // Validate questionType
-    body('questionType')
-        .notEmpty().withMessage('Question type is required')
-        .isIn(['Options', 'True/False', 'Short Answer', 'Guess Word', 'Fill in the Blanks'])
-        .withMessage('Invalid question type'),
+    // body('questionType')
+    //     .notEmpty().withMessage('Question type is required')
+    //     .isIn(['Options', 'True/False', 'Short Answer', 'Guess Word', 'Fill in the Blanks'])
+    //     .withMessage('Invalid question type'),
 
     // Validate options (for 'Options' question type)
     body('options')
@@ -461,7 +499,14 @@ exports.subjectValidationRule = [
     // Validate classId
     body('classId')
         .notEmpty().withMessage('Class ID is required')
-        .isMongoId().withMessage('Invalid Class ID format'),
+        .isMongoId().withMessage('Invalid Class ID format')
+        .custom(async (value) => {
+            const classExists = await mongoose.model('Class').findById(value).lean();
+            if (!classExists) {
+                throw new Error('Class not found');
+            }
+            return true;
+        }),
 
     // Validate name
     body('name')
@@ -471,33 +516,32 @@ exports.subjectValidationRule = [
         .isLength({ max: 100 }).withMessage('Subject name must be less than 100 characters')
         .trim()
         .custom(async (name) => {
-            const existingSubject = await Subject.findOne({ name });
+            const existingSubject = await Subject.findOne({ name }).lean();
             if (existingSubject) {
                 throw new Error('Subject name must be unique');
             };
         }),
 
     // Validate description
-    body('description')
-        .optional()
-        .isString().withMessage('Description must be a string')
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
+    // body('description')
+    //     .optional()
+    //     .isString().withMessage('Description must be a string')
+    //     .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+    //     .trim(),
 
     // Validate imageUrl
     body('imageUrl')
+        .optional()
         .custom((value, { req }) => {
             // Check if there's no file uploaded
             const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            if (!req.files || !req.files.imageUrl) {
-                throw new Error('Image file is required!');
-            };
-
-            // Check the file size
-            if (imageFile.size > maxSize) {
-                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            if (imageFile) {
+                // Check the file size
+                if (imageFile.size > maxSize) {
+                    throw new Error('File is too large. Maximum allowed size is 50MB.');
+                };
             };
 
             return true;
@@ -525,11 +569,11 @@ exports.editSubjectValidationRule = [
         .trim(),
 
     // Validate description
-    body('description')
-        .optional()
-        .isString().withMessage('Description must be a string')
-        .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
-        .trim(),
+    // body('description')
+    //     .optional()
+    //     .isString().withMessage('Description must be a string')
+    //     .isLength({ max: 500 }).withMessage('Description must be less than 500 characters')
+    //     .trim(),
 
     // Validate imageUrl
     body('imageUrl')
@@ -538,12 +582,12 @@ exports.editSubjectValidationRule = [
             const imageFile = req.files?.imageUrl;
             const maxSize = 50 * 1024 * 1024; // 50MB file size limit
 
-            // If no file is provided, pass the validation
-            if (!imageFile) return true;
-
             // Check the file size
-            if (imageFile.size > maxSize) {
-                throw new Error('File is too large. Maximum allowed size is 50MB.');
+            if (imageFile) {
+                // Check the file size
+                if (imageFile.size > maxSize) {
+                    throw new Error('File is too large. Maximum allowed size is 50MB.');
+                };
             };
 
             return true;

@@ -46,14 +46,6 @@ const quizSchema = new mongoose.Schema({
         type: Number,
     },
     /**
-     * Description
-     * 
-     * A brief description of the quiz.
-     */
-    description: {
-        type: String,
-    },
-    /**
      * Image URL
      * 
      * The URL of the image associated with the quiz.

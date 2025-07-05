@@ -694,7 +694,7 @@ exports.getUserById = async (req, res, next) => {
  */
 exports.updateUser = async (req, res, next) => {
     try {
-        const { fullName, email, role, classId } = req.body;
+        const { fullName, email, role, classId, mobile } = req.body;
 
         // Fetch the user by ID
         const user = await User.findById(req.params.userId);
@@ -707,24 +707,28 @@ exports.updateUser = async (req, res, next) => {
 
         // If a new role is provided, check if it's a valid ObjectId and update it
         if (role && mongoose.Types.ObjectId.isValid(role)) {
-            const roleUser = await User.findById(role).select('role'); // Fetch the role from the user collection
+            const roleUser = await User.findById(role).select('role');
             if (roleUser) {
                 updatedRole = roleUser.role; // Set the updated role from the user object
             } else {
-                return res.status(400).json({ success: false, status: 400, message: 'Invalid role user ID.' });
+                return res.status(400).json({
+                    success: false,
+                    status: 400,
+                    message: 'Invalid role user ID.'
+                });
             };
         };
 
         // Handle profile image update (upload or keep existing)
         let imageData = {};
         if (req.files && req.files.profileUrl) {
-            const userData = await User.findById(req.params.userId, { publicId: 1 });
+            const userData = await User.findById(req.params.userId, { publicId: 1 }).lean();
             if (userData?.publicId) await deleteImage(userData.publicId);
 
             imageData = await uploadImage(req.files.profileUrl.tempFilePath, 'CysProfilesImg', 220, 200);
         } else {
             const { profileUrl: existingProfileUrl, publicId }
-                = await User.findById(req.params.userId, { profileUrl: 1, publicId: 1 });
+                = await User.findById(req.params.userId, { profileUrl: 1, publicId: 1 }).lean();
             imageData.url = existingProfileUrl;
             imageData.publicId = publicId;
         };
@@ -733,7 +737,8 @@ exports.updateUser = async (req, res, next) => {
         Object.assign(user, {
             fullName: fullName || user.fullName,
             email: email || user.email,
-            role: updatedRole, // Set the role after looking it up
+            role: updatedRole,
+            mobile: mobile || user.mobile,
             classId: role === 'admin' ? null : classId || user.classId,
             profileUrl: imageData.url,
             publicId: imageData.publicId
@@ -741,7 +746,6 @@ exports.updateUser = async (req, res, next) => {
 
         // Clear cache and save updated user
         flushAllCache()
-
         await user.save();
 
         res.status(200).json({ success: true, message: 'User updated successfully.', user });

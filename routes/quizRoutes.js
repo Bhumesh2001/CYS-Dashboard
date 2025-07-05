@@ -56,6 +56,7 @@ router.put(
     authenticate,
     authorize(['admin']),
     validateObjectIds(['quizId'], 'params'),
+    validateFields(quizValidation.quizValidationRules),
     quizController.updateQuiz
 );
 

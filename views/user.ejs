@@ -304,6 +304,21 @@
                     >
                       <i class="fas fa-plus"></i> Create User
                     </button>
+
+                    <!-- filter dropdown -->
+                    <div class="col-2">
+                      <div>
+                        <select
+                          class="form-select"
+                          name="class_filter"
+                          id="class_filter"
+                          autocomplete="off"
+                        >
+                          <option value="Active">All Users</option>
+                          <option value="Inactive">Class 1</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="content-section" id="user">
@@ -313,7 +328,6 @@
                         <!-- User heading -->
                         <thead class="thead-dark">
                           <tr>
-                            <th>Image</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Registered</th>
@@ -540,7 +554,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="profileUrl" class="form-label"
-                          >Profile
+                          >Profile (optional)
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -699,7 +713,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="profileUrl_" class="form-label"
-                          >Profile
+                          >Profile (optional)
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"

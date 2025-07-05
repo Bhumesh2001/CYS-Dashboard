@@ -17,7 +17,7 @@ const saveButtons = document.querySelectorAll('.save-btn');
 const toggleButtons = document.querySelectorAll(".toggle-password");
 const paginationContainer = document.querySelector(".pagination");
 const buttonClickMap = new Map();
-const baseUrl = 'https://control-yourself.com';
+const baseUrl = 'http://localhost:3000';
 let totalPages = 3;
 const groupSize = 3; // Number of pages to show in one group
 let currentGroup = 1; // Track the current group
@@ -237,6 +237,7 @@ if (document.getElementById('setting_id')) {
     });
 };
 
+// load chart js
 if (handleMissingElement('#userAnalyticsChart')) {
     document.addEventListener("DOMContentLoaded", function () {
         const ctxUserAnalytics = document
@@ -281,6 +282,32 @@ if (handleMissingElement('#userAnalyticsChart')) {
                 },
             }
         });
+    });
+};
+
+// load classe data in dropdown
+if (handleMissingElement('#class_filter')) {
+    loadClassesInDropdown();
+};
+
+// load filterwise data
+if (handleMissingElement('#class_filter')) {
+    const filterDropdown = document.getElementById('class_filter');
+    const data_title = filterDropdown.getAttribute('data-title');
+
+    filterDropdown.addEventListener('change', async function () {
+        const selectedClassId = this.value;
+
+        if (data_title === "subjects") {
+            const data = await fetchData(`${baseUrl}/api/subjects/class/${selectedClassId}`);
+            loadSubjectData(data);
+        }else if (data_title === 'chapters'){
+            const data = await fetchData(`${baseUrl}/api/chapters/class/${selectedClassId}`);
+            loadChapterData(data);
+        }else if (data_title === 'questions'){
+            const data = await fetchData(`${baseUrl}/api/questions/class/${selectedClassId}`);
+            loadQuestionData(data);
+        }
     });
 };
 
@@ -401,6 +428,7 @@ function loadClassData(data) {
     // Create a document fragment for better performance
     const fragment = document.createDocumentFragment();
 
+    // loading the data in dom
     data.data.forEach(class_ => {
         const row = document.createElement("tr");
 
@@ -638,14 +666,6 @@ function loadUserData(data) {
 
     userTableBody.innerHTML = data.data.map(user => `
         <tr>
-            <td>
-                <img 
-                    src="${user.profileUrl || 'https://via.placeholder.com/50'}" 
-                    alt="User Image" 
-                    class="rounded-circle" 
-                    style="width: 50px; height: 50px;"
-                />
-            </td>
             <td>${user.fullName}</td>
             <td>${user.email}</td>
             <td>${new Date(user.createdAt).toISOString().split('T')[0]}</td>
@@ -733,13 +753,6 @@ function loadAdminData(data) {
     data.data.forEach(admin => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>
-                <img 
-                    src="${admin.profileUrl || "https://via.placeholder.com/50"}" 
-                    alt="Admin Image" 
-                    class="rounded-circle"
-                >
-            </td>
             <td>${admin.fullName}</td>
             <td>${admin.email}</td>
             <td>${new Date(admin.createdAt).toISOString().split('T')[0]}</td>
@@ -826,6 +839,27 @@ async function loadSettingsData(responses) {
         });
     } catch (error) {
         console.error('Error fetching data:', error);
+    };
+};
+
+// Function to fetch classes from the API and populate the dropdown
+async function loadClassesInDropdown() {
+    const classFilter = document.getElementById('class_filter');
+    try {
+        const data = await fetchData(`${baseUrl}/api/classes`);
+
+        // Clear existing options (except the first one)
+        classFilter.innerHTML = '<option value="All">All</option>';
+
+        // Loop through the data and add options to the dropdown
+        data.data.forEach(classItem => {
+            const option = document.createElement('option');
+            option.value = classItem._id; // Use class ID or name as the value
+            option.textContent = classItem.name; // Use class name as the display text
+            classFilter.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading classes:', error);
     };
 };
 
@@ -1392,7 +1426,7 @@ document.getElementById("logoutButton").addEventListener("click", async (e) => {
     };
 });
 
-if (document.getElementById('siteLogo')) {
+if (handleMissingElement('#siteLogo')) {
     // Handle file input to show preview
     document.getElementById('siteLogo').addEventListener('change', function (event) {
         const file = event.target.files[0];
@@ -1408,14 +1442,14 @@ if (document.getElementById('siteLogo')) {
     });
 };
 
-if (document.getElementById('cancelDelete')) {
+if (handleMissingElement('#cancelDelete')) {
     // Close the popup when Cancel is clicked
     document.getElementById("cancelDelete").addEventListener("click", function () {
         document.getElementById("deletePopup").style.display = "none";
     });
 };
 
-if (document.getElementById('confirmDelete')) {
+if (handleMissingElement('#confirmDelete')) {
     // Confirm the deletion when Confirm is clicked
     document.getElementById("confirmDelete").addEventListener("click", function (event) {
 
@@ -1455,14 +1489,14 @@ if (document.getElementById('confirmDelete')) {
     });
 };
 
-if (document.getElementById('submitBtn')) {
+if (handleMissingElement('#submitBtn')) {
     // submit btn
     document.getElementById("submitBtn").addEventListener("click", async (event) => {
         submitData(event, null, null, null);
     });
 };
 
-if (document.getElementById('editBtn')) {
+if (handleMissingElement('#editBtn')) {
     // edit btn
     document.getElementById('editBtn').addEventListener('click', async (event) => {
         const loderId = '_loading-btn';

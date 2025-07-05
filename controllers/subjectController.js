@@ -1,23 +1,26 @@
 const Subject = require('../models/Subject');
-const { uploadImage, deleteImage, uploadPDFToCloudinary } = require('../utils/image');
+const { uploadImage, deleteImage } = require('../utils/image');
 const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Subject**
 exports.createSubject = async (req, res, next) => {
-    const { classId, name, description, status } = req.body;
+    const { classId, name } = req.body;
 
     try {
-        // Upload image and PDF (if available)
-        const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
+        // Initialize image data as null
+        let imageData = { url: null, publicId: null };
+
+        // Check if an image file is uploaded
+        if (req.files?.imageUrl) {
+            imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysSubjectsImg', 220, 200);
+        }
 
         // Create the new subject document
         const newSubject = await Subject.create({
             classId,
             name,
-            description,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
-            status,
         });
 
         // Clear cache and respond
@@ -29,7 +32,7 @@ exports.createSubject = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    };
+    }
 };
 
 // **Get Subject by id**
@@ -120,7 +123,7 @@ exports.getAllSubjects = async (req, res, next) => {
 
 // **Update Subject**
 exports.updateSubject = async (req, res, next) => {
-    const { classId, name, description, status } = req.body;
+    const { classId, name, status } = req.body;
 
     try {
         const file = req.files?.imageUrl;
@@ -139,7 +142,7 @@ exports.updateSubject = async (req, res, next) => {
         // Update subject
         const updatedSubject = await Subject.findByIdAndUpdate(
             req.params.subjectId,
-            { classId, name, description, status, imageUrl: imageData.url, publicId: imageData.publicId },
+            { classId, name, status, imageUrl: imageData.url, publicId: imageData.publicId },
             { new: true, runValidators: true }
         );
 

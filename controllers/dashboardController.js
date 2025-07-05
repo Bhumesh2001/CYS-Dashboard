@@ -9,27 +9,28 @@ const moment = require('moment');
  */
 exports.getDashboardStats = async (req, res, next) => {
     try {
-        // Fetch totals
-        const [totalQuizzes, totalChapters, totalReports, totalUsers] = await Promise.all([
-            Quiz.countDocuments().lean(),
-            Chapter.countDocuments().lean(),
-            Report.countDocuments().lean(),
-            User.countDocuments({ role: 'user' }).lean(),
+        // Fetch counts using aggregation to minimize DB calls
+        const stats = await Promise.all([
+            Quiz.aggregate([{ $count: "totalQuizzes" }]),
+            Chapter.aggregate([{ $count: "totalChapters" }]),
+            Report.aggregate([{ $count: "totalReports" }]),
+            User.aggregate([{ $match: { role: "user" } }, { $count: "totalUsers" }]),
         ]);
+
+        // Extract counts safely (default to 0 if no documents exist)
+        const totalQuizzes = stats[0][0]?.totalQuizzes || 0;
+        const totalChapters = stats[1][0]?.totalChapters || 0;
+        const totalReports = stats[2][0]?.totalReports || 0;
+        const totalUsers = stats[3][0]?.totalUsers || 0;
 
         res.status(200).json({
             success: true,
             message: "Stats fetched successfully...!",
-            data: {
-                totalQuizzes,
-                totalChapters,
-                totalReports,
-                totalUsers,
-            },
+            data: { totalQuizzes, totalChapters, totalReports, totalUsers },
         });
     } catch (error) {
         next(error);
-    };
+    }
 };
 
 /**

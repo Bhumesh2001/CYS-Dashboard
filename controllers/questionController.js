@@ -1,4 +1,6 @@
 const Question = require('../models/Question');
+const Subject = require('../models/Subject');
+const Chapter = require('../models/Chapter');
 const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // create bulk question
@@ -78,6 +80,8 @@ exports.getQuestionById = async (req, res, next) => {
         const question = await Question.findById(
             req.params.questionId,
             { createdAt: 0, updatedAt: 0 })
+            .populate('classId', 'name')
+            .populate('subjectId', 'name')
             .populate('chapterId', 'name')
             .lean();
         if (!question) {
@@ -91,6 +95,51 @@ exports.getQuestionById = async (req, res, next) => {
     } catch (error) {
         next(error);
     };
+};
+
+// Get questions by class ID
+exports.getQuestionByClassId = async (req, res, next) => {
+    try {
+        const { classId } = req.params; // Extract classId from request parameters
+
+        // Step 1: Fetch subjects by classId
+        const subjects = await Subject.find({ classId }, { _id: 1 }).lean();
+        if (!subjects.length) {
+            return res.status(404).json({
+                success: false,
+                message: 'No subjects found for this class.'
+            });
+        }
+
+        // Step 2: Fetch chapters by subjectIds
+        const subjectIds = subjects.map(subject => subject._id);
+        const chapters = await Chapter.find({ subjectId: { $in: subjectIds } }, { _id: 1 }).lean();
+        if (!chapters.length) {
+            return res.status(404).json({
+                success: false,
+                message: 'No chapters found for the subjects in this class.'
+            });
+        }
+
+        // Step 3: Fetch questions by chapterIds
+        const chapterIds = chapters.map(chapter => chapter._id);
+        const questions = await Question.find({ chapterId: { $in: chapterIds } }).lean();
+        if (!questions.length) {
+            return res.status(404).json({
+                success: false,
+                message: 'No questions found for the chapters in this class.'
+            });
+        }
+
+        // Step 4: Return the response
+        res.status(200).json({
+            success: true,
+            message: 'Questions fetched successfully.',
+            data: questions,
+        });
+    } catch (error) {
+        next(error); // Pass errors to the error-handling middleware
+    }
 };
 
 // **Update Question**

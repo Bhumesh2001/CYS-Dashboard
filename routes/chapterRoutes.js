@@ -34,6 +34,14 @@ router.get(
     chapterController.getChaptersBySubjectId
 );
 
+// Route to get chapters by classId
+router.get(
+    '/class/:classId',
+    validateObjectIds(['classId'], 'params'),
+    cacheMiddleware,
+    chapterController.getChaptersByClassId
+);
+
 // **Get Chapter by ID**
 router.get(
     '/:chapterId',

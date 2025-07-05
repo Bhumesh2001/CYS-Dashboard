@@ -13,7 +13,7 @@
     <!-- Include Font Awesome -->
     <link rel="stylesheet" href="/css/all.min.css" />
     <link rel="stylesheet" href="/css/all.css" />
-    <link rel="stylesheet" href="/css/fontawesome.css">
+    <link rel="stylesheet" href="/css/fontawesome.css" />
 
     <!-- dashboard2 css -->
     <link rel="stylesheet" href="/css/styless.css" />
@@ -305,6 +305,22 @@
                       <i class="fas fa-plus"></i>
                       Create Chapter
                     </button>
+
+                    <!-- filter dropdown -->
+                    <div class="col-2">
+                      <div>
+                        <select
+                          class="form-select"
+                          name="class_filter"
+                          id="class_filter"
+                          autocomplete="off"
+                          data-title="chapters"
+                        >
+                          <option value="All">All</option>
+                          <option value="Inactive">Class 1</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="content-section" id="chapter">
@@ -375,6 +391,26 @@
                   >
                     <div class="col-12">
                       <div class="mb-3">
+                        <label for="classId" class="form-label"
+                          >Class
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="classId"
+                          id="classId"
+                          autocomplete="off"
+                          required
+                        >
+                          <option value="select a class">Select a class</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
                         <label for="subjectId" class="form-label"
                           >Subject
                           <i
@@ -411,7 +447,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12">
+                    <!-- <div class="col-12">
                       <div class="mb-3">
                         <label for="description" class="form-label"
                           >Description
@@ -428,7 +464,7 @@
                           autocomplete="on"
                         ></textarea>
                       </div>
-                    </div>
+                    </div> -->
 
                     <div class="col-12">
                       <div class="mb-3">
@@ -453,7 +489,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="imageUrl" class="form-label"
-                          >Image
+                          >Upload Image (optional)
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -473,7 +509,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="pdfUrl" class="form-label"
-                          >Upload Pdf
+                          >Upload Pdf (optional)
                           <i class="fa fa-asterisk" aria-hidden="true"></i
                         ></label>
                         <input
@@ -533,6 +569,26 @@
                   >
                     <div class="col-12">
                       <div class="mb-3">
+                        <label for="classId" class="form-label"
+                          >Class
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="classId"
+                          id="_classId"
+                          autocomplete="off"
+                          required
+                        >
+                          <option value="select a class">Select a class</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
                         <label for="subjectId" class="form-label"
                           >Subject
                           <i
@@ -567,7 +623,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12">
+                    <!-- <div class="col-12">
                       <div class="mb-3">
                         <label for="description" class="form-label"
                           >Description
@@ -584,7 +640,7 @@
                           autocomplete="off"
                         ></textarea>
                       </div>
-                    </div>
+                    </div> -->
 
                     <div class="col-12">
                       <div class="mb-3">
@@ -609,7 +665,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="imageUrl" class="form-label"
-                          >Image
+                          >Upload Image (optional)
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -640,7 +696,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="pdfUrl" class="form-label"
-                          >Upload Pdf
+                          >Upload Pdf (optional)
                           <i class="fa fa-asterisk" aria-hidden="true"></i
                         ></label>
                         <input

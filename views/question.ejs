@@ -6,14 +6,14 @@
     <title>Dashboard</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/assets/icons/cys_logo.jpeg" />
-    
+
     <!-- bootstrap css -->
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
 
     <!-- Include Font Awesome -->
     <link rel="stylesheet" href="/css/all.min.css" />
     <link rel="stylesheet" href="/css/all.css" />
-    <link rel="stylesheet" href="/css/fontawesome.css">
+    <link rel="stylesheet" href="/css/fontawesome.css" />
 
     <!-- dashboard2 css -->
     <link rel="stylesheet" href="/css/styless.css" />
@@ -237,7 +237,10 @@
 
               <!-- nested setting -->
               <div class="nested-menu" id="nestedSettingsMenu">
-                <a href="/admin/settings/setting1" class="sidebar-link nested-link">
+                <a
+                  href="/admin/settings/setting1"
+                  class="sidebar-link nested-link"
+                >
                   <div class="sidebar-item pt-0">
                     <i class="fa-solid fa-user-gear"></i>
                     <!-- Admin settings icon -->
@@ -245,7 +248,10 @@
                   </div>
                 </a>
 
-                <a href="/admin/settings/setting2" class="sidebar-link nested-link">
+                <a
+                  href="/admin/settings/setting2"
+                  class="sidebar-link nested-link"
+                >
                   <div class="sidebar-item">
                     <i class="fa-solid fa-cogs"></i>
                     <!-- App settings icon -->
@@ -298,6 +304,22 @@
                     >
                       <i class="fas fa-plus"></i> Create Question
                     </button>
+
+                    <!-- filter dropdown -->
+                    <div class="col-2">
+                      <div>
+                        <select
+                          class="form-select"
+                          name="class_filter"
+                          id="class_filter"
+                          autocomplete="off"
+                          data-title="questions"
+                        >
+                          <option value="All">All Questions</option>
+                          <option value="Inactive">Class 1</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="content-section" id="question">
@@ -377,6 +399,45 @@
                   >
                     <div class="col-12">
                       <div class="mb-3">
+                        <label for="classId" class="form-label"
+                          >Class
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="classId"
+                          id="classId"
+                          autocomplete="off"
+                          required
+                        >
+                          <option value="select a class">Select a class</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="subjectId" class="form-label"
+                          >Subject
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="subjectId"
+                          autocomplete="on"
+                          id="subjectId"
+                        >
+                          <option value="select subject">Select Subject</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
                         <label for="chapterId" class="form-label"
                           >Chapter
                           <i
@@ -415,25 +476,6 @@
                       </div>
                     </div>
 
-                    <div class="col-12">
-                      <div class="mb-3">
-                        <label for="questionType" class="form-label"
-                          >Question Type
-                          <i
-                            class="fa fa-asterisk"
-                            aria-hidden="true"
-                          ></i></label
-                        ><select
-                          class="form-select"
-                          name="questionType"
-                          id="questionType"
-                          autocomplete="off"
-                        >
-                          <option value="Options" selected>Options</option>
-                        </select>
-                      </div>
-                    </div>
-
                     <!-- option -->
                     <div class="col-12">
                       <div class="mb-3">
@@ -441,7 +483,7 @@
                           for="option_1"
                           class="form-label option-input"
                           data-answer="Answer A"
-                          >Answer A
+                          >Option A
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -463,7 +505,7 @@
                           for="option_2"
                           class="form-label option-input"
                           data-answer="Answer B"
-                          >Answer B
+                          >Option B
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -485,7 +527,7 @@
                           for="option_3"
                           class="form-label option-input"
                           data-answer="Answer C"
-                          >Answer C
+                          >Option C
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -507,7 +549,7 @@
                           for="option_4"
                           class="form-label option-input"
                           data-answer="Answer D"
-                          >Answer D
+                          >Option D
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -539,10 +581,10 @@
                           <option value="" selected="">
                             Select Correct Answer
                           </option>
-                          <option value="a">Answer A</option>
-                          <option value="b">Answer B</option>
-                          <option value="c">Answer C</option>
-                          <option value="d">Answer D</option>
+                          <option value="a">Option A</option>
+                          <option value="b">Option B</option>
+                          <option value="c">Option C</option>
+                          <option value="d">Option D</option>
                         </select>
                       </div>
                     </div>
@@ -612,6 +654,45 @@
                   >
                     <div class="col-12">
                       <div class="mb-3">
+                        <label for="classId" class="form-label"
+                          >Class
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="classId"
+                          id="_classId"
+                          autocomplete="off"
+                          required
+                        >
+                          <option value="select a class">Select a class</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
+                        <label for="subjectId" class="form-label"
+                          >Subject
+                          <i
+                            class="fa fa-asterisk"
+                            aria-hidden="true"
+                          ></i></label
+                        ><select
+                          class="form-select"
+                          name="subjectId"
+                          autocomplete="on"
+                          id="_subjectId"
+                        >
+                          <option value="select subject">Select Subject</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="col-12">
+                      <div class="mb-3">
                         <label for="chapterId" class="form-label"
                           >Chapter
                           <i
@@ -646,27 +727,6 @@
                       </div>
                     </div>
 
-                    <div class="col-12">
-                      <div class="mb-3">
-                        <label for="questionType" class="form-label"
-                          >Question Type
-                          <i
-                            class="fa fa-asterisk"
-                            aria-hidden="true"
-                          ></i></label
-                        ><select
-                          class="form-select"
-                          name="questionType"
-                          id="_questionType"
-                          autocomplete="off"
-                        >
-                          <option value="Options" selected>
-                            Options
-                          </option>
-                        </select>
-                      </div>
-                    </div>
-
                     <!-- option -->
                     <div class="col-12">
                       <div class="mb-3">
@@ -674,7 +734,7 @@
                           for="option_1"
                           class="form-label option-input"
                           data-answer="Answer A"
-                          >Answer A
+                          >Option A
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -696,7 +756,7 @@
                           for="option_2"
                           class="form-label option-input"
                           data-answer="Answer B"
-                          >Answer B
+                          >Option B
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -718,7 +778,7 @@
                           for="option_3"
                           class="form-label option-input"
                           data-answer="Answer C"
-                          >Answer C
+                          >Option C
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -740,7 +800,7 @@
                           for="option_4"
                           class="form-label option-input"
                           data-answer="Answer D"
-                          >Answer D
+                          >Option D
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -772,10 +832,10 @@
                           <option value="" selected="">
                             Select Correct Answer
                           </option>
-                          <option value="a">Answer A</option>
-                          <option value="b">Answer B</option>
-                          <option value="c">Answer C</option>
-                          <option value="d">Answer D</option>
+                          <option value="a">Option A</option>
+                          <option value="b">Option B</option>
+                          <option value="c">Option C</option>
+                          <option value="d">Option D</option>
                         </select>
                       </div>
                     </div>

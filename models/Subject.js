@@ -24,14 +24,6 @@ const subjectSchema = new mongoose.Schema({
         type: String,
     },
     /**
-     * Subject Description
-     * 
-     * A brief description of the subject.
-     */
-    description: {
-        type: String,
-    },
-    /**
     * Image URL for the category.
     * 
     * - Required: Yes

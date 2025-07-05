@@ -2,14 +2,15 @@ const mongoose = require('mongoose');
 
 // **Chapter Schema**
 const chapterSchema = new mongoose.Schema({
+    classId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Class',
+    },
     subjectId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Subject',
     },
     name: {
-        type: String,
-    },
-    description: {
         type: String,
     },
     imageUrl: {

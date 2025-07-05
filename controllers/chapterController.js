@@ -1,31 +1,38 @@
 const Chapter = require('../models/Chapter');
+const Subject = require('../models/Subject');
 const { uploadImage, deleteImage, uploadPDFToCloudinary } = require('../utils/image');
 const { flushAllCache } = require("../middlewares/cacheMiddle");
 
 // **Create Chapter**
 exports.createChapter = async (req, res, next) => {
-    const { subjectId, name, description, status } = req.body;
-    try {
-        if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(422).json({
-                success: false,
-                status: 422,
-                messeage: 'No files were uploaded.'
-            });
-        };
-        const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysChaptersImg', 220, 200);
-        const pdfData = req.files?.pdfUrl ? await uploadPDFToCloudinary(req.files.pdfUrl.tempFilePath) : null;
+    const { classId, subjectId, name } = req.body;
 
+    try {
+        // Initialize image and PDF data as null
+        let imageData = { url: null, publicId: null };
+        let pdfData = { url: null, publicId: null };
+
+        // Upload image if provided
+        if (req.files?.imageUrl) {
+            imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysChaptersImg', 220, 200);
+        }
+
+        // Upload PDF if provided
+        if (req.files?.pdfUrl) {
+            pdfData = await uploadPDFToCloudinary(req.files.pdfUrl.tempFilePath);
+        }
+
+        // Create the new chapter document
         const newChapter = await Chapter.create({
+            classId,
             subjectId,
             name,
-            description,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
-            pdfUrl: pdfData ? { url: pdfData.url, publicId: pdfData.publicId } : null,
-            status,
+            pdfUrl: pdfData.url ? { url: pdfData.url, publicId: pdfData.publicId } : null,
         });
 
+        // Clear cache and respond
         flushAllCache();
 
         res.status(201).json({
@@ -35,7 +42,7 @@ exports.createChapter = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    };
+    }
 };
 
 // **Get Chapter by id**
@@ -45,10 +52,15 @@ exports.getChapterById = async (req, res, next) => {
             req.params.chapterId,
             { createdAt: 0, updatedAt: 0, publicId: 0 }
         )
+            .populate('classId', 'name')
             .populate('subjectId', 'name')
             .lean();
 
-        if (!Chapter) return res.status(404).json({ success: false, message: 'Chapter not found' });
+        if (!Chapter) return res.status(404).json({
+            success: false,
+            status: 404,
+            message: 'Chapter not found'
+        });
 
         res.status(200).json({
             success: true,
@@ -90,6 +102,42 @@ exports.getChaptersBySubjectId = async (req, res, next) => {
     };
 };
 
+// Get all chapters by class ID
+exports.getChaptersByClassId = async (req, res, next) => {
+    try {
+        const { classId } = req.params; // Extract classId from request parameters
+
+        // Step 1: Fetch subjects by classId to get their IDs
+        const subjects = await Subject.find({ classId }).select('_id').exec();
+
+        if (!subjects || subjects.length === 0) {
+            return res.status(404).json({
+                success: false,
+                status: 404,
+                message: 'No subjects found for this class'
+            });
+        }
+
+        // Extract subject IDs
+        const subjectIds = subjects.map(subject => subject._id);
+
+        // Step 2: Fetch chapters for all subjects (including _id, name, and imageUrl)
+        const chapters = await Chapter.find(
+            { subjectId: { $in: subjectIds } },
+            { name: 1, imageUrl: 1 } // Fetch name and imageUrl; _id is included by default
+        ).exec();
+
+        // Step 3: Return the response
+        res.status(200).json({
+            success: true,
+            message: 'Chapters fetched successfully',
+            data: chapters, // Directly return the array of chapters
+        });
+    } catch (error) {
+        next(error); // Pass errors to the error-handling middleware
+    };
+};
+
 // **Get all Chapters**
 exports.getAllChapter = async (req, res, next) => {
     try {
@@ -124,29 +172,33 @@ exports.getAllChapter = async (req, res, next) => {
 
 // **Update Chapter**
 exports.updateChapter = async (req, res, next) => {
-    const { subjectId, name, description, status } = req.body;
+    const { classId, subjectId, name, status } = req.body;
 
     try {
+        // Fetch the existing chapter
+        const existingChapter = await Chapter.findById(req.params.chapterId);
+        if (!existingChapter) {
+            return res.status(404).json({ success: false, message: 'Chapter not found' });
+        }
+
         // Helper function to handle image and PDF upload
         const handleFileUpload = async (fileKey, folder, isPDF = false) => {
             const file = req.files?.[fileKey];
-            const chapterData = await Chapter.findById(
-                req.params.chapterId,
-                isPDF ? { pdfUrl: 1 } : { imageUrl: 1, publicId: 1 }
-            );
 
-            // If file is provided, delete the existing file and upload the new one
+            // If a new file is uploaded, delete the old one and upload the new one
             if (file) {
-                if (chapterData?.[isPDF ? 'pdfUrl' : 'publicId']?.publicId) {
-                    await deleteImage(chapterData[isPDF ? 'pdfUrl' : 'publicId'].publicId);
-                };
+                if (existingChapter?.[isPDF ? 'pdfUrl' : 'publicId']) {
+                    await deleteImage(existingChapter[isPDF ? 'pdfUrl' : 'publicId']);
+                }
                 return isPDF
                     ? await uploadPDFToCloudinary(file.tempFilePath)
                     : await uploadImage(file.tempFilePath, folder, 220, 200);
-            };
+            }
 
-            // If no new file, retain the existing data
-            return chapterData[isPDF ? 'pdfUrl' : 'imageUrl'] || { url: null, publicId: null };
+            // If no new file is provided, retain existing data
+            return isPDF
+                ? existingChapter.pdfUrl
+                : { url: existingChapter.imageUrl, publicId: existingChapter.publicId };
         };
 
         // Process image and PDF
@@ -157,24 +209,18 @@ exports.updateChapter = async (req, res, next) => {
         const updatedChapter = await Chapter.findByIdAndUpdate(
             req.params.chapterId,
             {
+                classId,
                 subjectId,
                 name,
-                description,
                 status,
-                imageUrl: imageData.url,
-                publicId: imageData.publicId,
-                pdfUrl: pdfData.url ? { url: pdfData.url, publicId: pdfData.publicId } : null,
+                imageUrl: imageData?.url || null,
+                publicId: imageData?.publicId || null,
+                pdfUrl: pdfData?.url ? { url: pdfData.url, publicId: pdfData.publicId } : null,
             },
             { new: true, runValidators: true }
         );
 
-        if (!updatedChapter) {
-            return res.status(404).json({ success: false, status: 404, message: 'Chapter not found' });
-        };
-
-        // Clear caches and respond
         flushAllCache();
-
         res.status(200).json({
             success: true,
             message: 'Chapter updated successfully...!',
@@ -182,7 +228,7 @@ exports.updateChapter = async (req, res, next) => {
         });
     } catch (error) {
         next(error);
-    };
+    }
 };
 
 // **Delete Chapter**
@@ -193,7 +239,7 @@ exports.deleteChapter = async (req, res, next) => {
 
         const deletedChapter = await Chapter.findByIdAndDelete(req.params.chapterId);
         if (!deletedChapter) {
-            return res.status(404).json({ success: false, message: 'Chapter not found' });
+            return res.status(404).json({ success: false, status: 404, message: 'Chapter not found' });
         };
 
         flushAllCache();

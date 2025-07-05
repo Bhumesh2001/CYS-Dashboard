@@ -6,14 +6,14 @@
     <title>Dashboard</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/assets/icons/cys_logo.jpeg" />
-    
+
     <!-- bootstrap css -->
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
 
     <!-- Include Font Awesome -->
     <link rel="stylesheet" href="/css/all.min.css" />
     <link rel="stylesheet" href="/css/all.css" />
-    <link rel="stylesheet" href="/css/fontawesome.css">
+    <link rel="stylesheet" href="/css/fontawesome.css" />
 
     <!-- dashboard2 css -->
     <link rel="stylesheet" href="/css/styless.css" />
@@ -237,7 +237,10 @@
 
               <!-- nested setting -->
               <div class="nested-menu" id="nestedSettingsMenu">
-                <a href="/admin/settings/setting1" class="sidebar-link nested-link">
+                <a
+                  href="/admin/settings/setting1"
+                  class="sidebar-link nested-link"
+                >
                   <div class="sidebar-item pt-0">
                     <i class="fa-solid fa-user-gear"></i>
                     <!-- Admin settings icon -->
@@ -245,7 +248,10 @@
                   </div>
                 </a>
 
-                <a href="/admin/settings/setting2" class="sidebar-link nested-link">
+                <a
+                  href="/admin/settings/setting2"
+                  class="sidebar-link nested-link"
+                >
                   <div class="sidebar-item">
                     <i class="fa-solid fa-cogs"></i>
                     <!-- App settings icon -->
@@ -299,6 +305,22 @@
                       <i class="fas fa-plus"></i>
                       Create Subject
                     </button>
+
+                    <!-- filter dropdown -->
+                    <div class="col-2">
+                      <div>
+                        <select
+                          class="form-select"
+                          name="class_filter"
+                          id="class_filter"
+                          autocomplete="off"
+                          data-title="subjects"
+                        >
+                          <option value="Active">All</option>
+                          <option value="Inactive">Class 1</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
 
                   <!-- content section -->
@@ -333,8 +355,6 @@
                             Pre
                           </a>
                         </li>
-
-                        <!-- Dynamic Page Numbers will be appended here -->
 
                         <!-- Next Button -->
                         <li class="page-item px-2" id="next-btn">
@@ -407,7 +427,7 @@
                         />
                       </div>
                     </div>
-
+                    <!-- 
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="description" class="form-label"
@@ -425,7 +445,7 @@
                           autocomplete="off"
                         ></textarea>
                       </div>
-                    </div>
+                    </div> -->
 
                     <div class="col-12">
                       <div class="mb-3">
@@ -450,7 +470,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="imageUrl" class="form-label"
-                          >Upload Image
+                          >Upload Image (optional)
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"
@@ -551,7 +571,7 @@
                       </div>
                     </div>
 
-                    <div class="col-12">
+                    <!-- <div class="col-12">
                       <div class="mb-3">
                         <label for="description" class="form-label"
                           >Description
@@ -568,7 +588,7 @@
                           autocomplete="off"
                         ></textarea>
                       </div>
-                    </div>
+                    </div> -->
 
                     <div class="col-12">
                       <div class="mb-3">
@@ -593,7 +613,7 @@
                     <div class="col-12">
                       <div class="mb-3">
                         <label for="imageUrl" class="form-label"
-                          >Upload Image
+                          >Upload Image (optional)
                           <i
                             class="fa fa-asterisk"
                             aria-hidden="true"

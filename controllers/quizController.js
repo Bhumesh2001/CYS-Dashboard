@@ -8,23 +8,29 @@ const { flushAllCache } = require("../middlewares/cacheMiddle");
 // **Create Quiz**
 exports.createQuiz = async (req, res, next) => {
     try {
-        if (!req.files || Object.keys(req.files).length === 0) {
-            return res.status(422).json({ success: false, status: 422, messeage: 'No files were uploaded.' });
-        };
-        const imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
+        // Initialize image data as null
+        let imageData = { url: null, publicId: null };
+
+        // Upload image if provided
+        if (req.files?.imageUrl) {
+            imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
+        }
+
+        // Create quiz document
         const quiz = new Quiz({
             ...req.body,
             imageUrl: imageData.url,
             publicId: imageData.publicId,
         });
 
+        // Save quiz & clear cache
+        await quiz.save();
         flushAllCache();
 
-        await quiz.save();
         res.status(201).json({ success: true, message: 'Quiz created successfully', quiz });
     } catch (error) {
         next(error);
-    };
+    }
 };
 
 // **Get All Quizzes**
@@ -218,48 +224,46 @@ exports.getQuizByChapterId = async (req, res, next) => {
 // **Update Quiz**
 exports.updateQuiz = async (req, res, next) => {
     try {
-        let imageData = {}; // Initialize an empty object to store image data
-        if (req.files && Object.keys(req.files).length !== 0) {
-            // If a new image is uploaded
-            const quizData = await Quiz.findById(req.params.quizId, { publicId: 1 });
-            if (quizData && quizData.publicId) {
-                // If the category already has an image, delete the old one
-                await deleteImage(quizData.publicId);
+        // Fetch existing quiz data
+        const existingQuiz = await Quiz.findById(req.params.quizId);
+        if (!existingQuiz) {
+            return res.status(404).json({ success: false, message: 'Quiz not found' });
+        }
+
+        // Initialize image data with existing values
+        let imageData = { url: existingQuiz.imageUrl, publicId: existingQuiz.publicId };
+
+        // If a new image is uploaded, replace the old one
+        if (req.files?.imageUrl) {
+            if (existingQuiz.publicId) {
+                await deleteImage(existingQuiz.publicId); // Delete old image
             }
             imageData = await uploadImage(req.files.imageUrl.tempFilePath, 'CysQuizzesImg', 220, 200);
-        } else {
-            // If no new image is provided, use the current image data
-            const quizData = await Quiz.findById(req.params.quizId, { imageUrl: 1, publicId: 1 });
-            imageData.url = quizData.imageUrl;
-            imageData.publicId = quizData.publicId;
-        };
+        }
 
-        const quiz = await Quiz.findByIdAndUpdate(
+        // Update quiz with new or existing data
+        const updatedQuiz = await Quiz.findByIdAndUpdate(
             req.params.quizId,
             {
                 ...req.body,
-                imageUrl: imageData.url,
-                publicId: imageData.publicId
+                imageUrl: imageData.url || null,
+                publicId: imageData.publicId || null
             },
             { new: true, runValidators: true }
         );
 
-        if (!quiz) {
-            return res.status(404).json({ success: false, status: 404, message: 'Quiz not found' });
-        };
-
         flushAllCache();
 
-        res.status(200).json({ success: true, message: 'Quiz updated successfully', data: quiz });
+        res.status(200).json({ success: true, message: 'Quiz updated successfully', data: updatedQuiz });
     } catch (error) {
         next(error);
-    };
+    }
 };
 
 // **Delete Quiz**
 exports.deleteQuiz = async (req, res, next) => {
     try {
-        const quizData = await Quiz.findById(req.params.quizId, { publicId: 1 });
+        const quizData = await Quiz.findById(req.params.quizId, { publicId: 1 }).lean();
         if (quizData && quizData.publicId) await deleteImage(quizData.publicId);
 
         const quiz = await Quiz.findByIdAndDelete(req.params.quizId);

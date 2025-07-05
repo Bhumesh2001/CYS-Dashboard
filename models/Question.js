@@ -2,6 +2,14 @@ const mongoose = require('mongoose');
 
 // **Question Schema**
 const questionSchema = new mongoose.Schema({
+    classId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Class',
+    },
+    subjectId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject',
+    },
     chapterId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Chapter',
@@ -16,10 +24,6 @@ const questionSchema = new mongoose.Schema({
     },
     answer: {
         type: String,
-    },
-    questionType: {
-        type: String,
-        default: 'Options',
     },
     status: {
         type: String,

@@ -40,6 +40,15 @@ router.get(
     questonController.getQuestionById
 );
 
+// Get question by class ID
+router.get(
+    '/class/:classId',
+    authenticate,
+    validateObjectIds(['classId'], 'params'),
+    cacheMiddleware,
+    questonController.getQuestionByClassId
+);
+
 // Update a Question by ID
 router.put(
     '/:questionId',
